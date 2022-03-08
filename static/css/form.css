@@ -1,0 +1,392 @@
+.sadforms, div.form-block, div.form-group, .sadforms .items {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+.form-container {
+    width: 35rem;
+    max-width: 100%;
+ }
+.sadforms {
+    width: 100%;
+    padding: 3rem 0rem;
+    gap: 4.5rem;
+}
+.form-container h2 {
+    width: fit-content;
+    max-width: 100%;
+}
+.form-container p {
+    white-space: pre-wrap;
+}
+.sadforms * { transition: all 0s; }
+div.form-block, div.form-group { gap: .75rem; }
+
+.sadforms .disabled input,
+.sadforms .disabled textarea,
+.sadforms .disabled .dropdown, 
+.sadforms .disabled .checkbox,
+.sadforms .disabled .switch {
+	cursor: not-allowed;
+    border-color: transparent;
+	background-color: var(--disabled);
+}
+
+div.form-block, div.form-group, .form-group .items, 
+div.dropdown-container { 
+    width: 100%;
+    border-radius: .5rem;
+ }
+
+.sadforms .items .field { 
+    border-radius: 0;
+    border-top: none;
+}
+.sadforms .items .form-block:first-of-type .field { 
+    border-radius: 0.5rem 0.5rem 0 0;
+    border-top: solid 0.2rem var(--accent2);
+}
+.sadforms .items .form-block:last-of-type .field { 
+    border-radius: 0 0 0.5rem 0.5rem;
+}
+
+.sadforms .field {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background-color: var(--background);
+    border: solid 0.2rem var(--accent2);
+    border-radius: 0.5rem;
+    font-size: var(--normal);
+}
+.sadforms .checkbox,
+.sadforms .switch,
+.sadforms .dropdown, .sadforms .option,
+.sadforms input[type="button"],
+.sadforms input[type="color"],
+.sadforms input[type="file"],
+.sadforms input[type="submit"]
+{ cursor: pointer; }
+
+.sadforms .switch-container {
+    min-width: 80px;
+    min-height: calc(100% - 1rem);
+    height: 2.3333rem;
+    background-color: var(--accent2);
+
+    position: absolute;
+    right: 0.5rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: .6rem;
+
+    border-radius: .5rem;
+    overflow: hidden;
+}
+.sadforms .switch-container span {
+    color: var(--placeholder);
+    font-size: 1.5rem;
+    z-index: 2;
+}
+.sadforms .switch[aria-checked="false"] .switch-container span:first-of-type,
+.sadforms .switch[aria-checked="true"] .switch-container span:last-of-type {
+    color: var(--accent2);
+}
+.sadforms .switch-container .switch-state {
+    aspect-ratio: 1/1;
+    min-height: calc(100% - 0.5rem);
+    background-color: var(--background);
+    margin: 0.25rem;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    border-radius: .35rem;
+    transition: all .5s;
+}
+.sadforms .switch[aria-checked="true"] .switch-state {
+    left: 47%;
+    background-color: var(--text);
+    transition: all .25s;
+}
+
+.sadforms input::placeholder, .sadforms textarea::placeholder,
+.sadforms .dropdown-container .option-empty:not(.redact) { color: var(--placeholder); }
+.sadforms .dropdown, .sadforms .checkbox, .sadforms .switch { 
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+.sadforms .dropdown-container.active { 
+    background-color: var(--accent2); 
+    border-radius: .5rem .5rem 0 0;
+}
+.sadforms .option-container {
+    position: absolute;
+    min-width: 100%;
+    padding: .75rem;
+    background-color: var(--accent2);
+
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+
+    z-index: 2;
+    border-radius: 0 0 .5rem .5rem;
+}
+.sadforms .option-container > div, .sadforms .option { 
+    width: 100%;
+    padding: .5rem;
+    padding-left: 1rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    border-radius: .5rem;
+}
+.sadforms .dropdown > span:first-of-type,
+.sadforms .option > span { 
+    width: 80%;
+    word-break: break-word;
+ }
+.sadforms .dropdown > span:first-of-type { width: 81%;}
+.sadforms .option:hover { background-color: var(--disabled); }
+.sadforms .option.active,
+.sadforms input.option.active ~ .edit-details * { 
+    background-color: var(--text); 
+    color: var(--accent2);
+}
+.sadforms .option.active * { color: var(--accent2); }
+.sadforms .option.adding-container { background-color: transparent; }
+.sadforms .option.adding-container .edit-details {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: .5rem;
+}
+
+.sadforms .option input::placeholder { color: var(--placeholder); }
+.sadforms .option input.active::placeholder { color: var(--disabled); }
+.sadforms .option input {
+    height: 100%;
+    margin: 0;
+    padding-right: 8em;
+    position: absolute;
+    left: 0;
+    background-color: transparent;
+
+    color: var(--text);
+    font-size: inherit;
+    border: none;
+    cursor: text;
+}
+.sadforms .option-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: .5rem;
+}
+.sadforms .option-actions span { 
+    padding: .5rem;
+    border-radius: .5rem;
+}
+.sadforms .option-actions span:hover { background-color: var(--placeholder); }
+.sadforms input.option ~ .edit-details span:hover { background-color: var(--disabled); }
+
+.sadforms .option.active .option-actions span:hover,
+.sadforms input.option.active ~ .edit-details span:hover { 
+    color: var(--text);
+    background-color: var(--disabled); 
+}
+.sadforms .option-del { display: none; }
+.sadforms .option:hover .option-del, 
+.sadforms .option.active .option-del 
+{ display: flex; }
+
+
+.sadforms textarea { 
+    min-height: 10rem;
+    resize: none;
+}
+
+.sadforms label, .sadforms legend {
+    position: absolute;
+    top: -.65rem;
+    left: 1rem;
+
+    padding: .2rem .75rem;
+    background-color: var(--background);
+
+    font-size: .75rem; 
+    font-weight: 700;
+
+    z-index: 1;
+}
+.sadforms label *, .sadforms legend * { 
+    padding-left: .5rem;
+    font-size: .75rem; 
+    font-weight: 400;
+}
+.sadforms .trailingButtons {
+    width: 100%;
+    
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.sadforms .divider {
+    min-width: 100%;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1.25rem;
+}
+.sadforms .divider span:first-of-type { font-size: 2rem; }
+.sadforms .divider span:last-of-type {
+    max-width: 50%;
+    font-weight: bold;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+.sadforms .divider hr {
+    width: 100%;
+    height: 0.25rem;
+    margin-left: 1rem;
+    background-color: var(--text);
+
+    border: 0.1rem solid var(--text);
+    flex-shrink: 1;
+}
+
+/* FEEDBACK */
+.sadforms .container-tooltip, .sadforms .container-validity, 
+.sadforms .container-preview {
+    display: none;
+
+    min-width: 97%;
+    max-width: 97%;
+    padding: .75rem 1rem;
+    margin: 0 1.5%;
+
+    border-radius: .25rem;
+}
+.sadforms .container-tooltip {
+    background-color: var(--accent2);
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+.sadforms .container-tooltip span { 
+    padding-right: 1rem; 
+    font-size: 1.25rem;
+}
+.sadforms .container-validity.active {
+    display: flex;
+    flex-direction: column;
+    border: solid var(--accent2) .1rem;
+}
+
+.sadforms .field.redact::after,
+.sadforms .container-preview.redact::after {    
+    content: '[redacted]';
+    color: var(--text);   
+    text-align: center; 
+    
+    position: absolute;
+    background-color: var(--background);
+    padding: 1rem;
+    padding-left: 1.5rem;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    border-radius: 0.5rem;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+.sadforms .container-preview.redact::after {
+    padding: 0;
+    border: .25rem solid var(--accent2);
+    align-items: center;
+}
+.sadforms .field.redact:hover::after, 
+.sadforms .field.redact:focus::after,
+.sadforms .container-preview:hover::after,
+.sadforms .container-preview:focus::after
+{ display: none; }
+.sadforms .container-preview.active {
+    background-color: var(--accent2);
+    padding: 1rem;
+
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+
+    overflow: hidden;
+}
+.sadforms .preview {
+    width: 6rem;
+    height: 6rem;
+
+	gap: 0.25em;
+    padding: .5rem;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    background-color: var(--background);
+    border-radius: 10px;
+}
+.sadforms .preview * { color: var(--text); }
+.sadforms .preview span { font-size: 3rem !important; }
+.sadforms .preview p {
+	font-size: .8rem;
+    white-space: nowrap;
+    width: 4rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.sadforms .condition-true { color: var(--good); }
+.sadforms .condition-false { color: var(--warn); }
+
+.sadforms .form-block.warn .field { border-color: var(--warn) !important; }
+.sadforms .form-group.warn .items {
+    outline: solid 0.2rem var(--warn);
+    border-radius: 0.5rem;
+ }
+
+.sadforms .warn label, .sadforms .warn legend,
+.sadforms .warn label *, .sadforms .warn legend * { color: var(--warn) !important; }
+
+.sadforms #aria {
+    display: flex;
+}
+.sadforms .for-aria { 
+    max-width: 0;
+    max-height: 0;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+ }

@@ -1,0 +1,225 @@
+<script lang="ts">
+	import CustomStore from "../store/CustomStore";
+	import FormStore from "../store/FormStore";
+	import Checkbox from "./Checkbox.svelte";
+	import Dropdown from "./Dropdown.svelte";
+	import type { Field, Group } from "../types/Form";
+	import Divider from "./Divider.svelte";
+
+	export let formid: string,
+		field: Field,
+		group: Group = undefined,
+		functions: Record<string, Function>;
+</script>
+
+<div
+	class={`form-block type:${field.type} ${field.disabled ? "disabled" : ""}`}
+	id={`${$CustomStore.names.blockHeader}${field.uid}`}
+>
+	{#if !field.hidden}
+		{#if field.type && field.type === "custom"}
+			<div>{field.body}</div>
+		{:else}
+			{#if !field?.hide?.label}
+				<label
+					id={`${$CustomStore.names.label}${field.uid}`}
+					for={`${$CustomStore.names.inputHeader}${field.uid}`}
+				>
+					{field.name}
+					{#if field.required}<em aria-hidden="true">*required</em
+						><span class="for-aria">required</span>{/if}
+					{#if field.tooltip}<span class="for-aria"
+							>Tooltip: {field.tooltip}</span
+						>{/if}
+				</label>
+			{/if}
+			{#if field.type === "textarea"}
+				<textarea
+					id={`${$CustomStore.names.inputHeader}${field.uid}`}
+					class={`field ${field.redact ? "redact" : ""}`}
+					name={field.name}
+					placeholder={field.placeholder}
+					disabled={field.disabled}
+					aria-disabled={field.disabled}
+					aria-required={field.required}
+					spellcheck={`${field.spellcheck}`}
+					value={group === undefined
+						? $FormStore[formid].value[field.uid]
+						: $FormStore[formid].value[group.meta.uid][field.uid]}
+					on:focus={() =>
+						functions.onFocus(field.uid, group?.meta.uid)}
+					on:blur={() => functions.onBlur(field.uid, group?.meta.uid)}
+					on:input={async (event) =>
+						await functions.updateField(
+							event,
+							field.uid,
+							group?.meta.uid
+						)}
+				/>
+			{:else if field.type === "file" && field.custom}
+				<button
+					id={`${$CustomStore.names.inputHeader}${field.uid}`}
+					class={`field ${field.redact ? "redact" : ""}`}
+					name={field.name}
+					title={`click to choose ${
+						field.multiple ? `files` : `a file`
+					} or drag and drop ${
+						field.multiple ? `files` : `a file`
+					} onto the button`}
+					on:click={(event) => {
+						event.preventDefault();
+						document
+							.getElementById(
+								`${$CustomStore.names.inputHeader}${field.uid}`
+							)
+							.click();
+					}}
+					on:drop={null}
+					on:dragenter={null}
+					on:dragover={null}
+					on:dragleave={null}
+				>
+					{$FormStore[formid].data[field.uid]
+						? $FormStore[formid].data[field.uid].name
+						: `click to choose ${
+								field.multiple ? `files` : `a file`
+						  }`}
+				</button>
+				<input
+					id={`${$CustomStore.names.inputHeader}${field.uid}`}
+					class={`field ${field.redact ? "redact" : ""}`}
+					name={field.name}
+					type={field.type}
+					accept={field.accept}
+					placeholder={field.placeholder}
+					disabled={field.disabled}
+					aria-required={field.required}
+					aria-disabled={field.disabled}
+					aria-hidden="true"
+					style={`display: none`}
+					on:focus={() =>
+						functions.onFocus(field.uid, group?.meta.uid)}
+					on:blur={() => functions.onBlur(field.uid, group?.meta.uid)}
+					on:input={async (event) =>
+						await functions.updateField(
+							event,
+							field.uid,
+							group?.meta.uid
+						)}
+				/>
+			{:else if ["dropdown", "radio"].includes(field.type)}
+				<Dropdown
+					id={`${field.uid}`}
+					name={field.name}
+					placeholder={field.placeholder}
+					disabled={field.disabled}
+					multiple={field.multiple}
+					compact={field.compact}
+					options={field.options}
+					edit={field.edit}
+					value={group === undefined
+						? $FormStore[formid].value[field.uid]
+						: $FormStore[formid].value[group.meta.uid][field.uid]}
+					data={group === undefined
+						? $FormStore[formid].data[field.uid]
+						: $FormStore[formid].data[group.meta.uid][field.uid]}
+					focus={() => functions.onFocus(field.uid, group?.meta.uid)}
+					blur={() => functions.onBlur(field.uid, group?.meta.uid)}
+					input={async (event) =>
+						await functions.updateField(
+							event,
+							field.uid,
+							group?.meta.uid
+						)}
+				/>
+			{:else if ["checkbox", "switch"].includes(field.type)}
+				<Checkbox
+					type={field.type}
+					id={`${field.uid}`}
+					name={field.name}
+					placeholder={field.placeholder}
+					icon={typeof field.icon === "object"
+						? field.icon
+						: undefined}
+					disabled={field.disabled}
+					redact={field.redact}
+					data={group === undefined
+						? $FormStore[formid].data[field.uid]
+						: $FormStore[formid].data[group.meta.uid][field.uid]}
+					focus={() => functions.onFocus(field.uid, group?.meta.uid)}
+					blur={() => functions.onBlur(field.uid, group?.meta.uid)}
+					input={async (event) =>
+						await functions.updateField(
+							event,
+							field.uid,
+							group?.meta.uid
+						)}
+				/>
+			{:else if field.type === "divider"}
+				<Divider
+					id={`${$CustomStore.names.visualHeader}${field.uid}`}
+					name={field.name}
+					icon={typeof field.icon === "string"
+						? field.icon
+						: undefined}
+				/>
+			{:else}
+				<input
+					id={`${$CustomStore.names.inputHeader}${field.uid}`}
+					class={`field ${field.redact ? "redact" : ""}`}
+					name={field.name}
+					type={field.type}
+					accept={field.accept}
+					placeholder={field.placeholder}
+					autocomplete={field.autocomplete}
+					spellcheck={`${field.spellcheck}`}
+					disabled={field.disabled}
+					aria-disabled={field.disabled}
+					multiple={field.multiple ? true : null}
+					value={field.type === "file"
+						? null
+						: group === undefined
+						? $FormStore[formid].value[field.uid]
+						: $FormStore[formid].value[group.meta.uid][field.uid]}
+					on:focus={() =>
+						functions.onFocus(field.uid, group?.meta.uid)}
+					on:blur={() => functions.onBlur(field.uid, group?.meta.uid)}
+					on:input={async (event) =>
+						await functions.updateField(
+							event,
+							field.uid,
+							group?.meta.uid
+						)}
+				/>
+			{/if}
+		{/if}
+	{/if}
+	{#if field.tooltip}
+		<div class="container-tooltip" aria-hidden="true">
+			{#if $CustomStore.icons.tooltip}
+				<span aria-hidden="true" class="material-icons"
+					>{$CustomStore.icons.tooltip}</span
+				>
+			{/if}
+			<p>
+				{field.tooltip}
+			</p>
+		</div>
+	{/if}
+	{#if !group?.meta?.group?.feedback && field.validity}
+		<div
+			class="container-validity"
+			id={`${$CustomStore.names.inputFeedback}${field.uid}`}
+			aria-live="polite"
+		/>
+	{/if}
+	{#if field.type === "file" && field?.hide?.preview === undefined}
+		<div
+			class={`container-preview ${
+				field.redact ? $CustomStore.names.redact : ""
+			}`}
+			id={`${$CustomStore.names.inputPreview}${field.uid}`}
+			aria-live="polite"
+		/>
+	{/if}
+</div>
