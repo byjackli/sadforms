@@ -15,9 +15,7 @@
   <h3 align="center">
     low-level accessible forms designed for Svelte programmers
   </h3>
-
   <p align="center">
-    <br />
     <a href="https://sadforms.com/edit#sample%7C"><strong>Live Demo »</strong></a>
     <br />
     <br />
