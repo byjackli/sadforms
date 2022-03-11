@@ -1,9 +1,11 @@
 <script lang="ts">
     import Code from "../../components/Docs/Code.svelte";
     import CodeBlock from "../../components/Docs/CodeBlock.svelte";
+
+    import DocsTemplate from "../../components/Docs/DocsTemplate.svelte";
 </script>
 
-<main class="fwfh">
+<DocsTemplate title="welcome">
     <CodeBlock title="sure">
         <Code
             slot="source"
@@ -234,4 +236,4 @@
         </div>
     `}
     />
-</main>
+</DocsTemplate>

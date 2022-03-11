@@ -18,7 +18,8 @@
     --code: 'Roboto Mono', monospace;
 
     --pill: 69em;
-    --h-navbar: 6.5em;
+    --h-navmain: 6.5em;
+    --w-navdocs: 15em;
     --w-editor: 713px;
     --p-editor: 0vw;
 
@@ -149,7 +150,7 @@ button:active, .button:active { transform: scale3d(.9, .9, 1); }
 /* ======  COMPONENT:: NAV  ======*/
 nav#main {
     width: 100%;
-    height: var(--h-navbar);
+    height: var(--h-navmain);
     padding: 3em 3.5em 0 3.75em;
     background-color: var(--accent);
 
@@ -205,8 +206,8 @@ a.doc-mode {
 
  /* ======  COMPONENT:: EDITOR  ======*/
 main#editor {
-    min-height: calc(100vh - var(--h-navbar));
-    max-height: calc(100vh - var(--h-navbar));
+    min-height: calc(100vh - var(--h-navmain));
+    max-height: calc(100vh - var(--h-navmain));
     /* min-width: clamp(0px, 800px, 100%); */
     padding: 3.75em;
 
@@ -221,11 +222,11 @@ main#editor {
 main#editor::-webkit-scrollbar { display: none; }
  #editor-sidemenu-container {
     width: var(--w-editor);
-    min-height: calc(100vh - var(--h-navbar));
+    min-height: calc(100vh - var(--h-navmain));
     background-color: var(--accent1);
     position: absolute;
     right: 0;
-    top: var(--h-navbar);
+    top: var(--h-navmain);
     transform: translate3d(var(--p-editor),0,0);
 }
 main#editor .sadforms {
@@ -261,7 +262,7 @@ main#editor .sadforms {
 }
 .tiny-toggle { height: 2rem !important; }
 #editor-sidemenu { 
-    height: calc(100vh - var(--h-navbar));
+    height: calc(100vh - var(--h-navmain));
     padding: 3em 5em;
     display: flex;
     flex-direction: column;
@@ -394,7 +395,10 @@ button#copy-code { border-radius: var(--pill); }
 }
 
 .fwfh {
-    height: calc(100vh - var(--h-navbar));
+    width: 100%;
+    height: calc(100vh - var(--h-navmain));
+    min-width: 100%;
+    justify-content: flex-start;
     overflow: auto;
 }
 
@@ -511,14 +515,13 @@ code {
 
 /* ======  CODEBLOCK COMPONENT  ======*/
 div.codeblock {
-    width: 80%;
+    width: 100%;
     max-width: 1920px;
-    padding: 2rem 0 1rem 0;
 }
 div.codeblock button {
     position: absolute;
-    right: .75rem;
-    bottom: 1.75rem;
+    right: 1.75rem;
+    bottom: 1.25rem;
     padding: .3rem .75rem;
 }
 div.codeblock button .material-icons { font-size: 1.25em; }
@@ -537,7 +540,7 @@ div.codeblock h3 { padding-bottom: 1rem; }
 
 
 
-/* ======  DOCUMENTATION NAVBAR  ======*/
+/* ======  DOCUMENTATION NAVDOCS  ======*/
 nav#docs, nav#docs div.scrolltainer,
 div.page-sections {
     display: flex;
@@ -547,8 +550,8 @@ div.page-sections {
     gap: .25rem;
 }
 nav#docs {
-    width: 15rem;
-    height: calc(100vh - var(--h-navbar) - 2em);
+    width: var(--w-navdocs);
+    height: calc(100vh - var(--h-navmain) - 2em);
     position: fixed;
     bottom: 0;
     left: 0;
@@ -584,10 +587,42 @@ a.section-title.active {
 }
 
 nav#docs div.scrolltainer {
-    width: 15rem;
-    height: calc(100vh - var(--h-navbar) - 2em);
+    width: var(--w-navdocs);
+    height: calc(100vh - var(--h-navmain) - 2em);
     padding: 1.5rem;
     
     border-top-right-radius: 1.5rem;
     overflow-y: auto
+}
+
+
+
+/* ======  DOCUMENTATION TEMPLATES  ======*/
+main.docs {
+    width: calc(100vw - var(--w-navdocs));
+    min-width: auto;
+    /* min-height: calc(100vh - var(--h-navmain)); */
+    /* max-height: calc(100vh - var(--h-navmain)); */
+    align-self: flex-end;
+
+    display: flex;
+    flex-direction: column;
+    justify-self: flex-start;
+    align-items: flex-start;
+}
+main.docs h1 {
+    width: inherit;
+    position: fixed;
+    padding: 5rem 8rem 1rem 8rem;
+    background-color: var(--background);
+    
+    font-family: var(--body);
+    font-size: 1rem;
+    color: var(--placeholder);
+    text-transform: uppercase;
+    z-index: 2;
+}
+main.docs .scrolltainer {
+    width: 100%;
+    padding: 8rem;
 }
