@@ -147,7 +147,7 @@ button:active, .button:active { transform: scale3d(.9, .9, 1); }
 
 
 /* ======  COMPONENT:: NAV  ======*/
-nav {
+nav#main {
     width: 100%;
     height: var(--h-navbar);
     padding: 3em 3.5em 0 3.75em;
@@ -158,7 +158,7 @@ nav {
     align-items: flex-end;
     z-index: 4;
 }
-nav * {
+nav#main * {
     color: var(--background);
     text-decoration: none;
 }
@@ -186,14 +186,14 @@ div#editpreview .switch-container {
     right: inherit; 
 }
 
-nav .h3 { font-weight: bold; }
-nav ul { 
+nav#main .h3 { font-weight: bold; }
+nav#main ul { 
     gap: 0; 
     padding-bottom: 0;
 }
-nav ul li { padding: 1em 1em .5em 1em; }
-nav .active { background-color: var(--background); }
-nav .active a { color: var(--accent); }
+nav#main ul li { padding: 1em 1em .5em 1em; }
+nav#main .active { background-color: var(--background); }
+nav#main .active a { color: var(--accent); }
 
 a.doc-mode {
     width: 100%;
@@ -522,7 +522,7 @@ div.codeblock button {
     padding: .3rem .75rem;
 }
 div.codeblock button .material-icons { font-size: 1.25em; }
-div.clip-scrollbar {
+div.codeblock .clip-scrollbar {
     overflow: hidden;
     border-radius: 1.5rem;
     border: 0.15rem solid var(--text);
@@ -534,3 +534,60 @@ div.code-container {
     overflow: auto;
 }
 div.codeblock h3 { padding-bottom: 1rem; }
+
+
+
+/* ======  DOCUMENTATION NAVBAR  ======*/
+nav#docs, nav#docs div.scrolltainer,
+div.page-sections {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: .25rem;
+}
+nav#docs {
+    width: 15rem;
+    height: calc(100vh - var(--h-navbar) - 2em);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    background-color: var(--accent2);
+
+    border-top-right-radius: 1.5rem;
+    overflow: hidden;
+    z-index: 2;
+}
+nav#docs * { text-decoration: none; }
+a.page-title {
+    padding: 1rem 0 0.5rem 0;
+
+    color: var(--placeholder);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+div.page-sections { 
+    width: 100%;
+    padding-bottom: 2rem;
+ }
+a.section-title {
+    width: 100%;
+    
+    padding: .25rem;
+    padding-left: 1rem;
+    border-radius: .25rem;
+}
+a.section-title:hover { background-color: var(--disabled); }
+a.section-title.active { 
+    background-color: var(--accent1); 
+    font-weight: bold;
+}
+
+nav#docs div.scrolltainer {
+    width: 15rem;
+    height: calc(100vh - var(--h-navbar) - 2em);
+    padding: 1.5rem;
+    
+    border-top-right-radius: 1.5rem;
+    overflow-y: auto
+}

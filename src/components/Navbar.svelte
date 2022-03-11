@@ -8,7 +8,7 @@
         edit: HTMLElement = undefined;
 </script>
 
-<nav>
+<nav id="main">
     <div class="lhs-container">
         <a class="h3" href="/">Sad Forms</a>
         {#if ["/edit", "/preview"].includes(path)}
