@@ -1,0 +1,108 @@
+/* PrismJS 1.27.0
+https://prismjs.com/download.html#themes=prism-dark&languages=css+clike+javascript+typescript */
+
+code * { 
+    font-family: var(--code); 
+    font-size: 1em;
+}
+code[class*="language-"],
+pre[class*="language-"] {
+color: #f8f8f2;
+background: none;
+font-size: 1em;
+text-align: left;
+white-space: pre;
+word-spacing: normal;
+word-break: normal;
+word-wrap: normal;
+
+-moz-tab-size: 4;
+-o-tab-size: 4;
+tab-size: 4;
+
+-webkit-hyphens: none;
+-moz-hyphens: none;
+-ms-hyphens: none;
+hyphens: none;
+}
+
+pre[class*="language-"],
+:not(pre) > code[class*="language-"]
+{ background: transparent; }
+
+/* Code blocks */
+pre[class*="language-"] { 
+    width: 100%; 
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"]
+{ white-space: normal; }
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata
+{ color: hsl(30, 20%, 50%); }
+
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol
+{ color: #66d9ef; }
+.token.boolean { color: #AE81F1; }
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted
+{ color: #66D9EF; }
+.language-typescript .token.builtin { font-style: italic; }
+.language-typescript .token.string { color: #E6DB74; }
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string,
+.token.variable,
+.token.interpolation-punctuation 
+{ color: #F92672; }
+
+
+.token.atrule,
+.token.attr-value,
+.token.keyword 
+{ color: #F92672; }
+
+.token.class-name,
+.token.function 
+{ color: #9BE22E; }
+
+.token.regex,
+.token.important 
+{ color: #e90; }
+
+.token.important,
+.token.bold
+{ font-weight: bold; }
+.token.italic
+{ font-style: italic; }
+
+.token.entity
+{ cursor: help; }
+
+.token.deleted
+{ color: red; }
+
+
+/* SVELTE */
+.language-svelte .token.token.attr-name { color: #9BE22E; }
+.language-svelte .token.attr-value { color: #e6db74 }
+.language-svelte .token.curly { color: #F92672}
+

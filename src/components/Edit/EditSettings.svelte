@@ -7,7 +7,7 @@
         reviver,
         updateForm,
         updateSave,
-    } from "../store/SadForms";
+    } from "../../store/SadForms";
 
     $: data = $SadForms.data;
     $: fields = $SadForms && editSettings();

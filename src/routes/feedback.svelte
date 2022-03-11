@@ -1,4 +1,4 @@
-<main class="fhfw">
+<main class="fwfh">
     <div class="hero">
         <h1>Feedback</h1>
         <p>We recognize there's always room to grow.</p>

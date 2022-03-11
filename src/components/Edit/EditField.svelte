@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { SvelteComponent } from "svelte";
-    import type { Edit, Field, Group, Hide, Options } from "$lib/types/Form";
+    import type { Edit, Field, Group } from "$lib/types/Form";
     import Form from "$lib/components/Form.svelte";
 
     import SadForms, {
@@ -9,8 +9,13 @@
         setRefresh,
         updateForm,
         updateSave,
-    } from "../store/SadForms";
-    import { makeToData, makeToOptions, newType, parseHide } from "../presets";
+    } from "../../store/SadForms";
+    import {
+        makeToData,
+        makeToOptions,
+        newType,
+        parseHide,
+    } from "../../presets";
     import { belongs, uuidV4 } from "$lib/tools/kit";
 
     export let main: SvelteComponent;

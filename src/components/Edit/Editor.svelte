@@ -4,10 +4,10 @@
         replacer,
         updateForm,
         updateSave,
-    } from "../store/SadForms";
-    import EditPreview from "../components/EditPreview.svelte";
-    import EditField from "../components/EditField.svelte";
-    import EditSettings from "../components/EditSettings.svelte";
+    } from "../../store/SadForms";
+    import EditPreview from "./EditPreview.svelte";
+    import EditField from "./EditField.svelte";
+    import EditSettings from "./EditSettings.svelte";
     import Checkbox from "$lib/components/Checkbox.svelte";
 
     let curView = "code",
