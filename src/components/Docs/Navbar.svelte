@@ -4,7 +4,7 @@
             title: "WELCOME",
             nested: [
                 "Project Motivation",
-                "The Dev Team",
+                "Usability Testing",
                 "What is Svelte?",
                 "Project Setup",
             ],

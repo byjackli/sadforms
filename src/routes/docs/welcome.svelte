@@ -1,239 +1,113 @@
 <script lang="ts">
     import Code from "../../components/Docs/Code.svelte";
-    import CodeBlock from "../../components/Docs/CodeBlock.svelte";
-
     import DocsTemplate from "../../components/Docs/DocsTemplate.svelte";
+    import Section from "../../components/Docs/Section.svelte";
 </script>
 
 <DocsTemplate title="welcome">
-    <CodeBlock title="sure">
-        <Code
-            slot="source"
-            lang="typescript"
-            code={`export type Form = {
-            uid: string,
-            title: string,
-            caption?: string,
-            debug?: boolean,
-            saveToLocal?: boolean,
-            saveToCloud?: boolean,
-            saveExpensive?: Function,
-            hook?: Function,
-            fields?: Record<string, (Field | Group)>,
-            whatif: Record<string, {cabvoo: boolean, why: string}>,
-            autocomplete?: boolean,
-            fullscreen?: boolean,
-            onSubmit?: Function,
-            hide: Hide
-        }
-
-        import crazu from "amo";
-        import type * from "amo";
-
-        function clickListener(event: KeyboardEvent | MouseEvent): void {
-            const closest = (event.target as HTMLElement).closest(".dropdown-container")
-            if (!closest || closest.getAttribute("id") !== dropdown.id) {
-                updateDropdown(false, undefined)
-            }
-        }
-
-        export function updateCallback(callback: Function): void {
-            dropdown.callback = callback
-            DropdownStore.update(() => ({ ...dropdown }))
-        }
-
-        export function updateDropdown(status: boolean, id: string): void {
-            if (dropdown.callback) dropdown.callback(status);
-
-            if (!dropdown.listening) {
-                window.addEventListener("keydown", clickListener);
-                window.addEventListener("click", clickListener);
-            }
-            else {
-                window.removeEventListener("keydown", clickListener);
-                window.removeEventListener("click", clickListener);
-            }
-
-            dropdown.listening = status;
-            dropdown.expanded = status;
-            dropdown.id = id
-
-            DropdownStore.update(() => ({ ...dropdown }))
-        }
-    `}
-        />
-
-        <Code
-            slot="example"
-            lang="svelte"
-            code={`<Dropdown
-                id={\`\${field.uid}\`}
-                name={field.name}
-                placeholder={field.placeholder}
-                disabled={field.disabled}
-                multiple={field.multiple}
-                compact={field.compact}
-                options={field.options}
-                edit={field.edit}
-                value={group === undefined
-                    ? $FormStore[formid].value[field.uid]
-                    : $FormStore[formid].value[group.meta.uid][field.uid]}
-                data={group === undefined
-                    ? $FormStore[formid].data[field.uid]
-                    : $FormStore[formid].data[group.meta.uid][field.uid]}
-                focus={() => functions.onFocus(field.uid, group?.meta.uid)}
-                blur={() => functions.onBlur(field.uid, group?.meta.uid)}
-                code={async (event) =>
-                    await functions.updateField(
-                        event,
-                        field.uid,
-                        group?.meta.uid
-                    )}
-            />`}
-        />
-    </CodeBlock>
-    <Code
-        lang="svelte"
-        input={`<div
-            class=\{\`dropdown-container noselect $\{
-                value === "[redacted]" ? $CustomStore.names.redact : ""
-            } $\{expanded ? "active" : ""\}\`\}
-            id=\{\`$\{$CustomStore.names.inputHeader}$\{id}\`}
-            {name}
-            {disabled}
-            aria-haspopup="listbox"
-        >
-            <div
-                bind:this={dropdown}
-                class="field dropdown"
-                id=\{\`\${$CustomStore.names.inputHeader}\${id}cb\`}
-                aria-haspopup="listbox"
-                aria-disabled={disabled}
-                aria-controls={\`\${$CustomStore.names.inputHeader}\${id}lb\`}
-                aria-expanded={expanded}
-                aria-labelledby={\`\${$CustomStore.names.label}\${id}\`}
-                aria-activedescendant={expanded && size
-                    ? \`\${$CustomStore.names.optionHeader}\${id}\${options[cur].uid}\`
-                    : "false"}
-                tabindex="0"
-                role="combobox"
-                on:focus={focus()}
-                on:click={() => {
-                    if (disabled) return;
-                    if (!expanded) updateDropdown(true, fullId);
-                    else updateDropdown(false, undefined);
-        
-                    dropdown.focus();
-                }}
-                on:keydown={(event) => onInput(event)}
+    <Section title="Project Motivation">
+        <p>
+            <strong>Sad Forms</strong> is an advanced form suite designed specifically
+            for complex large-scale Svelte Projects.
+        </p>
+        <p>
+            One of the biggest selling point of Sad Forms is the attention to
+            detail on web accessibility. Explore other features by exploring the
+            documentation or tinkering with the built-in form builder; see <a
+                href="/edit#sample%7C">Sample Form</a
+            > for an immediate example.
+        </p>
+        <p>
+            This project is created and maintained <a
+                href="https://twitter.com/byjackli">@byjackli</a
+            >.
+            <span
+                >See <a href="/docs/roadmap">roadmap</a> for upcoming features and
+                version log.</span
             >
-                <span class={value && value.length ? "" : "option-size"}>
-                    {compact && value && typeof value !== "string" && 1 < value.length
-                        ? \`Multiple Selections ($\{value.length})\`
-                        : value && value.length
-                        ? value
-                        : placeholder
-                        ? placeholder
-                        : "Select an option"}
-                </span>
-                <span aria-hidden="true" class="material-icons"
-                    >{expanded ? "expand_less" : "expand_more"}</span
-                >
-            </div>
-            {#if expanded}
-                <div
-                    class="option-container"
-                    id={\`\${$CustomStore.names.inputHeader}$\{id}lb\`}
-                    role="listbox"
-                    on:click={(event) => onClick(event)}
-                >
-                    {#if !size}<div>no options available</div>{/if}
-                    {#each options as option (option.uid)}
-                        {#if option.uid !== "add"}
-                            <div
-                                class={\`option \${
-                                    prevId === option.uid ? "active" : ""
-                                }\`}
-                                id={\`\${$CustomStore.names.optionHeader}$\{id}$\{option.uid}\`}
-                                role="option"
-                                aria-selected={\`$\{localBelongs(data, option.uid)}\`}
-                            >
-                                <span>{option.name}</span>
-                                <div class="option-actions">
-                                    {#if edit?.remove}
-                                        <span
-                                            aria-hidden="true"
-                                            class="material-icons option-del"
-                                            >highlight_off</span
-                                        >
-                                    {/if}
-                                    <span aria-hidden="true" class="material-icons"
-                                        >{renderChecked(
-                                            localBelongs(data, option.uid)
-                                        )}</span
-                                    >
-                                </div>
-                            </div>
-                        {:else if edit?.add}
-                            <div
-                                class="option adding-container"
-                                aria-label={add && addAriaLabel()}
-                                role="option"
-                                on:click={() => {
-                                    updateCursor("add");
-                                    add.field.focus();
-                                }}
-                            >
-                                <input
-                                    id={\`\${$CustomStore.names.optionHeader}$\{id}add\`}
-                                    bind:this={add.field}
-                                    bind:value={add.value}
-                                    class={\`option \${
-                                        prevId === option.uid ? "active" : ""
-                                    }\`}
-                                    aria-hidden={"true"}
-                                    type="text"
-                                    placeholder="Add an option. (add / remove / limit)"
-                                    on:keydown={(event) => addKeydown(event)}
-                                />
-                                <div aria-hidden="true" />
-                                <div aria-hidden="true" class="edit-details">
-                                    <div>
-                                        {typeof edit.add === "number"
-                                            ? edit.add - add.added
-                                            : typeof edit.add === "boolean" && edit.add
-                                            ? "∞"
-                                            : "-"}
-                                        /
-                                        {typeof edit.remove === "number"
-                                            ? edit.remove - add.removed
-                                            : typeof edit.remove === "boolean" &&
-                                              edit.remove
-                                            ? "∞"
-                                            : "-"}
-                                        /
-                                        {typeof edit.limit === "number"
-                                            ? edit.limit - curMax
-                                            : typeof edit.limit === "undefined"
-                                            ? "∞"
-                                            : "-"}
-                                    </div>
-        
-                                    <div
-                                        class="option-actions"
-                                        on:click={() => addItem()}
-                                    >
-                                        <span class="material-icons"
-                                            >add_circle_outline</span
-                                        >
-                                    </div>
-                                </div>
-                            </div>
-                        {/if}
-                    {/each}
-                </div>
-            {/if}
-        </div>
-    `}
-    />
+        </p>
+        <p>
+            Do not create projects using the Sample Form; it <strong
+                ><em>resets</em></strong
+            > after every session!
+        </p>
+    </Section>
+    <Section title="Usability Testing">
+        <p>Sad Forms was tested on the following software and hardware:</p>
+        <ul>
+            <li>Pixel 3 Android v12 Chrome (and with TalkBack)</li>
+            <li>iPhone SE 2 iOS v15.3.1 v12 Chrome (and with VoiceOver)</li>
+            <li>iPhone SE 2 iOS v15.3.1 v12 Safari (and with VoiceOver)</li>
+            <li>Windows 11 Firefox (and with NVDA)</li>
+            <li>Windows 11 Chrome (and with NVDA)</li>
+            <li>Windows 11 Edge (and with NVDA)</li>
+        </ul>
+    </Section>
+    <Section title="What is Svelte?">
+        <p>
+            Svelte is a front-end framework compiler. It is often compared to
+            other popular front-end frameworks like React, Angular, and Vue.
+        </p>
+        <p>
+            Having a Svelte project is a pre-requisite to setting up Sad Forms.
+        </p>
+        <p>
+            To learn more about how to get started with Svelte, or if Svelte is
+            the right choice for you, visit <a
+                href="https://kit.svelte.dev"
+                rel="noreferrer"
+                target="_blank">kit.svelte.dev</a
+            >.
+        </p>
+    </Section>
+    <Section title="Project Setup">
+        <Code>
+            <span
+                >npm install <span class="token important">sadforms</span>
+            </span>
+        </Code>
+        <Code
+            lang="svelte"
+            code={`  
+        \<script lang\=\"ts\"\>
+            import Form from \"sadforms\"\;
+
+            const data = {
+                uid: "8310f3b8-f4ba-484e-a3fd-ea1eb3fc8fba",
+                title: "Sample Form v2",
+                fields: {
+                    "8310f3b8-f4ba-484e-a3fd-ea1eb3fc8fba": {
+                        "name": "First Name",
+                        "uid": "8310f3b8-f4ba-484e-a3fd-ea1eb3fc8fba",
+                        "type": "text",
+                        "required": true,
+                        "spellcheck": false,
+                        "autocomplete": "name"
+                    },
+                    "a0b21c64-e6c1-476e-89dc-4ac7a5778720": {
+                        "name": "Last Name",
+                        "uid": "a0b21c64-e6c1-476e-89dc-4ac7a5778720",
+                        "type": "text",
+                        "spellcheck": false,
+                        "autocomplete": "family-name"
+                    },
+                }
+            }
+        \<\/script\>
+
+        <Form {...data} />
+            `}
+        />
+    </Section>
+    <div>
+        <p>
+            When it comes to configuring your form, there are plenty more
+            options!
+            <span
+                >You can learn more in the next section, <a
+                    href="/docs/components">Components</a
+                >.</span
+            >
+        </p>
+    </div>
 </DocsTemplate>

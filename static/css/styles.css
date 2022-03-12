@@ -46,6 +46,7 @@
 
 	transition: all .25s;
 	transition-timing-function: var(--animation);
+    scroll-behavior: smooth;
 }
 * {
 	scrollbar-width: thin;
@@ -536,7 +537,10 @@ div.code-container {
     max-width: 100%;
     overflow: auto;
 }
-div.codeblock h3 { padding-bottom: 1rem; }
+div.codeblock pre[class*="language-"],
+div.codeblock :not(pre) > code[class*="language-"] {
+    background-color: transparent;
+}
 
 
 
@@ -601,17 +605,16 @@ nav#docs div.scrolltainer {
 main.docs {
     width: calc(100vw - var(--w-navdocs));
     min-width: auto;
-    /* min-height: calc(100vh - var(--h-navmain)); */
-    /* max-height: calc(100vh - var(--h-navmain)); */
     align-self: flex-end;
 
     display: flex;
     flex-direction: column;
     justify-self: flex-start;
     align-items: flex-start;
+    scroll-padding-top: 6.75rem;
 }
 main.docs h1 {
-    width: inherit;
+    width: calc(100vw - var(--w-navdocs) - .5rem);
     position: fixed;
     padding: 5rem 8rem 1rem 8rem;
     background-color: var(--background);
@@ -622,7 +625,41 @@ main.docs h1 {
     text-transform: uppercase;
     z-index: 2;
 }
-main.docs .scrolltainer {
+main.docs > .scrolltainer {
     width: 100%;
-    padding: 8rem;
+    padding: 6.5rem 8rem;
+
+    display: flex;
+    flex-direction: column;
+    gap: 5rem;
+}
+main.docs section .scrolltainer {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+main.docs section h2 { padding-bottom: 1rem; }
+main.docs section p { 
+    width: 57ch; 
+    line-height: 1.4rem;
+}
+main.docs section span { display: inline-block; }
+main.docs section strong { font-weight: bold; }
+main.docs section em { font-style: italic; }
+main.docs section a {
+    font-weight: bold;
+    font-style: italic;
+}
+main.docs section ul {
+    flex-direction: column;
+    list-style-type: disc;
+    padding-left: 2rem;
+    gap: .5rem;
+}
+main.docs section img { 
+    width: 57ch;
+    border: 1px solid var(--text);
+}
+main.docs section iframe.ratio16x9 {
+    aspect-ratio: 16 / 9;
 }

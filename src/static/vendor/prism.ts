@@ -1,5 +1,12 @@
 /* PrismJS 1.27.0
 https://prismjs.com/download.html#themes=prism-dark&languages=markup+css+clike+javascript+typescript */
+
+/*	
+	credits to prismjs, vkbansel for Typescript parser, and pngwn for Svelte parser
+	this version of prismjs is modified and fine-tuned @byjackli to, as closely as 
+	possible, emulate the VSCode Monokai experience
+*/
+
 /// <reference lib="WebWorker"/>
 
 var _self = (typeof window !== 'undefined')
@@ -1840,6 +1847,7 @@ Prism.languages.svelte = Prism.languages.extend('markup', {
 			tag: {
 				pattern: /^<\/?[^\s>\/]+/i,
 				inside: {
+					component: /\b[A-Z]+\w*(?!.*\.)/,
 					punctuation: /^<\/?/,
 					namespace: /^[^\s>\/:]+:/,
 				},
