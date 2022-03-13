@@ -1,8 +1,8 @@
 <script lang="ts">
-    import Code from "../../components/Docs/Code.svelte";
-    import CodeBlock from "../../components/Docs/CodeBlock.svelte";
+    import Code from "../components/Docs/Code.svelte";
+    import CodeBlock from "../components/Docs/CodeBlock.svelte";
 
-    import DocsTemplate from "../../components/Docs/DocsTemplate.svelte";
+    import DocsTemplate from "../components/Docs/DocsTemplate.svelte";
 </script>
 
 <DocsTemplate title="components">

@@ -1,7 +1,7 @@
 <script lang="ts">
-    import Code from "../../components/Docs/Code.svelte";
-    import DocsTemplate from "../../components/Docs/DocsTemplate.svelte";
-    import Section from "../../components/Docs/Section.svelte";
+    import Code from "../components/Docs/Code.svelte";
+    import DocsTemplate from "../components/Docs/DocsTemplate.svelte";
+    import Section from "../components/Docs/Section.svelte";
 </script>
 
 <DocsTemplate title="welcome">
