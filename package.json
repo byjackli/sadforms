@@ -30,6 +30,18 @@
   "exports": {
     ".": "./components/Form.svelte"
   },
+  "devDependencies": {
+    "@sveltejs/adapter-auto": "next",
+    "@sveltejs/adapter-static": "^1.0.0-next.26",
+    "@sveltejs/kit": "next",
+    "svelte": "^3.44.0",
+    "svelte-check": "^2.2.6",
+    "svelte-preprocess": "^4.9.4",
+    "svelte2tsx": "^0.5.5",
+    "tslib": "^2.3.1",
+    "typescript": "^4.4.3",
+    "firebase": "^9.6.8"
+  },
   "peerDependencies": {
     "svelte": "^3.44.0"
   },
