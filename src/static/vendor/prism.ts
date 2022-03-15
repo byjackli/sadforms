@@ -610,9 +610,9 @@ var Prism = (function (_self: any) {
 
 			// plugins may change/add the parent/element
 			parent = env.element.parentElement;
-			if (parent && parent.nodeName.toLowerCase() === 'pre' && !parent.hasAttribute('tabindex')) {
-				parent.setAttribute('tabindex', '0');
-			}
+			// if (parent && parent.nodeName.toLowerCase() === 'pre' && !parent.hasAttribute('tabindex')) {
+			// 	parent.setAttribute('tabindex', '0');
+			// }
 
 			if (!env.code) {
 				_.hooks.run('complete', env);

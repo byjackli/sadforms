@@ -1,7 +1,8 @@
 <script lang="ts">
-    import Code from "../components/Docs/Code.svelte";
     import DocsTemplate from "../components/Docs/DocsTemplate.svelte";
     import Section from "../components/Docs/Section.svelte";
+    import Code from "../components/Docs/Code.svelte";
+    import Note from "../components/Docs/Note.svelte";
 </script>
 
 <DocsTemplate title="welcome">
@@ -26,11 +27,14 @@
                 version log.</span
             >
         </p>
-        <p>
-            Do not create projects using the Sample Form; it <strong
-                ><em>resets</em></strong
-            > after every session!
-        </p>
+        <Note>
+            <span slot="icon" class="material-icons">warning</span>
+            <p>
+                Do not create projects using the Sample Form; it <strong
+                    ><em>resets</em></strong
+                > after every session!
+            </p>
+        </Note>
     </Section>
     <Section title="Usability Testing">
         <p>Sad Forms was tested on the following software and hardware:</p>
@@ -99,15 +103,19 @@
             `}
         />
     </Section>
-    <div>
-        <p>
-            When it comes to configuring your form, there are plenty more
-            options!
-            <span
-                >You can learn more in the next section, <a
-                    href="/docs/components">Components</a
-                >.</span
-            >
-        </p>
-    </div>
+    <Note>
+        <span slot="icon" class="material-icons">task_alt</span>
+        <div>
+            <p>
+                <span
+                    >Next up, <em
+                        ><strong
+                            ><a href="/docs/components">Components</a></strong
+                        ></em
+                    >.</span
+                >
+                Discover all form and field configuration options!
+            </p>
+        </div>
+    </Note>
 </DocsTemplate>

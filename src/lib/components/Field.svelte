@@ -1,10 +1,10 @@
 <script lang="ts">
 	import CustomStore from "../store/CustomStore";
-	import FormStore from "../store/FormStore";
+	import FormStore, { fieldData } from "../store/FormStore";
 	import Checkbox from "./Checkbox.svelte";
 	import Dropdown from "./Dropdown.svelte";
-	import type { Field, Group } from "../types/Form";
 	import Divider from "./Divider.svelte";
+	import type { Field, Group } from "../types/Form";
 
 	export let formid: string,
 		field: Field,
@@ -45,7 +45,7 @@
 					spellcheck={`${field.spellcheck}`}
 					value={group === undefined
 						? $FormStore[formid].value[field.uid]
-						: $FormStore[formid].value[group.meta.uid][field.uid]}
+						: $FormStore[formid].value[group?.meta.uid][field.uid]}
 					on:focus={() =>
 						functions.onFocus(field.uid, group?.meta.uid)}
 					on:blur={() => functions.onBlur(field.uid, group?.meta.uid)}
@@ -79,8 +79,18 @@
 					on:dragover={null}
 					on:dragleave={null}
 				>
-					{$FormStore[formid].data[field.uid]
-						? $FormStore[formid].data[field.uid].name
+					{fieldData(
+						formid,
+						{ action: "get" },
+						field.uid,
+						group?.meta.uid
+					)
+						? fieldData(
+								formid,
+								{ action: "get" },
+								field.uid,
+								group?.meta.uid
+						  ).name
 						: `click to choose ${
 								field.multiple ? `files` : `a file`
 						  }`}
@@ -119,10 +129,13 @@
 					edit={field.edit}
 					value={group === undefined
 						? $FormStore[formid].value[field.uid]
-						: $FormStore[formid].value[group.meta.uid][field.uid]}
-					data={group === undefined
-						? $FormStore[formid].data[field.uid]
-						: $FormStore[formid].data[group.meta.uid][field.uid]}
+						: $FormStore[formid].value[group?.meta.uid][field.uid]}
+					data={fieldData(
+						formid,
+						{ action: "get" },
+						field.uid,
+						group?.meta.uid
+					)}
 					focus={() => functions.onFocus(field.uid, group?.meta.uid)}
 					blur={() => functions.onBlur(field.uid, group?.meta.uid)}
 					input={async (event) =>
@@ -143,9 +156,12 @@
 						: undefined}
 					disabled={field.disabled}
 					redact={field.redact}
-					data={group === undefined
-						? $FormStore[formid].data[field.uid]
-						: $FormStore[formid].data[group.meta.uid][field.uid]}
+					data={fieldData(
+						formid,
+						{ action: "get" },
+						field.uid,
+						group?.meta.uid
+					)}
 					focus={() => functions.onFocus(field.uid, group?.meta.uid)}
 					blur={() => functions.onBlur(field.uid, group?.meta.uid)}
 					input={async (event) =>
@@ -180,7 +196,7 @@
 						? null
 						: group === undefined
 						? $FormStore[formid].value[field.uid]
-						: $FormStore[formid].value[group.meta.uid][field.uid]}
+						: $FormStore[formid].value[group?.meta.uid][field.uid]}
 					on:focus={() =>
 						functions.onFocus(field.uid, group?.meta.uid)}
 					on:blur={() => functions.onBlur(field.uid, group?.meta.uid)}
@@ -206,14 +222,14 @@
 			</p>
 		</div>
 	{/if}
-	{#if !group?.meta?.group?.feedback && field.validity}
+	{#if !group?.meta?.override?.feedback && field.validity}
 		<div
 			class="container-validity"
 			id={`${$CustomStore.names.inputFeedback}${field.uid}`}
 			aria-live="polite"
 		/>
 	{/if}
-	{#if field.type === "file" && field?.hide?.preview === undefined}
+	{#if field.type === "file" && !field?.hide?.preview}
 		<div
 			class={`container-preview ${
 				field.redact ? $CustomStore.names.redact : ""

@@ -105,7 +105,7 @@ pre[class*="language-"] {
 /* SVELTE */
 .language-svelte .token.token.attr-name { color: #9BE22E; }
 
-.language-svelte .language-javascript .token.property,
+.language-javascript .token.property,
 .language-svelte .language-javascript .token.operator 
 { color: #f8f8f2}
 

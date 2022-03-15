@@ -1,7 +1,7 @@
 <script lang="ts">
+    import Note from "../components/Docs/Note.svelte";
     import Code from "../components/Docs/Code.svelte";
     import CodeBlock from "../components/Docs/CodeBlock.svelte";
-
     import DocsTemplate from "../components/Docs/DocsTemplate.svelte";
 </script>
 
@@ -353,4 +353,19 @@
             />`}
         />
     </CodeBlock>
+    <Note>
+        <span slot="icon" class="material-icons">task_alt</span>
+        <div>
+            <p>
+                <span
+                    >Next up, <em
+                        ><strong
+                            ><a href="/docs/supported_fields">Supported Fields</a></strong
+                        ></em
+                    >.</span
+                >
+                Since "Field" is so broad, find out what options really matter.
+            </p>
+        </div>
+    </Note>
 </DocsTemplate>

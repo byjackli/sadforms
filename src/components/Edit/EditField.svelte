@@ -45,6 +45,14 @@
                 required: true,
                 defaultValue: value.meta.name,
             },
+            uid: {
+                uid: "uid",
+                name: "Group UID",
+                type: "text",
+                required: true,
+                disabled: true,
+                defaultValue: value.meta.uid,
+            },
             tooltip: {
                 uid: "tooltip",
                 name: "group tooltip",
@@ -74,7 +82,7 @@
                     { uid: "label", name: "Label" },
                     { uid: "feedback", name: "Feedback" },
                 ],
-                defaultValue: parseHide(value.meta.group),
+                defaultValue: parseHide(value.meta.override),
             },
             dropdown: {
                 uid: "dropdown",
@@ -616,7 +624,7 @@
         if (belongs(details.data, "dropdown")) delete details.data.dropdown;
 
         base.meta = { ...base.meta, ...details.data };
-        base.meta.group = parseHide(base.meta.group, true);
+        base.meta.override = parseHide(base.meta.override, true);
 
         updateForm(data);
         updateSave(data);

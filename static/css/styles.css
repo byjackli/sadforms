@@ -160,7 +160,7 @@ nav#main {
     align-items: flex-end;
     z-index: 4;
 }
-nav#main * {
+nav#main a {
     color: var(--background);
     text-decoration: none;
 }
@@ -531,6 +531,7 @@ div.codeblock .clip-scrollbar {
     border-radius: 1.5rem;
     border: 0.15rem solid var(--text);
 }
+div.codeblock .sadforms { padding: 3rem; }
 div.code-container {
     width: 100%;
     height: 400px;
@@ -541,6 +542,33 @@ div.codeblock pre[class*="language-"],
 div.codeblock :not(pre) > code[class*="language-"] {
     background-color: transparent;
 }
+
+
+
+/* ======  NOTE COMPONENT  ======*/
+main.docs .note { 
+    width: 65ch;
+    max-width: 100%;
+    padding: 1rem 2rem;
+    background-color: var(--text);
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 2rem;
+
+    border-radius: 0.5rem;
+}
+main.docs .note * { color: var(--background); }
+main.docs .note .material-icons { font-size: 1.5rem; }
+main.docs .note .body { 
+    width: calc(100% - 2rem);
+    padding-left: .5rem;
+    border-left: 1px solid var(--background);
+    overflow: hidden;
+}
+
 
 
 
@@ -641,6 +669,7 @@ main.docs section .scrolltainer {
 main.docs section h2 { padding-bottom: 1rem; }
 main.docs section p { 
     width: 57ch; 
+    max-width: 100%;
     line-height: 1.4rem;
 }
 main.docs section span { display: inline-block; }

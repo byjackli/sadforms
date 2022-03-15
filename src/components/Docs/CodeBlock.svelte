@@ -1,21 +1,9 @@
 <script lang="ts">
     import Section from "../Docs/Section.svelte";
-    export let title: string;
+    export let title: string,
+        viewSource: boolean = true;
 
-    let viewSource = true,
-        icon = "science",
-        text = "example";
-    function swap() {
-        if (viewSource) {
-            icon = "data_object";
-            text = "obj type";
-            viewSource = false;
-        } else {
-            icon = "science";
-            text = "example";
-            viewSource = true;
-        }
-    }
+    let swap = () => (viewSource = !viewSource);
 </script>
 
 <Section {title}>
@@ -31,9 +19,9 @@
         </div>
         <button class="pill" on:click={swap}>
             <span class={`material-icons${viewSource ? "" : "-outlined"}`}
-                >{icon}</span
+                >{viewSource ?  "science":"data_object" }</span
             >
-            <span>{text}</span>
+            <span>{viewSource ? "example": "obj type" }</span>
         </button>
     </div>
 </Section>

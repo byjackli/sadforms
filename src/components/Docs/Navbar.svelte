@@ -33,7 +33,6 @@
                 "Checkbox",
                 "Switch",
                 "File",
-                "Time",
                 "Group",
                 "Divider",
             ],

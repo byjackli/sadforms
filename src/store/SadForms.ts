@@ -519,7 +519,7 @@ const sampleForm: Form = {
             "meta": {
                 "uid": "ab3f205b-17be-469d-b8e3-1774c2ed3cef",
                 "name": "Links",
-                "group": {
+                "override": {
                     "label": true,
                     "feedback": true
                 },
@@ -605,7 +605,7 @@ const sampleForm: Form = {
             "meta": {
                 "uid": "031300af-f2e8-4bbd-b5f2-5fc30d116526",
                 "name": "Specific Email Settings",
-                "group": {
+                "override": {
                     "feedback": true
                 },
                 "tooltip": ""
