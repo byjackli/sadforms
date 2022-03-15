@@ -38,6 +38,7 @@
 		field: undefined,
 		value: "",
 	};
+	$: localData = $$props && data;
 
 	function localBelongs(object: object, key: string): boolean {
 		return multiple ? belongs(object, key) : options[cur].uid === key;
@@ -342,7 +343,7 @@
 						}`}
 						id={`${$CustomStore.names.optionHeader}${id}${option.uid}`}
 						role="option"
-						aria-selected={`${localBelongs(data, option.uid)}`}
+						aria-selected={`${localBelongs(localData, option.uid)}`}
 					>
 						<span>{option.name}</span>
 						<div class="option-actions">
@@ -355,7 +356,7 @@
 							{/if}
 							<span aria-hidden="true" class="material-icons"
 								>{renderChecked(
-									localBelongs(data, option.uid)
+									localBelongs(localData, option.uid)
 								)}</span
 							>
 						</div>

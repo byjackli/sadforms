@@ -4,13 +4,13 @@
     import Dropdown from "$lib/components/Dropdown.svelte";
     import { genSubmit, uuidV4 } from "$lib/tools/kit";
 
-    import { newType } from "../presets";
+    import { newType } from "../../presets";
     import SadForms, {
         setRefresh,
         updateEditing,
         updateForm,
         updateSave,
-    } from "../store/SadForms";
+    } from "../../store/SadForms";
 
     export let togglePanel: Function,
         swapView: Function,

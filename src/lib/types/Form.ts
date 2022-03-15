@@ -63,7 +63,7 @@ export type Group = {
         required?: boolean,
         dontSave?: boolean,
         redact?: boolean,
-        group: { label?: boolean, feedback?: boolean }
+        override: { label?: boolean, feedback?: boolean }
         spellcheck?: string,
     },
     [key: string]: unknown

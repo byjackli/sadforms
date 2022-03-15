@@ -5,13 +5,16 @@
 </script>
 
 <script lang="ts">
-    import Navbar from "../components/Navbar.svelte";
+    import { default as NavMain } from "../components/Navbar.svelte";
+    import { default as NavDocs } from "../components/Docs/Navbar.svelte";
+
     export let home: string, doc: string;
 
     $: path = home;
     $: hash = doc;
 </script>
 
-{#if !(path === "/")} <Navbar {path} {hash} />{/if}
+{#if !(path === "/")} <NavMain {path} {hash} />{/if}
+{#if path.match(/(\/docs)+\/*\b(?![%])/)} <NavDocs />{/if}
 
 <slot />

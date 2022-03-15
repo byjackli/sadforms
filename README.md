@@ -1,10 +1,16 @@
 <div id="top"></div>
-
 <br/>
   
+<a href="https://npmjs.com/package/sadforms">![GitHub package.json version](https://img.shields.io/github/package-json/v/byjackli/sadforms?label=%20&style=flat-square)</a>
+<a href="https://npmjs.com/package/sadforms">![npm](https://img.shields.io/github/languages/code-size/byjackli/sadforms?label=%20&style=flat-square)</a>
+<a href="https://npmjs.com/package/sadforms">![npm](https://img.shields.io/npm/types/sadforms?label=TYPE&style=flat-square)</a>
+<br/>
+<a href="https://npmjs.com/package/sadforms">![npm](https://img.shields.io/npm/dw/sadforms?color=%23048711&label=DOWNLOADS&style=flat-square)</a>
 <br/>
 
 <div align="center">
+<br/>
+  
   <a href="https://github.com/byjackli/sadforms">
     <img src="readme/favicon-transparent75.png">
   </a>
@@ -15,9 +21,7 @@
   <h3 align="center">
     low-level accessible forms designed for Svelte programmers
   </h3>
-
   <p align="center">
-    <br />
     <a href="https://sadforms.com/edit#sample%7C"><strong>Live Demo »</strong></a>
     <br />
     <br />
@@ -30,6 +34,8 @@
     <a href="https://sadforms.com/feedback">Feedback</a>
   </p>
 </div>
+
+<br/>
 
 
 
@@ -44,12 +50,13 @@ I’ve forgotten the initial solution Sad Forms was designed to solve, but acces
 See the [roadmap](https://sadforms.com/docs/roadmap) for list of upcoming features and the version logs.
 
 <img style="width: 100%;" src="readme/Completing.webp">
-
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+<br/>
 
 
-### Feature Highlight
+
+## Feature Highlight
 
 Sad Forms currently supports most of the popular HTML input elements while enhancing others. For a complete list of working and upcoming fields, see [Supported Fields](https://sadforms.com/docs/roadmap#Supported-Fields) section.
 
@@ -64,24 +71,27 @@ Sad Forms currently supports most of the popular HTML input elements while enhan
 
 Discover other features by exploring the documentation or tinkering with the built-in form builder, see [Sample Form](https://sadforms.com/edit#sample%7C) for an immediate example.
 
+<br/>
+
+
 
 ## Setup
 
 0. Pre-requisite: SvelteKit is installed. See [SvelteKit](https://kit.svelte.dev) website for help.
-<br/>
-
 1. `npm install sadforms`
 2. `import Form from “sadforms”;`
 3. add the `<Form />` component
 4. load your custom values
 
 still not sure how to proceed? try [https://sadforms.com/docs](https://sadforms.com/docs)
-
 <p align="right">(<a href="#top">back to top</a>)</p>
+
+<br/>
 
 
 
 ## Form Builder
+
 Unless you’re somehow dynamically creating sign-up/log-in forms on the fly, feel free to utilize the online [form builder tool](https://sadforms.com) to quickly create static forms. Diagnose and view changes live in the browser.
 
 The form builder tool is rich with debug mode and type-check-free function previewing.
@@ -90,10 +100,11 @@ See the [roadmap](https://sadforms.com/docs/roadmap) for list of upcoming featur
 
 <img style="width: 100%;" src="readme/Did You Smile Today.webp">
 
+<br/>
+
 
 
 ## Contact
 
 Sad Forms is created and maintained by Jack Li. He is reachable through [twitter](https://twitter.com/byjackli) and email via hello@byjackli.com
-
 <p align="right">(<a href="#top">back to top</a>)</p>

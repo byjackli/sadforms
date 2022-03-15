@@ -44,6 +44,28 @@ export function loadSave(formid: string, saveToLocal: boolean, saveToCloud: bool
     }
 }
 
+export function fieldData(uid, payload, fieldid, groupid) {
+    const dontSave = existsEntry(uid, "dontSave", fieldid, groupid),
+        verdict =
+            dontSave || (payload.verdict !== undefined && payload.verdict);
+
+    if (["set", "init"].includes(payload.action))
+        return verdict
+            ? setEntry(
+                    uid,
+                    "dontSave",
+                    { verdict, data: payload.data },
+                    fieldid,
+                    groupid
+              )
+            : setEntry(uid, "data", payload.data, fieldid, groupid);
+    else if (payload.action === "get")
+        return verdict
+            ? getEntry(uid, "dontSave", fieldid, groupid).data
+            : getEntry(uid, "data", fieldid, groupid);
+    else if (payload.action === "exists")
+        return dontSave || existsEntry(uid, "data", fieldid, groupid);
+}
 export function existsEntry(formid: string, entry: string, fieldid: string, groupid?: string): boolean {
     const slot: Record<string, unknown> = lookup(formid, entry);
     if (groupid === undefined) return belongs(slot, fieldid);
