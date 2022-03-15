@@ -75,7 +75,6 @@
             code={`  
         \<script lang\=\"ts\"\>
             import Form from \"sadforms\"\;
-
             const data = {
                 uid: "8310f3b8-f4ba-484e-a3fd-ea1eb3fc8fba",
                 title: "Sample Form v2",
@@ -98,7 +97,6 @@
                 }
             }
         \<\/script\>
-
         <Form {...data} />
             `}
         />

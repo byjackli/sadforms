@@ -1,5 +1,6 @@
 <script context="module">
     export function load({ params }) {
+        console.info({ params });
         return { props: { subpage: params.subpage } };
     }
 </script>

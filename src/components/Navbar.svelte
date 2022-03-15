@@ -48,7 +48,7 @@
         <li class={path === "/donate" ? "active" : ""}>
             <a href="/donate">donate</a>
         </li>
-        <li class={path === "/docs" ? "active" : ""}>
+        <li class={path.match(/(\/docs)+\/*\b(?![%])/) ? "active" : ""}>
             <a href="/docs">documentation</a>
         </li>
         <li class={path === "/feedback" ? "active" : ""}>

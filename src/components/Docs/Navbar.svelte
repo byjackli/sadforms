@@ -1,4 +1,7 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    import { forceUpdatePrev } from "../../static/intersection";
+
     const pages = {
         0: {
             title: "WELCOME",
@@ -61,17 +64,26 @@
             ],
         },
     };
+
+    onMount(() => forceUpdatePrev(undefined));
 </script>
 
 <nav id="docs">
     <div class="scrolltainer">
         {#each Object.values(pages) as page (page.title)}
             {@const h1 = page.title.toLowerCase().replace(/\s+/g, "_")}
-            <a class="page-title" href="/docs/{h1}">{page.title}</a>
+            <a
+                id={`/docs/${h1}`.replace(/[\/#?]/g, "-")}
+                class="page-title"
+                href="/docs/{h1}">{page.title}</a
+            >
             <div class="page-sections">
                 {#each page.nested as section (section)}
                     {@const h2 = section.toLowerCase().replace(/\s+/g, "_")}
-                    <a class="section-title" href="/docs/{h1}#{h2}">{section}</a
+                    <a
+                        id={`/docs/${h1}#${h2}`.replace(/[\/#?]/g, "-")}
+                        class="section-title"
+                        href="/docs/{h1}#{h2}">{section}</a
                     >
                 {/each}
             </div>

@@ -1200,16 +1200,16 @@ var Prism = (function (_self: any) {
 		// might take longer one animation frame to execute which can create a race condition where only some plugins have
 		// been loaded when Prism.highlightAll() is executed, depending on how fast resources are loaded.
 		// See https://github.com/PrismJS/prism/issues/2102
-		var readyState = document.readyState;
-		if (readyState === 'loading' || readyState === 'interactive' && script && script.defer) {
-			document.addEventListener('DOMContentLoaded', highlightAutomaticallyCallback);
-		} else {
-			if (window.requestAnimationFrame) {
-				window.requestAnimationFrame(highlightAutomaticallyCallback);
-			} else {
-				window.setTimeout(highlightAutomaticallyCallback, 16);
-			}
-		}
+		// var readyState = document.readyState;
+		// if (readyState === 'loading' || readyState === 'interactive' && script && script.defer) {
+		// 	document.addEventListener('DOMContentLoaded', highlightAutomaticallyCallback);
+		// } else {
+		// 	if (window.requestAnimationFrame) {
+		// 		window.requestAnimationFrame(highlightAutomaticallyCallback);
+		// 	} else {
+		// 		window.setTimeout(highlightAutomaticallyCallback, 16);
+		// 	}
+		// }
 	}
 
 	return _;
