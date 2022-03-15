@@ -21,5 +21,5 @@ jobs:
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_SADFORMS }}"
-          channelId: "${{ secrets.GITHUB_RUN_ID }}"
+          channelId: preview
           projectId: sadforms
