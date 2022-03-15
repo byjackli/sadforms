@@ -1,6 +1,6 @@
 name: Deploy to Production
 "on":
-  pull_request:
+  push:
     branches:
       - main
 jobs:
@@ -9,8 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     if: '${{github.repository == byjackli/sadforms}}'
     steps:
-      - name: build
+      - name: checkout
         uses: actions/checkout@v2
+      - name: build
         run: npm ci && npm run build
       - name: deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
