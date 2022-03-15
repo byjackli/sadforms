@@ -1,0 +1,21 @@
+name: Deploy to Production
+"on":
+  pull_request:
+    branches:
+      - main
+jobs:
+  build_and_deploy:
+    environment: Production - sadforms.com
+    runs-on: ubuntu-latest
+    if: '${{github.repository == byjackli/sadforms}}'
+    steps:
+      - name: build
+        uses: actions/checkout@v2
+        run: npm ci && npm run build
+      - name: deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_SADFORMS }}"
+          channelId: live
+          projectId: sadforms
