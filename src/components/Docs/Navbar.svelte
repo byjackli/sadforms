@@ -13,14 +13,19 @@
             ],
         },
         1: {
-            title: "COMPONENTS",
+            title: "FORM TYPES",
             nested: [
                 "Form",
                 "Field",
-                "Dropdown",
-                "Checkbox",
-                "List",
-                "Divider",
+                "Group",
+                "Value",
+                "Hide",
+                "Options",
+                "Edit",
+                "Data",
+                "Verdict",
+                "Validity",
+                "Rule",
             ],
         },
         2: {
@@ -44,7 +49,7 @@
             title: "FUNCTIONS",
             nested: [
                 "FORM onInput",
-                "FORM hook",
+                "FORM afterFormLoad",
                 "FORM onSubmit",
                 "FIELD onInput",
                 "FIELD validation",
@@ -57,10 +62,10 @@
         5: {
             title: "ROADMAP",
             nested: [
-                "State of SadForms",
+                "State of Sad Forms",
                 "Update Log",
-                "Known Issues",
                 "Form Builder",
+                "Known Issues",
             ],
         },
     };

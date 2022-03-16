@@ -19,7 +19,7 @@
 
     --pill: 69em;
     --h-navmain: 6.5em;
-    --w-navdocs: 15em;
+    --w-navdocs: 16em;
     --w-editor: 713px;
     --p-editor: 0vw;
 
@@ -91,13 +91,14 @@ html, div#root {
 html { background-color: var(--background); }
 main { padding-bottom: 5em; }
 
-h1, h2, h3,
-.h1, .h2, .h3 {
+h1, h2, h3, h4,
+.h1, .h2, .h3, .h4 {
     font-family: var(--title);
 }
 h1, .h1 { font-size: 5em; }
 h2, .h2 { font-size: 3.5em; }
 h3, .h3 { font-size: 2.5em; }
+h4, .h4 { font-size: 1.5em; }
 
 .noselect,
 .material-icons {
@@ -692,3 +693,22 @@ main.docs section img {
 main.docs section iframe.ratio16x9 {
     aspect-ratio: 16 / 9;
 }
+
+.split {
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 60% 40%;
+    gap: 3rem;
+}
+.details-container {
+    padding-top: .5rem;
+    grid-row: span 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+.details-container .details-chunk { 
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+ }

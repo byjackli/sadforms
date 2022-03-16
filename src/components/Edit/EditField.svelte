@@ -708,7 +708,7 @@
         fields={$SadForms && groupFields()}
         afterFormLoad={(refresh) => {
             if ($SadForms.refresh) {
-                refresh(undefined, true);
+                refresh(true);
                 main.refresh();
             }
         }}
@@ -726,7 +726,7 @@
     afterFormLoad={(refresh) => {
         if ($SadForms.refresh) {
             setRefresh(false);
-            refresh(undefined, true);
+            refresh(true);
             main.refresh();
         }
     }}

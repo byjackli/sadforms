@@ -1,13 +1,19 @@
 <main class="fwfh">
     <div class="hero">
         <h1>Feedback</h1>
-        <p>We recognize there's always room to grow.</p>
+        <p>
+            coming soon.. in the meantime, try messaging me on <a
+                href="https://twitter.com/byjackli"
+                rel="noreferrer"
+                target="_blank">Twitter!</a
+            >
+        </p>
     </div>
 
     <div>
         <!-- form stuff -->
 
-        <p>As of now, there are no plans to formally set up this page.</p>
+        <!-- <p>As of now, there are no plans to formally set up this page.</p>
 
         <div>
             <h2 class="h3">Predicted FAQ</h2>
@@ -15,7 +21,8 @@
                 <li>
                     <details>
                         <summary>Why another form?</summary>
-                        I didn't do enough research to come across the other more powerful forms.
+                        I didn't do enough research to come across the other more
+                        powerful forms.
                     </details>
                 </li>
                 <li>
@@ -38,6 +45,6 @@
                     </details>
                 </li>
             </ol>
-        </div>
+        </div> -->
     </div>
 </main>

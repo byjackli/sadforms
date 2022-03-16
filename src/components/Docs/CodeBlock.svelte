@@ -1,27 +1,29 @@
 <script lang="ts">
-    import Section from "../Docs/Section.svelte";
-    export let title: string,
-        viewSource: boolean = true;
+    export let side: "a" | "b" | "A" | "B" = "a",
+        sideA = { icon: "data_object", text: "obj type" },
+        sideB = { icon: "science", text: "example" },
+        hideButton: boolean = false;
 
-    let swap = () => (viewSource = !viewSource);
+    let swap = () => (side = side === "a" ? "b" : "a"),
+        isitA = (char: string) => ["a", "A"].includes(char);
 </script>
 
-<Section {title}>
-    <div class="codeblock">
-        <div class="clip-scrollbar">
-            <div class="code-container">
-                {#if viewSource}
-                    <slot name="source" />
-                {:else}
-                    <slot name="example" />
-                {/if}
-            </div>
+<div class="codeblock">
+    <div class="clip-scrollbar">
+        <div class="code-container">
+            {#if isitA(side)}
+                <slot name="a" />
+            {:else}
+                <slot name="b" />
+            {/if}
         </div>
-        <button class="pill" on:click={swap}>
-            <span class={`material-icons${viewSource ? "" : "-outlined"}`}
-                >{viewSource ?  "science":"data_object" }</span
-            >
-            <span>{viewSource ? "example": "obj type" }</span>
-        </button>
     </div>
-</Section>
+    {#if !hideButton}
+        <button class="pill" on:click={swap}>
+            <span class="material-icons"
+                >{isitA(side) ? sideB.icon : sideA.icon}</span
+            >
+            <span>{isitA(side) ? sideB.text : sideA.text}</span>
+        </button>
+    {/if}
+</div>

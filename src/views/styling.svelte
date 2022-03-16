@@ -6,19 +6,16 @@
 </script>
 
 <DocsTemplate title="Styling">
-    <Section title="placeholder" />
+    <Section title="Header Names"><p>It's in the works..</p></Section>
+    <Section title="CSS Profiles"><p>..hang in there..</p></Section>
+    <Section title="Ingenuity Tips"><p>..coming really soon!</p></Section>
     <Note>
         <span slot="icon" class="material-icons">task_alt</span>
         <div>
             <p>
-                <span
-                    >Next up, <em
-                        ><strong
-                            ><a href="/docs/components">Components</a></strong
-                        ></em
-                    >.</span
-                >
-                Discover all form and field configuration options!
+                If you're curious about the past OR the future, up next is <em
+                    ><strong><a href="/docs/roadmap">Roadmap</a></strong></em
+                >.
             </p>
         </div>
     </Note>

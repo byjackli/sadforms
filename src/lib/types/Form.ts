@@ -22,13 +22,13 @@ export type Field = {
     uid: string,
     name: string,
     type: string,
-    defaultValue?: string | boolean | Record<string, string>,
+    defaultValue?: Value,
     placeholder?: string,
     tooltip?: string,
     hide?: {
         label?: boolean,
         preview?: boolean
-    }
+    },
     disabled?: boolean,
     hidden?: boolean,
     required?: boolean,
@@ -48,6 +48,7 @@ export type Field = {
     icon?: string | { on: string, off: string }
 
 }
+export type Value = string | number | boolean | Record<string, string>
 export type Hide = {
     title?: boolean,
     caption?: boolean,
@@ -81,7 +82,7 @@ export type Database = Record<string, Data>
 
 type Data = {
     submit: { submitting: boolean, accepted: boolean, attempted: boolean },
-    data: Record<string, (Field | Record<string, Field>)>,
+    data: Record<string, (Value | Record<string, Value>)>,
     required: Record<string, (boolean | Record<string, boolean>)>,
     onInput: Record<string, (Function | Record<string, Function>)>,
     validity: Record<string, (Validity | Record<string, Validity>)>,
@@ -91,7 +92,7 @@ type Data = {
     touched: Record<string, (boolean | Record<string, boolean>)>,
     value: Record<string, (unknown | Record<string, unknown>)>,
     active: Record<string, (boolean | Record<string, boolean>)>,
-    dontSave: Record<string, (DontSave | Record<string, DontSave>)>,
+    dontSave: Record<string, (Value | Record<string, Value>)>,
     group: Record<string, Group>
 }
 
@@ -105,11 +106,6 @@ export type Validity = ((value: string) => Record<string, Rule>) | boolean
 export type Verdict = {
     verdict: boolean,
     raw?: { verdict: boolean, feedback: string }[]
-}
-export type DontSave = {
-    verdict?: boolean,
-    data?: unknown,
-    action: string
 }
 
 export default Form

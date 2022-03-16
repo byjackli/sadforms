@@ -105,14 +105,10 @@
         <span slot="icon" class="material-icons">task_alt</span>
         <div>
             <p>
-                <span
-                    >Next up, <em
-                        ><strong
-                            ><a href="/docs/components">Components</a></strong
-                        ></em
-                    >.</span
-                >
-                Discover all form and field configuration options!
+                Next up, <em
+                    ><strong><a href="/docs/form-types">Form Types</a></strong
+                    ></em
+                >. Discover all form and field configuration options!
             </p>
         </div>
     </Note>
