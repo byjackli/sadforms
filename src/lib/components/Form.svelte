@@ -480,8 +480,8 @@
 		});
 	}
 
-	function load(type, clean) {
-		if (type === "init") {
+	function load(clean, init = false) {
+		if (init) {
 			console.log(
 				"This app takes advantage of Sad Forms.\nLearn more at https://sadforms.com"
 			);
@@ -506,7 +506,7 @@
 		if (fullscreen) section = fieldsArr[0];
 	}
 
-	onMount(() => load("init"));
+	onMount(() => load(false, true));
 	afterUpdate(() => {
 		if (fieldsArr.length && typeof afterFormLoad === "function")
 			afterFormLoad(refresh);
@@ -594,7 +594,7 @@
 						type="button"
 						value="reset"
 						on:click|preventDefault={() => {
-							load(undefined, true);
+							load(true);
 						}}
 					/>
 				{/if}

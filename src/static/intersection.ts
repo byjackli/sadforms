@@ -29,9 +29,11 @@ export function updateView(event: MouseEvent | KeyboardEvent | CustomEvent): voi
         block = (event.target as HTMLElement).closest(".page-title");
     else if (!block && event.type !== "enterView") return;
 
-    const previous = document.getElementById(prev),
+    const pathname = window.location.pathname,
+        newPathname = pathname.endsWith("docs") ? "/docs/welcome" : pathname,
+        previous = document.getElementById(prev),
         selectedId = event.type === "enterView"
-            ? `${window.location.pathname}-${(event.target as HTMLElement).getAttribute("id")}`.replace(/[\/#?]/g, "-")
+            ? `${newPathname}-${(event.target as HTMLElement).getAttribute("id")}`.replace(/[\/#?]/g, "-")
             : block.getAttribute("id"),
         selected = document.getElementById(selectedId);
 
