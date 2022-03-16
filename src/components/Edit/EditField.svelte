@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { SvelteComponent } from "svelte";
-    import type { Edit, Field, Group, Hide, Options } from "$lib/types/Form";
+    import type { Edit, Field, Group } from "$lib/types/Form";
     import Form from "$lib/components/Form.svelte";
 
     import SadForms, {
@@ -9,8 +9,13 @@
         setRefresh,
         updateForm,
         updateSave,
-    } from "../store/SadForms";
-    import { makeToData, makeToOptions, newType, parseHide } from "../presets";
+    } from "../../store/SadForms";
+    import {
+        makeToData,
+        makeToOptions,
+        newType,
+        parseHide,
+    } from "../../presets";
     import { belongs, uuidV4 } from "$lib/tools/kit";
 
     export let main: SvelteComponent;
@@ -39,6 +44,14 @@
                 type: "text",
                 required: true,
                 defaultValue: value.meta.name,
+            },
+            uid: {
+                uid: "uid",
+                name: "Group UID",
+                type: "text",
+                required: true,
+                disabled: true,
+                defaultValue: value.meta.uid,
             },
             tooltip: {
                 uid: "tooltip",
@@ -69,7 +82,7 @@
                     { uid: "label", name: "Label" },
                     { uid: "feedback", name: "Feedback" },
                 ],
-                defaultValue: parseHide(value.meta.group),
+                defaultValue: parseHide(value.meta.override),
             },
             dropdown: {
                 uid: "dropdown",
@@ -611,7 +624,7 @@
         if (belongs(details.data, "dropdown")) delete details.data.dropdown;
 
         base.meta = { ...base.meta, ...details.data };
-        base.meta.group = parseHide(base.meta.group, true);
+        base.meta.override = parseHide(base.meta.override, true);
 
         updateForm(data);
         updateSave(data);
@@ -695,7 +708,7 @@
         fields={$SadForms && groupFields()}
         afterFormLoad={(refresh) => {
             if ($SadForms.refresh) {
-                refresh(undefined, true);
+                refresh(true);
                 main.refresh();
             }
         }}
@@ -713,7 +726,7 @@
     afterFormLoad={(refresh) => {
         if ($SadForms.refresh) {
             setRefresh(false);
-            refresh(undefined, true);
+            refresh(true);
             main.refresh();
         }
     }}

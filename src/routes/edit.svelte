@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
     import SadForms, { loadForm } from "../store/SadForms";
 
-    import Editor from "../components/Editor.svelte";
+    import Editor from "../components/Edit/Editor.svelte";
     import Loading from "../components/Loading.svelte";
 
     $: SadForm = undefined;

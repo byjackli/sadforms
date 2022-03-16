@@ -11,6 +11,7 @@
 		updateSave,
 		clearSave,
 		loadSave,
+		fieldData,
 	} from "../store/FormStore";
 	// NOTES: implement saveToCloud at critical points
 	//  ie setInterval, onVisibilityChange, onbeforeunload, changePage, manual saves
@@ -36,6 +37,8 @@
 		submitting = false,
 		section = null,
 		autoNav = [];
+
+	$: localFields = $$props && fields;
 	$: fieldsArr = [];
 
 	// NOTE ***
@@ -120,7 +123,7 @@
 	}
 
 	function checkEmpty(fieldid, groupid) {
-		const field = fieldData({ action: "get" }, fieldid, groupid);
+		const field = fieldData(uid, { action: "get" }, fieldid, groupid);
 		return (
 			field === "" ||
 			field === undefined ||
@@ -151,7 +154,7 @@
 			const func = getEntry(uid, "validity", fieldid, groupid);
 			if (func) {
 				const conditions = func(
-					fieldData({ action: "get" }, fieldid, groupid)
+					fieldData(uid, { action: "get" }, fieldid, groupid)
 				);
 				for (const condition of Object.values(conditions)) {
 					const expression = await condition.check,
@@ -184,7 +187,7 @@
 	}
 	async function updateFeedback(fieldid, groupid, validation) {
 		const groupOnly =
-			groupid && getEntry(uid, "group", groupid)?.group?.feedback;
+			groupid && getEntry(uid, "group", groupid)?.override?.feedback;
 		let { verdict, raw } = validation,
 			block = document.getElementById(
 				`${$CustomStore.names.inputFeedback}${fieldid}`
@@ -255,7 +258,7 @@
 		}
 	}
 	function updatePreview(fieldid, groupid) {
-		const files = fieldData({ action: "get" }, fieldid, groupid),
+		const files = fieldData(uid, { action: "get" }, fieldid, groupid),
 			block = document.getElementById(
 				`${$CustomStore.names.inputPreview}${fieldid}`
 			),
@@ -297,7 +300,7 @@
 					: await getData(event.target.files);
 		}
 
-		fieldData({ action: "set", data }, fieldid, groupid);
+		fieldData(uid, { action: "set", data }, fieldid, groupid);
 		fieldValue(fieldid, groupid);
 
 		if (getEntry(uid, "preview", fieldid, groupid))
@@ -346,30 +349,9 @@
 		updateDebug();
 	}
 
-	function fieldData(payload, fieldid, groupid) {
-		const dontSave = existsEntry(uid, "dontSave", fieldid, groupid),
-			verdict =
-				dontSave || (payload.verdict !== undefined && payload.verdict);
-
-		if (["set", "init"].includes(payload.action))
-			return verdict
-				? setEntry(
-						uid,
-						"dontSave",
-						{ verdict, data: payload.data },
-						fieldid,
-						groupid
-				  )
-				: setEntry(uid, "data", payload.data, fieldid, groupid);
-		else if (payload.action === "get")
-			return verdict
-				? getEntry(uid, "dontSave", fieldid, groupid).data
-				: getEntry(uid, "data", fieldid, groupid);
-		else if (payload.action === "exists")
-			return dontSave || existsEntry(uid, "data", fieldid, groupid);
-	}
 	function fieldValue(fieldid, groupid, verdict) {
 		const exists = fieldData(
+			uid,
 			{ verdict, action: "exists" },
 			fieldid,
 			groupid
@@ -377,7 +359,7 @@
 		let data;
 
 		if (exists) {
-			data = fieldData({ verdict, action: "get" }, fieldid, groupid);
+			data = fieldData(uid, { verdict, action: "get" }, fieldid, groupid);
 
 			if (typeof data === "object") {
 				const array = Object.values(data);
@@ -437,12 +419,17 @@
 		let g = group?.meta;
 		const verdict = field.dontSave || g?.dontSave;
 
-		if (!fieldData({ action: "exists" }, field.uid, g?.uid)) {
+		if (!fieldData(uid, { action: "exists" }, field.uid, g?.uid)) {
 			const data =
 				field.defaultValue !== undefined && field.defaultValue !== null
 					? field.defaultValue
 					: loadBlank(field.type);
-			fieldData({ verdict, action: "init", data }, field.uid, g?.uid);
+			fieldData(
+				uid,
+				{ verdict, action: "init", data },
+				field.uid,
+				g?.uid
+			);
 			setEntry(uid, "value", data, field.uid, g?.uid);
 		}
 		if (field.onInput)
@@ -476,9 +463,9 @@
 			await checkValidity("field", field.uid, g?.uid);
 		}
 
-		if (field.type === "file" && field?.hide?.preview === undefined) {
+		if (field.type === "file" && !field?.hide?.preview) {
 			setEntry(uid, "preview", true, field.uid, g?.uid);
-			if (fieldData({ action: "get" }, field.uid, g?.uid))
+			if (fieldData(uid, { action: "get" }, field.uid, g?.uid))
 				updatePreview(field.uid);
 		}
 	}
@@ -493,14 +480,14 @@
 		});
 	}
 
-	function load(type, clean) {
-		if (type === "init") {
+	function load(clean, init = false) {
+		if (init) {
 			console.log(
 				"This app takes advantage of Sad Forms.\nLearn more at https://sadforms.com"
 			);
 		}
 
-		fieldsArr = Object.values(fields);
+		fieldsArr = Object.values(localFields);
 		loading = false;
 
 		loadSave(uid, saveToLocal, saveToCloud, clean);
@@ -519,7 +506,7 @@
 		if (fullscreen) section = fieldsArr[0];
 	}
 
-	onMount(() => load("init"));
+	onMount(() => load(false, true));
 	afterUpdate(() => {
 		if (fieldsArr.length && typeof afterFormLoad === "function")
 			afterFormLoad(refresh);
@@ -549,7 +536,7 @@
 						id={`${$CustomStore.names.groupHeader}${group.meta.uid}`}
 					>
 						<div class="items">
-							{#if group.meta?.group?.label}
+							{#if group.meta?.override?.label}
 								<legend>
 									{group.meta.name}
 									{#if group.meta.required}<em>*required</em
@@ -571,7 +558,21 @@
 								{/if}
 							{/each}
 						</div>
-						{#if group.meta?.group?.feedback}
+						{#if group.meta?.tooltip}
+							<div class="container-tooltip" aria-hidden="true">
+								{#if $CustomStore.icons.tooltip}
+									<span
+										aria-hidden="true"
+										class="material-icons"
+										>{$CustomStore.icons.tooltip}</span
+									>
+								{/if}
+								<p>
+									{group.meta?.tooltip}
+								</p>
+							</div>
+						{/if}
+						{#if group.meta?.override?.feedback}
 							<div
 								class="form-group-feedback"
 								id={`${$CustomStore.names.groupFeedback}${group.meta.uid}`}
@@ -593,7 +594,7 @@
 						type="button"
 						value="reset"
 						on:click|preventDefault={() => {
-							load(undefined, true);
+							load(true);
 						}}
 					/>
 				{/if}

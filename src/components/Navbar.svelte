@@ -8,7 +8,7 @@
         edit: HTMLElement = undefined;
 </script>
 
-<nav>
+<nav id="main">
     <div class="lhs-container">
         <a class="h3" href="/">Sad Forms</a>
         {#if ["/edit", "/preview"].includes(path)}
@@ -48,7 +48,7 @@
         <li class={path === "/donate" ? "active" : ""}>
             <a href="/donate">donate</a>
         </li>
-        <li class={path === "/docs" ? "active" : ""}>
+        <li class={path.match(/(\/docs)+\/*\b(?![%])/) ? "active" : ""}>
             <a href="/docs">documentation</a>
         </li>
         <li class={path === "/feedback" ? "active" : ""}>

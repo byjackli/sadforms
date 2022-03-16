@@ -17,7 +17,7 @@
     });
 </script>
 
-<main id="preview" class="fhfw">
+<main id="preview" class="fwfh">
     {#if SadForm}
         <Form {...SadForm} />
     {:else}
