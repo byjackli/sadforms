@@ -106,7 +106,7 @@
         <div>
             <p>
                 Next up, <em
-                    ><strong><a href="/docs/form-types">Form Types</a></strong
+                    ><strong><a href="/docs/form_types">Form Types</a></strong
                     ></em
                 >. Discover all form and field configuration options!
             </p>
