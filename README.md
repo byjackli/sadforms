@@ -104,7 +104,19 @@ See the [roadmap](https://sadforms.com/docs/roadmap) for list of upcoming featur
 
 
 
-## Contact
+## House Keeping
 
-Sad Forms is created and maintained by Jack Li. He is reachable through [twitter](https://twitter.com/byjackli) and email via hello@byjackli.com
+* [Apache License 2.0](./LICENSE).
+* [Code of Conduct](./CODE_OF_CONDUCT.md)
+* [Contributing](./CONTRIBUTING.md)
+
+<br/>
+
+
+
+## Contributing
+
+Sad Forms is created and maintained by Jack Li. He is reachable through [twitter](https://twitter.com/byjackli) and email via <hello@byjackli.com>
 <p align="right">(<a href="#top">back to top</a>)</p>
+
+<br/>
