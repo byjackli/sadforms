@@ -1461,7 +1461,8 @@ Prism.languages.rss = Prism.languages.xml;
 
 (function (Prism) {
 
-	var string = /(?:"(?:\\(?:\r\n|[\s\S])|[^"\\\r\n])*"|'(?:\\(?:\r\n|[\s\S])|[^'\\\r\n])*')/;
+	const string = /(?:"(?:\\(?:\r\n|[\s\S])|[^"\\\r\n])*"|'(?:\\(?:\r\n|[\s\S])|[^'\\\r\n])*')/,
+		numeric = /(\b|\.)(?:-*[.0-9]+)+(cm|mm|in|px|pt|pc|em|ex|ch|rem|vw|vh|vmin|vmax|%|s)*/;
 
 	Prism.languages.css = {
 		'comment': /\/\*[\s\S]*?\*\//,
@@ -1496,7 +1497,18 @@ Prism.languages.rss = Prism.languages.xml;
 		},
 		'selector': {
 			pattern: RegExp('(^|[{}\\s])[^{}\\s](?:[^{};"\'\\s]|\\s+(?![\\s{])|' + string.source + ')*(?=\\s*\\{)'),
-			lookbehind: true
+			lookbehind: true,
+			inside: {
+				'class-name': {
+					pattern: /((\.|#)+[\w-_=\[\]\"\']*)|(:+\S*)/,
+					inside: {
+						punctuation: /[,\[\]\(\)]/,
+					}
+				},
+				'attr-name': /\w+(?=\=)/,
+				'attr-value': /\"[\w\S]+\"/,
+				punctuation: /[,\[\]\(\)]/,
+			}
 		},
 		'string': {
 			pattern: string,
@@ -1508,9 +1520,29 @@ Prism.languages.rss = Prism.languages.xml;
 		},
 		'important': /!important\b/i,
 		'function': {
-			pattern: /(^|[^-a-z0-9])[-a-z0-9]+(?=\()/i,
-			lookbehind: true
+			pattern: /(^|[^-a-z0-9])[-a-z0-9]+\(+.*\)/,
+			inside: {
+				'function-name': /(^|[^-a-z0-9])[-a-z0-9]+(?=\()/,
+				'punctuation': /[\(\)]/,
+				'parameter': {
+					pattern: /.*/, inside: {
+						'numeric': {
+							pattern: numeric,
+							inside: {
+								'units': /(cm|mm|in|px|pt|pc|em|ex|ch|rem|vw|vh|vmin|vmax|%|s)/,
+							}
+						}
+					}
+				}
+			}
 		},
+		'numeric': {
+			pattern: numeric,
+			inside: {
+				'units': /(cm|mm|in|px|pt|pc|em|ex|ch|rem|vw|vh|vmin|vmax|%|s)/,
+			}
+		},
+		'value': /[\w\-]+/,
 		'punctuation': /[(){};:,]/
 	};
 

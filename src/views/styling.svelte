@@ -7,7 +7,16 @@
 
 <DocsTemplate title="Styling">
     <Section title="Header Names"><p>It's in the works..</p></Section>
-    <Section title="CSS Profiles"><p>..hang in there..</p></Section>
+    <Section title="CSS Profiles"
+        ><p>
+            When it comes to customizing the forms, the possibilities are only
+            limited by the imagination and the limitations of CSS and
+            JavaScript.
+        </p>
+        <Code lang="css" code={`
+`}/>
+        </Section
+    >
     <Section title="Ingenuity Tips"><p>..coming really soon!</p></Section>
     <Note>
         <span slot="icon" class="material-icons">task_alt</span>
