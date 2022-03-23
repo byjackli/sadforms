@@ -164,7 +164,7 @@
         afterFormLoad={loadModify}
     />
     <div class="form-container">
-        <div class="sadforms modify-add">
+        <div class="sf modify-add">
             <Dropdown
                 id="add"
                 name="create new field"

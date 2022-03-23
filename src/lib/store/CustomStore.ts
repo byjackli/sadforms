@@ -3,15 +3,16 @@ import { belongs } from '../tools/kit'
 
 const names = {
     warn: 'warn',
+    notEmpty_safe: "notEmpty_safe",
     redact: 'redact',
-    label: 'label',
-    blockHeader: 'form:block/',
-    visualHeader: 'form:visual/',
-    inputHeader: 'form:input/',
-    inputFeedback: 'form:input-feedback/',
-    inputPreview: 'form:input-preview/',
-    groupHeader: 'form:group/',
-    groupFeedback: 'form:group-feedback/',
+    label: 'sf:label/',
+    blockHeader: 'sf:block/',
+    visualHeader: 'sf:visual/',
+    inputHeader: 'sf:input/',
+    inputFeedback: 'sf:input-feedback/',
+    inputPreview: 'sf:input-preview/',
+    groupHeader: 'sf:group/',
+    groupFeedback: 'sf:group-feedback/',
     optionHeader: 'option'
 },
     icons = {

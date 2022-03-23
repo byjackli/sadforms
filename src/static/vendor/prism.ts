@@ -20,6 +20,10 @@ export function highlight(container, async, callback) {
 	return Prism.highlightAllUnder(container, async, callback)
 }
 
+export function setCustomPattern(match: Record<string, unknown>): void {
+	Prism.languages.highlight = match
+}
+
 /**
  * Prism: Lightweight, robust, elegant syntax highlighting
  *
@@ -1499,15 +1503,15 @@ Prism.languages.rss = Prism.languages.xml;
 			pattern: RegExp('(^|[{}\\s])[^{}\\s](?:[^{};"\'\\s]|\\s+(?![\\s{])|' + string.source + ')*(?=\\s*\\{)'),
 			lookbehind: true,
 			inside: {
+				'attr-name': /[\w-]+(?=\=)/,
+				'attr-value': /\"[\w\S]+\"/,
+				punctuation: /[,\[\]\(\)]/,
 				'class-name': {
 					pattern: /((\.|#)+[\w-_=\[\]\"\']*)|(:+\S*)/,
 					inside: {
 						punctuation: /[,\[\]\(\)]/,
 					}
 				},
-				'attr-name': /\w+(?=\=)/,
-				'attr-value': /\"[\w\S]+\"/,
-				punctuation: /[,\[\]\(\)]/,
 			}
 		},
 		'string': {

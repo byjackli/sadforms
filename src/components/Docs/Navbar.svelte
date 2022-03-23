@@ -57,7 +57,7 @@
         },
         4: {
             title: "STYLING",
-            nested: ["Header Names", "CSS Profiles", "Ingenuity Tips"],
+            nested: ["CSS Profiles", "Header Names", "CSS Examples"],
         },
         5: {
             title: "ROADMAP",

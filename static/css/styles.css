@@ -231,7 +231,7 @@ main#editor::-webkit-scrollbar { display: none; }
     top: var(--h-navmain);
     transform: translate3d(var(--p-editor),0,0);
 }
-main#editor .sadforms {
+main#editor .sf {
     padding: 3rem 2rem;
 }
 #editor-sidemenu-container { 
@@ -293,36 +293,36 @@ main#editor .sadforms {
     white-space: -o-break-spaces; /* Opera 7 */
     word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
-#editor-sidemenu .form-container form {
+#editor-sidemenu .sf form {
     padding: 1.5em 0;
     gap: 2em;
 }
-#editor-sidemenu .form-container input,
-#editor-sidemenu .form-container textarea,
-#editor-sidemenu .form-container .dropdown, 
-#editor-sidemenu .form-container .checkbox  {
+#editor-sidemenu .sf input,
+#editor-sidemenu .sf textarea,
+#editor-sidemenu .sf .dropdown, 
+#editor-sidemenu .sf .checkbox  {
     background-color: var(--accent1);
     border-width: .15em;
     border-color: var(--background);
 }
-#editor-sidemenu .form-container .disabled input,
-#editor-sidemenu .form-container .disabled textarea,
-#editor-sidemenu .form-container .disabled .dropdown, 
-#editor-sidemenu .form-container .disabled .checkbox  {
+#editor-sidemenu .sf .disabled input,
+#editor-sidemenu .sf .disabled textarea,
+#editor-sidemenu .sf .disabled .dropdown, 
+#editor-sidemenu .sf .disabled .checkbox  {
 	cursor: not-allowed;
     border-color: transparent;
 	background-color: var(--disabled);
 }
-#editor-sidemenu .form-container .option.active { background-color: var(--text); }
+#editor-sidemenu .sf .option.active { background-color: var(--text); }
 
-#editor-sidemenu .form-container .container-tooltip { background-color: var(--text); }
-#editor-sidemenu .form-container .container-tooltip * { color: var(--background); }    
-#editor-sidemenu .form-container label, #editor-sidemenu .form-container legend {
+#editor-sidemenu .sf .container-tooltip { background-color: var(--text); }
+#editor-sidemenu .sf .container-tooltip * { color: var(--background); }    
+#editor-sidemenu .sf label, #editor-sidemenu .sf legend {
     background-color: var(--accent1);
 }
-#editor-sidemenu .form-container .container-validity { background-color: var(--background); }
+#editor-sidemenu .sf .container-validity { background-color: var(--background); }
 
-#editor-sidemenu .form-container  div#form\:input\/dropdowncb { border-style: dashed; }
+#editor-sidemenu .sf div#form\:input\/dropdowncb { border-style: dashed; }
 
 div.modify-block {
     min-width: fit-content;
@@ -421,7 +421,7 @@ button#copy-code { border-radius: var(--pill); }
 
 
 /* ======  PAGE:: PREVIEW  ======*/
-main#preview .form-container {
+main#preview .sf {
     margin-top: 2rem;
     padding: 1rem 2rem;
     border: .25rem solid var(--accent);
@@ -498,7 +498,7 @@ main#preview .form-container {
 
 
 /* ======  DEBUG COMPONENT  ======*/
-.sadforms.isolated {
+.sf.isolated {
     padding: 1em 0;
 }
 code {
@@ -532,7 +532,8 @@ div.codeblock .clip-scrollbar {
     border-radius: 1.5rem;
     border: 0.15rem solid var(--text);
 }
-div.codeblock .sadforms { padding: 3rem; }
+div.codeblock .sf { padding: 3rem; }
+div.codeblock .sf form { padding: 0; }
 div.code-container {
     width: 100%;
     height: 400px;
@@ -542,6 +543,7 @@ div.code-container {
 div.codeblock pre[class*="language-"],
 div.codeblock :not(pre) > code[class*="language-"] {
     background-color: transparent;
+    width: fit-content;
 }
 
 

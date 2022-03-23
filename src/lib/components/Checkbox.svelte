@@ -14,7 +14,8 @@
 		blur: Function = undefined,
 		input: Function = undefined;
 
-	let label: HTMLElement = undefined,
+	let fullId: string = `${$CustomStore.names.inputHeader}${id}`,
+		label: HTMLElement = undefined,
 		container = undefined;
 
 	function updateChecked() {
@@ -53,7 +54,7 @@
 <div
 	bind:this={container}
 	class={`field ${type} noselect ${redact ? $CustomStore.names.redact : ""}`}
-	{id}
+	id={fullId}
 	{name}
 	{disabled}
 	aria-disabled={disabled}
