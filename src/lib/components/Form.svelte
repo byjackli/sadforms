@@ -518,12 +518,11 @@
 
 <!-- <svelte:window on:keydown={changePageShortcut} /> -->
 
-<div id={uid} class="form-container">
+<div id={uid} class="sf sf-container">
 	{#if fieldsArr && !loading}
 		{#if !fullscreen && !hide?.title}<h2>{title}</h2>{/if}
 		{#if !hide?.caption && caption !== undefined}<p>{caption}</p>{/if}
 		<form
-			class="sadforms"
 			autocomplete={autocomplete ? "on" : "off"}
 			tabindex="-1"
 			on:submit|preventDefault={submit}

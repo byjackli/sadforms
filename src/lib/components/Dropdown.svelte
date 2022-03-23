@@ -285,7 +285,7 @@
 	class={`dropdown-container noselect ${
 		value === "[redacted]" ? $CustomStore.names.redact : ""
 	} ${expanded ? "active" : ""}`}
-	id={`${$CustomStore.names.inputHeader}${id}`}
+	id={fullId}
 	{name}
 	{disabled}
 	aria-haspopup="listbox"
@@ -293,10 +293,10 @@
 	<div
 		bind:this={dropdown}
 		class="field dropdown"
-		id={`${$CustomStore.names.inputHeader}${id}cb`}
+		id={`${fullId}cb`}
 		aria-haspopup="listbox"
 		aria-disabled={disabled}
-		aria-controls={`${$CustomStore.names.inputHeader}${id}lb`}
+		aria-controls={`${fullId}lb`}
 		aria-expanded={expanded}
 		aria-labelledby={`${$CustomStore.names.label}${id}`}
 		aria-activedescendant={expanded && size
@@ -363,7 +363,9 @@
 					</div>
 				{:else if edit?.add}
 					<div
-						class="option adding-container"
+						class={`option adding-container ${
+							prevId === option.uid ? "active" : ""
+						}`}
 						aria-label={add && addAriaLabel()}
 						role="option"
 						on:click={() => {
@@ -375,9 +377,7 @@
 							id={`${$CustomStore.names.optionHeader}${id}add`}
 							bind:this={add.field}
 							bind:value={add.value}
-							class={`option ${
-								prevId === option.uid ? "active" : ""
-							}`}
+							class="option"
 							aria-hidden={"true"}
 							type="text"
 							placeholder="Add an option. (add / remove / limit)"

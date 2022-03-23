@@ -136,7 +136,7 @@
                     <EditField {main} />
                 {:else if curView === "debug"}
                     <div class="form-container">
-                        <div class="sadforms isolated">
+                        <div class="sf isolated">
                             <Checkbox
                                 type="checkbox"
                                 id="toggleDebug"

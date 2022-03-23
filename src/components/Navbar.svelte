@@ -12,7 +12,7 @@
     <div class="lhs-container">
         <a class="h3" href="/">Sad Forms</a>
         {#if ["/edit", "/preview"].includes(path)}
-            <div class="sadforms" id="editpreview">
+            <div class="sf" id="editpreview">
                 <Checkbox
                     id="switch"
                     name="switch"
