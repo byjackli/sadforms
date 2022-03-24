@@ -65,16 +65,13 @@
             <h3 class="h4">03 March Goals</h3>
             <ul>
                 <li>
-                    <span
-                        class="material-icons animate-hammer"
-                        aria-hidden="true">hardware</span
-                    >Responsive CSS
+                    <del>Responsive CSS</del>
                 </li>
                 <li>
                     <span
                         class="material-icons animate-hammer"
                         aria-hidden="true">hardware</span
-                    >"Styling" documentation
+                    >create examples for /docs/css-examples
                 </li>
                 <li><del>GitHub README gif update</del></li>
                 <li><del>GitHub Reporting Issues Guideline</del></li>
