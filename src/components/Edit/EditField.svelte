@@ -464,7 +464,7 @@
                     meta: {
                         uid: "edit",
                         name: "Edit",
-                        group: { label: true, feedback: true },
+                        override: { label: true, feedback: true },
                     },
                     add: {
                         uid: "add",
@@ -581,7 +581,7 @@
                     meta: {
                         uid: "icon",
                         name: "icon",
-                        group: { label: true, feedback: true },
+                        override: { label: true, feedback: true },
                     },
                     off: {
                         uid: "off",

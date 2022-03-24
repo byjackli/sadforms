@@ -10,6 +10,12 @@
         <div>
             <h3 class="h4">03 March Goals</h3>
             <ul>
+                <li>
+                    <span
+                        class="material-icons animate-hammer"
+                        aria-hidden="true">hardware</span
+                    >Refactor classes to imrpove Form styling
+                </li>
                 <li>Revisit File Input Type</li>
             </ul>
         </div>
@@ -58,12 +64,19 @@
         <div>
             <h3 class="h4">03 March Goals</h3>
             <ul>
-                <li>Responsive CSS</li>
-                <li>"Styling" documentation</li>
-                <li>GitHub README gif update</li>
-                <li>GitHub Reporting Issues Guideline</li>
-                <li>GitHub Contribution Guideline</li>
-                <li>GitHub Code of Conduct</li>
+                <li>
+                    <del>Responsive CSS</del>
+                </li>
+                <li>
+                    <span
+                        class="material-icons animate-hammer"
+                        aria-hidden="true">hardware</span
+                    >create examples for /docs/css-examples
+                </li>
+                <li><del>GitHub README gif update</del></li>
+                <li><del>GitHub Reporting Issues Guideline</del></li>
+                <li><del>GitHub Contribution Guideline</del></li>
+                <li><del>GitHub Code of Conduct</del></li>
                 <li>Automate "Roadmap" documentation</li>
                 <li>Improve "Form Types" docmentation</li>
                 <li>Improve "Functions" docmentation</li>

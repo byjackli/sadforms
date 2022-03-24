@@ -57,7 +57,7 @@
         },
         4: {
             title: "STYLING",
-            nested: ["Header Names", "CSS Profiles", "Ingenuity Tips"],
+            nested: ["CSS Profiles", "Header Names", "CSS Examples"],
         },
         5: {
             title: "ROADMAP",
@@ -77,20 +77,22 @@
     <div class="scrolltainer">
         {#each Object.values(pages) as page (page.title)}
             {@const h1 = page.title.toLowerCase().replace(/\s+/g, "_")}
-            <a
-                id={`/docs/${h1}`.replace(/[\/#?]/g, "-")}
-                class="page-title"
-                href="/docs/{h1}">{page.title}</a
-            >
-            <div class="page-sections">
-                {#each page.nested as section (section)}
-                    {@const h2 = section.toLowerCase().replace(/\s+/g, "_")}
-                    <a
-                        id={`/docs/${h1}#${h2}`.replace(/[\/#?]/g, "-")}
-                        class="section-title"
-                        href="/docs/{h1}#{h2}">{section}</a
-                    >
-                {/each}
+            <div class="section-container">
+                <a
+                    id={`/docs/${h1}`.replace(/[\/#?]/g, "-")}
+                    class="page-title"
+                    href="/docs/{h1}">{page.title}</a
+                >
+                <div class="page-sections">
+                    {#each page.nested as section (section)}
+                        {@const h2 = section.toLowerCase().replace(/\s+/g, "_")}
+                        <a
+                            id={`/docs/${h1}#${h2}`.replace(/[\/#?]/g, "-")}
+                            class="section-title"
+                            href="/docs/{h1}#{h2}">{section}</a
+                        >
+                    {/each}
+                </div>
             </div>
         {/each}
     </div>

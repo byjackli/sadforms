@@ -1,0 +1,20 @@
+.animate-hammer {
+    animation: hammer 3s infinite;   
+    font-size: 1.5em;
+    position: absolute;
+    left: -1.75em;
+}
+@keyframes hammer {
+    0%, 20%, 30%, 40% {
+        transform: rotate(0deg);
+        transform-origin: bottom left;
+    }
+    10% {
+        transform: rotate(-30deg);
+        transform-origin: bottom left;
+    }
+    15%, 25%, 35% {
+        transform: rotate(20deg);
+        transform-origin: bottom left;
+    }
+}

@@ -20,19 +20,6 @@
 		{#if field.type && field.type === "custom"}
 			<div>{field.body}</div>
 		{:else}
-			{#if !field?.hide?.label}
-				<label
-					id={`${$CustomStore.names.label}${field.uid}`}
-					for={`${$CustomStore.names.inputHeader}${field.uid}`}
-				>
-					{field.name}
-					{#if field.required}<em aria-hidden="true">*required</em
-						><span class="for-aria">required</span>{/if}
-					{#if field.tooltip}<span class="for-aria"
-							>Tooltip: {field.tooltip}</span
-						>{/if}
-				</label>
-			{/if}
 			{#if field.type === "textarea"}
 				<textarea
 					id={`${$CustomStore.names.inputHeader}${field.uid}`}
@@ -40,6 +27,7 @@
 					name={field.name}
 					placeholder={field.placeholder}
 					disabled={field.disabled}
+					aria-labelledby={`${$CustomStore.names.label}${field.uid}`}
 					aria-disabled={field.disabled}
 					aria-required={field.required}
 					spellcheck={`${field.spellcheck}`}
@@ -66,6 +54,7 @@
 					} or drag and drop ${
 						field.multiple ? `files` : `a file`
 					} onto the button`}
+					aria-labelledby={`${$CustomStore.names.label}${field.uid}`}
 					on:click={(event) => {
 						event.preventDefault();
 						document
@@ -103,6 +92,7 @@
 					accept={field.accept}
 					placeholder={field.placeholder}
 					disabled={field.disabled}
+					aria-labelledby={`${$CustomStore.names.label}${field.uid}`}
 					aria-required={field.required}
 					aria-disabled={field.disabled}
 					aria-hidden="true"
@@ -190,6 +180,7 @@
 					autocomplete={field.autocomplete}
 					spellcheck={`${field.spellcheck}`}
 					disabled={field.disabled}
+					aria-labelledby={`${$CustomStore.names.label}${field.uid}`}
 					aria-disabled={field.disabled}
 					multiple={field.multiple ? true : null}
 					value={field.type === "file"
@@ -208,6 +199,20 @@
 						)}
 				/>
 			{/if}
+			<label
+				class={field?.hide?.label ? "for-aria" : undefined}
+				id={`${$CustomStore.names.label}${field.uid}`}
+				for={`${$CustomStore.names.inputHeader}${field.uid}`}
+				tabindex="-1"
+			>
+				{field.name}
+				{#if field.required}<em aria-hidden="true">*required</em><span
+						class="for-aria">required</span
+					>{/if}
+				{#if field.tooltip}<span class="for-aria"
+						>Tooltip: {field.tooltip}</span
+					>{/if}
+			</label>
 		{/if}
 	{/if}
 	{#if field.tooltip}

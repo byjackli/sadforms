@@ -82,13 +82,15 @@ html, body, main, div#root, nav,
 }
 html, body, main, div#root {
 	min-width: 100%;
+    width: 100%;
     justify-content: flex-start;
 }
 html, div#root {
 	overflow-x: hidden;
 	overflow-y: hidden;
 }
-html { background-color: var(--background); }
+html { background-color: var(--accent1); }
+div#root { background-color: var(--background); }
 main { padding-bottom: 5em; }
 
 h1, h2, h3, h4,
@@ -231,7 +233,7 @@ main#editor::-webkit-scrollbar { display: none; }
     top: var(--h-navmain);
     transform: translate3d(var(--p-editor),0,0);
 }
-main#editor .sadforms {
+main#editor .sf form {
     padding: 3rem 2rem;
 }
 #editor-sidemenu-container { 
@@ -293,36 +295,36 @@ main#editor .sadforms {
     white-space: -o-break-spaces; /* Opera 7 */
     word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
-#editor-sidemenu .form-container form {
+#editor-sidemenu .sf form {
     padding: 1.5em 0;
     gap: 2em;
 }
-#editor-sidemenu .form-container input,
-#editor-sidemenu .form-container textarea,
-#editor-sidemenu .form-container .dropdown, 
-#editor-sidemenu .form-container .checkbox  {
+#editor-sidemenu .sf input,
+#editor-sidemenu .sf textarea,
+#editor-sidemenu .sf .dropdown, 
+#editor-sidemenu .sf .checkbox  {
     background-color: var(--accent1);
     border-width: .15em;
     border-color: var(--background);
 }
-#editor-sidemenu .form-container .disabled input,
-#editor-sidemenu .form-container .disabled textarea,
-#editor-sidemenu .form-container .disabled .dropdown, 
-#editor-sidemenu .form-container .disabled .checkbox  {
+#editor-sidemenu .sf .disabled input,
+#editor-sidemenu .sf .disabled textarea,
+#editor-sidemenu .sf .disabled .dropdown, 
+#editor-sidemenu .sf .disabled .checkbox  {
 	cursor: not-allowed;
     border-color: transparent;
 	background-color: var(--disabled);
 }
-#editor-sidemenu .form-container .option.active { background-color: var(--text); }
+#editor-sidemenu .sf .option.active { background-color: var(--text); }
 
-#editor-sidemenu .form-container .container-tooltip { background-color: var(--text); }
-#editor-sidemenu .form-container .container-tooltip * { color: var(--background); }    
-#editor-sidemenu .form-container label, #editor-sidemenu .form-container legend {
+#editor-sidemenu .sf .container-tooltip { background-color: var(--text); }
+#editor-sidemenu .sf .container-tooltip * { color: var(--background); }    
+#editor-sidemenu .sf label, #editor-sidemenu .sf legend {
     background-color: var(--accent1);
 }
-#editor-sidemenu .form-container .container-validity { background-color: var(--background); }
+#editor-sidemenu .sf .container-validity { background-color: var(--background); }
 
-#editor-sidemenu .form-container  div#form\:input\/dropdowncb { border-style: dashed; }
+#editor-sidemenu .sf div#form\:input\/dropdowncb { border-style: dashed; }
 
 div.modify-block {
     min-width: fit-content;
@@ -390,11 +392,22 @@ button#copy-code { border-radius: var(--pill); }
     overflow: auto;
 }
 #home h1 { color: var(--accent); }
-#home section {
-    display: grid;
-    grid: auto / repeat(4,1fr);
-    gap: 3em;
+#home section, #home ul { 
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
+#home section {
+    max-width: 49rem;
+    width: 49rem;
+
+    justify-content: flex-start;
+    gap: 3rem;
+}
+#home ul { 
+    padding: 0 2rem;
+    justify-content: center;
+ }
 
 .fwfh {
     width: 100%;
@@ -421,7 +434,7 @@ button#copy-code { border-radius: var(--pill); }
 
 
 /* ======  PAGE:: PREVIEW  ======*/
-main#preview .form-container {
+main#preview .sf {
     margin-top: 2rem;
     padding: 1rem 2rem;
     border: .25rem solid var(--accent);
@@ -498,7 +511,7 @@ main#preview .form-container {
 
 
 /* ======  DEBUG COMPONENT  ======*/
-.sadforms.isolated {
+.sf.isolated {
     padding: 1em 0;
 }
 code {
@@ -532,7 +545,8 @@ div.codeblock .clip-scrollbar {
     border-radius: 1.5rem;
     border: 0.15rem solid var(--text);
 }
-div.codeblock .sadforms { padding: 3rem; }
+div.codeblock .sf { padding: 3rem; }
+div.codeblock .sf form { padding: 0; }
 div.code-container {
     width: 100%;
     height: 400px;
@@ -542,6 +556,7 @@ div.code-container {
 div.codeblock pre[class*="language-"],
 div.codeblock :not(pre) > code[class*="language-"] {
     background-color: transparent;
+    width: fit-content;
 }
 
 
@@ -575,6 +590,7 @@ main.docs .note .body {
 
 /* ======  DOCUMENTATION NAVDOCS  ======*/
 nav#docs, nav#docs div.scrolltainer,
+div.section-container,
 div.page-sections {
     display: flex;
     flex-direction: column;
@@ -585,14 +601,14 @@ div.page-sections {
 nav#docs {
     width: var(--w-navdocs);
     height: calc(100vh - var(--h-navmain) - 2em);
-    position: fixed;
+    position: absolute;
     bottom: 0;
     left: 0;
     background-color: var(--accent2);
 
     border-top-right-radius: 1.5rem;
     overflow: hidden;
-    z-index: 4;
+    z-index: 3;
 }
 nav#docs * { text-decoration: none; }
 a.page-title {
@@ -602,6 +618,7 @@ a.page-title {
     font-weight: bold;
     text-transform: uppercase;
 }
+div.section-container { width: 100%; }
 div.page-sections { 
     width: 100%;
     padding-bottom: 2rem;
