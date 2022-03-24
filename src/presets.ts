@@ -40,7 +40,7 @@ export function newType(type: string, uid: string): Field | Group {
             meta: {
                 uid,
                 name: `new group`,
-                group: { label: true, feedback: true },
+                override: { label: true, feedback: true },
             },
             [textUID]: {
                 uid: textUID,

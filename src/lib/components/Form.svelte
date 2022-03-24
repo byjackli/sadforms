@@ -439,7 +439,7 @@
 			setEntry(
 				uid,
 				"redact",
-				g ? g.redact : field.redact,
+				(g && g.redact) || field.redact,
 				field.uid,
 				g?.uid
 			);
