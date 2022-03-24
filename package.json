@@ -19,7 +19,7 @@
     "form-validation"
   ],
   "scripts": {
-    "dev": "svelte-kit dev --host",
+    "dev": "svelte-kit dev --host 0.0.0.0",
     "build": "svelte-kit build",
     "package": "svelte-kit package",
     "preview": "svelte-kit preview --host",

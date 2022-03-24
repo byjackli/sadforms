@@ -82,13 +82,15 @@ html, body, main, div#root, nav,
 }
 html, body, main, div#root {
 	min-width: 100%;
+    width: 100%;
     justify-content: flex-start;
 }
 html, div#root {
 	overflow-x: hidden;
 	overflow-y: hidden;
 }
-html { background-color: var(--background); }
+html { background-color: var(--accent1); }
+div#root { background-color: var(--background); }
 main { padding-bottom: 5em; }
 
 h1, h2, h3, h4,
@@ -231,7 +233,7 @@ main#editor::-webkit-scrollbar { display: none; }
     top: var(--h-navmain);
     transform: translate3d(var(--p-editor),0,0);
 }
-main#editor .sf {
+main#editor .sf form {
     padding: 3rem 2rem;
 }
 #editor-sidemenu-container { 
@@ -390,11 +392,22 @@ button#copy-code { border-radius: var(--pill); }
     overflow: auto;
 }
 #home h1 { color: var(--accent); }
-#home section {
-    display: grid;
-    grid: auto / repeat(4,1fr);
-    gap: 3em;
+#home section, #home ul { 
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
+#home section {
+    max-width: 49rem;
+    width: 49rem;
+
+    justify-content: flex-start;
+    gap: 3rem;
+}
+#home ul { 
+    padding: 0 2rem;
+    justify-content: center;
+ }
 
 .fwfh {
     width: 100%;
@@ -577,6 +590,7 @@ main.docs .note .body {
 
 /* ======  DOCUMENTATION NAVDOCS  ======*/
 nav#docs, nav#docs div.scrolltainer,
+div.section-container,
 div.page-sections {
     display: flex;
     flex-direction: column;
@@ -587,14 +601,14 @@ div.page-sections {
 nav#docs {
     width: var(--w-navdocs);
     height: calc(100vh - var(--h-navmain) - 2em);
-    position: fixed;
+    position: absolute;
     bottom: 0;
     left: 0;
     background-color: var(--accent2);
 
     border-top-right-radius: 1.5rem;
     overflow: hidden;
-    z-index: 4;
+    z-index: 3;
 }
 nav#docs * { text-decoration: none; }
 a.page-title {
@@ -604,6 +618,7 @@ a.page-title {
     font-weight: bold;
     text-transform: uppercase;
 }
+div.section-container { width: 100%; }
 div.page-sections { 
     width: 100%;
     padding-bottom: 2rem;
