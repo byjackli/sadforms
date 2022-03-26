@@ -86,11 +86,10 @@ html, body, main, div#root {
     justify-content: flex-start;
 }
 html, div#root {
-	overflow-x: hidden;
-	overflow-y: hidden;
+    background-color: var(--background);
+	overflow: hidden;
 }
-html { background-color: var(--accent1); }
-div#root { background-color: var(--background); }
+div#root { filter: var(--active); }
 main { padding-bottom: 5em; }
 
 h1, h2, h3, h4,
@@ -558,6 +557,19 @@ div.codeblock :not(pre) > code[class*="language-"] {
     background-color: transparent;
     width: fit-content;
 }
+.example .code-container { height: 600px; }
+.example .sf#example { max-width: none; }
+.select-example {
+    padding: 1rem .25rem;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+.select-example .pill { 
+    color: var(--background); 
+    border: .05em solid var(--accent);
+}
+.select-example .nofill { color: var(--text); }
 
 
 

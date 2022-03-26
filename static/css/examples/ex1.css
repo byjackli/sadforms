@@ -1,0 +1,467 @@
+/*  FORM  */
+.sf#example form, .sf#example div.form-block, .sf#example div.form-group, .sf#example .items {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+.sf#example * { 
+    color: #202124;
+    font-family: 'roboto','Noto Sans Myanmar UI',arial,sans-serif;
+    transition: all 0s;
+}
+.sf#example .material-icons { font-family: 'Material Icons'; }
+.sf#example {
+    width: 30rem;
+    max-width: 100%;
+    margin: 5rem;
+    background-color: #fff;
+}
+.sf#example h2 {
+    width: fit-content;
+    max-width: 100%;
+}
+.sf#example p {
+    white-space: pre-wrap;
+}
+.sf#example form {
+    width: 100%;
+    padding: 0rem;
+    padding-bottom: 3rem;
+    gap: 2rem;
+}
+.sf#example .trailingButtons {
+    width: 100%;
+    
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+
+/*  FIELD & GROUP CONTAINERS  */
+.sf#example .form-block, .sf#example .form-group,  .sf#example .form-group .items, 
+.sf#example .dropdown-container { 
+    width: 100%;
+    border-radius: .5rem;
+ }
+.sf#example .form-block, .sf#example .form-group { gap: .75rem; }
+
+
+/*  FIELD  */
+.sf#example .field {
+    width: 100%;
+    height: 56px;
+    padding: 13px 18px;
+    background-color: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-size: var(--normal);
+}
+.sf#example .field:focus { 
+    border: 2px solid #1a73e8;
+    outline: none;
+ }
+.sf#example .disabled .field {
+	cursor: not-allowed;
+    border-color: transparent;
+	background-color: var(--disabled);
+}
+.sf#example .items { 
+    flex-direction: row;
+    gap: 0.75rem;
+}
+
+
+/*  FIELD - label  */
+.sf#example label *, .sf#example legend *, 
+.sf#example label, .sf#example legend {
+    color: #5f6368;
+    font-size: 16px;
+    font-weight: 400;
+    cursor: text;
+}
+.sf#example label, .sf#example legend {
+    position: absolute;
+    top: 18px;
+    left: 15px;
+
+    padding: 0 8px;
+    background-color: #fff;
+    z-index: 1;
+}
+.sf#example .field:focus ~ label, .sf#example .field ~ label { 
+    transform-origin: bottom left;
+    transition: transform 150ms cubic-bezier(0.4,0,0.2,1),opacity 150ms cubic-bezier(0.4,0,0.2,1);
+}
+.sf#example .field:focus ~ label, .sf#example .notEmpty_safe label { 
+    transform: scale(.75) translateY(-39px);
+    transition: all .3s cubic-bezier(0.4,0,0.2,1);
+}
+
+.sf#example .field:focus ~ label { 
+    color: #1a73e8;
+}
+
+
+/*  FIELD:placeholder  */
+.sf#example input::placeholder, .sf#example textarea::placeholder,
+.sf#example .dropdown-container .option-empty:not(.redact) { color: var(--placeholder); }
+
+
+.sf#example .checkbox,
+.sf#example .switch,
+.sf#example .dropdown, .sf#example .option,
+.sf#example input[type="button"],
+.sf#example input[type="color"],
+.sf#example input[type="file"],
+.sf#example input[type="submit"]
+{ cursor: pointer; }
+.sf#example input[type="submit"]:active
+{ transform: scale3d(.98, .98, 1); }
+
+.sf#example input[type="button"],
+.sf#example input[type="submit"],
+.sf#example button {
+    width: fit-content;
+    height: fit-content;
+    padding: 12px 24px;
+    background-color: #1a73e8;
+    color: #fff;
+    font-family: "Google Sans", "Roboto", Arial, sans-serif;
+    font-weight: 600;
+}
+.sf#example input[type="button"] {
+    background-color: #fff;
+    padding: 12px 0;
+    color: #1a73e8;
+    border: none
+}
+.sf#example input[type="submit"]:focus,
+.sf#example input[type="button"]:focus { border: none; }
+
+
+/*  FIELD - textarea  */
+.sf#example textarea { 
+    min-height: 10rem;
+    resize: none;
+}
+
+
+/*  FIELD - switch  */
+.sf#example .switch, .sf#example .dropdown, .sf#example .checkbox { 
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+.sf#example .switch-container {
+    min-width: 80px;
+    min-height: calc(100% - 1rem);
+    height: 2.3333rem;
+    background-color: var(--accent2);
+
+    position: absolute;
+    right: 0.5rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: .6rem;
+
+    border-radius: .5rem;
+    overflow: hidden;
+}
+.sf#example .switch-container span {
+    color: var(--placeholder);
+    font-size: 1.5rem;
+    z-index: 2;
+}
+.sf#example .switch[aria-checked="false"] .switch-container span:first-of-type,
+.sf#example .switch[aria-checked="true"] .switch-container span:last-of-type {
+    color: var(--accent2);
+}
+.sf#example .switch .switch-state {
+    aspect-ratio: 1/1;
+    min-height: calc(100% - 0.5rem);
+    background-color: var(--background);
+    margin: 0.25rem;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    border-radius: .35rem;
+    transition: all .5s;
+}
+.sf#example .switch[aria-checked="true"] .switch-state {
+    left: 47%;
+    background-color: var(--text);
+    transition: all .25s;
+}
+
+
+/*  FIELD - dropdown  */
+.sf#example .option-container {
+    position: absolute;
+    min-width: 100%;
+    padding: .75rem;
+    background-color: var(--accent2);
+
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+
+    z-index: 2;
+    border-radius: 0 0 .5rem .5rem;
+}
+.sf#example .dropdown-container.active { 
+    background-color: var(--accent2); 
+    border-radius: .5rem .5rem 0 0;
+}
+.sf#example .option-container > div, .sf#example .option { 
+    width: 100%;
+    padding: .5rem;
+    padding-left: 1rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    border-radius: .5rem;
+}
+.sf#example .dropdown > span:first-of-type,
+.sf#example .option > span { 
+    width: 80%;
+    word-break: break-word;
+ }
+.sf#example .dropdown > span:first-of-type { width: 81%;}
+.sf#example .option:hover { background-color: var(--disabled); }
+.sf#example div.option.active { 
+    background-color: var(--text); 
+    color: var(--accent2);
+}
+.sf#example .option.active * { color: var(--accent2); }
+
+
+/*  FIELD - dropdown - EDITING FEATURE  */
+.sf#example .option.adding-container .edit-details {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: .5rem;
+}
+.sf#example div.option input {
+    height: 100%;
+    margin: 0;
+    padding-right: 8em;
+    position: absolute;
+    left: 0;
+    background-color: transparent;
+
+    color: var(--text);
+    font-size: inherit;
+    border: none;
+    cursor: text;
+}
+.sf#example div.option input:hover { background-color: transparent; }
+.sf#example div.option input::placeholder { color: var(--placeholder); }
+.sf#example div.option.active input::placeholder { color: var(--disabled); }
+.sf#example .option-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: .5rem;
+}
+.sf#example .option-actions span { 
+    padding: .5rem;
+    border-radius: .5rem;
+}
+.sf#example .option-actions span:hover { background-color: var(--placeholder); }
+.sf#example div.option.active .option-actions span:hover { 
+    color: var(--text);
+    background-color: var(--disabled); 
+}
+.sf#example .option-del { display: none; }
+.sf#example .option:hover .option-del, 
+.sf#example .option.active .option-del 
+{ display: flex; }
+
+
+/*  FIELD - divider  */
+.sf#example .divider {
+    min-width: 100%;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1.25rem;
+}
+.sf#example .divider span:last-of-type {
+    max-width: 50%;
+    font-weight: bold;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+.sf#example .divider span:first-of-type,
+.sf#example .divider hr { display: none; }
+
+.sf#example .checkbox {
+    width: fit-content;
+    height: fit-content;
+    padding: 0;
+    border: 2px solid transparent;
+}
+.sf#example div.form-block.type\:checkbox { 
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+}
+.sf#example div.form-block.type\:checkbox .container-validity {
+    position: absolute;
+    bottom: -1.1em;
+    left: 1.7em;
+}
+.sf#example .type\:checkbox .field ~ label,
+.sf#example .type\:checkbox .field:focus ~ label, .sf#example .notEmpty_safe .type\:checkbox label { 
+    display: flex;
+    position: relative;
+    transform: none;
+    padding: 0px;
+    top: unset;
+}
+
+
+/*  FIELD - feedback  */
+.sf#example .container-tooltip, .sf#example .container-validity, 
+.sf#example .container-preview {
+    min-width: 97%;
+    max-width: 97%;
+    margin: 0 1.5%;
+    padding: 0;
+
+    display: none;
+    
+    border-radius: .25rem;
+}
+.sf#example .container-tooltip *, .sf#example .container-validity *, 
+.sf#example .container-preview * {
+    font-size: 16px;
+    line-height: inherit;
+}
+.sf#example .container-tooltip {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: transparent;
+}
+.sf#example .container-tooltip span:first-of-type { display: none; }
+.sf#example .container-tooltip span { 
+    padding-right: 1rem; 
+    font-size: 1.25rem;
+}
+
+.sf#example .container-validity.active {
+    display: none;
+    flex-direction: column;
+    border: none;
+}
+.sf#example .condition-true { display: none; }
+.sf#example .condition-false { color: var(--warn); }
+.sf#example .warn .container-validity.active { display: flex; }
+
+.sf#example .field.redact::after,
+.sf#example .container-preview.redact::after {    
+    content: '[redacted]';
+    color: var(--text);   
+    text-align: center; 
+    
+    position: absolute;
+    background-color: var(--background);
+    padding: 1rem;
+    padding-left: 1.5rem;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    border-radius: 0.5rem;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+.sf#example .container-preview.redact::after {
+    padding: 0;
+    border: .25rem solid var(--accent2);
+    align-items: center;
+}
+.sf#example .container-preview.active {
+    background-color: var(--accent2);
+    padding: 1rem;
+
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+
+    overflow: hidden;
+}
+.sf#example .preview {
+    width: 6rem;
+    height: 6rem;
+
+	gap: 0.25em;
+    padding: .5rem;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    background-color: var(--background);
+    border-radius: 10px;
+}
+.sf#example .preview * { color: var(--text); }
+.sf#example .preview span { font-size: 3rem !important; }
+.sf#example .preview p {
+	font-size: .8rem;
+    white-space: nowrap;
+    width: 4rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.sf#example .field.redact:hover::after, 
+.sf#example .field.redact:focus::after,
+.sf#example .container-preview:hover::after,
+.sf#example .container-preview:focus::after
+{ display: none; }
+
+.sf#example .form-block.warn .field { border-color: var(--warn) !important; }
+.sf#example .form-group.warn .items {
+    outline: solid 0.2rem var(--warn);
+    border-radius: 0.5rem;
+ }
+.sf#example .warn label, .sf#example .warn legend,
+.sf#example .warn label *, .sf#example .warn legend * { color: var(--warn) !important; }
+
+
+/*  FORM - hide aria  */
+.sf#example #aria {
+    display: flex;
+}
+.sf#example .for-aria { 
+    max-width: 0;
+    max-height: 0;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+ }
