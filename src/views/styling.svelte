@@ -5,6 +5,7 @@
     import Note from "../components/Docs/Note.svelte";
     import CodeBlock from "../components/Docs/CodeBlock.svelte";
     import Form from "$lib/components/Form.svelte";
+    import Examples from "../components/Docs/Examples.svelte";
 </script>
 
 <DocsTemplate title="Styling">
@@ -186,7 +187,7 @@
                     },
                 }}
                 code={`
-        <div id="example" class="sf sf-container">
+        <div id="headernames" class="sf sf-container">
             <form autocomplete="on" tabindex="-1">
                 <div class="form-block type:divider " id="sf:block/mydividerid"> 
                     <div class="divider" id="sf:visual/mydividerid">
@@ -250,8 +251,8 @@
             />
             <Form
                 slot="b"
-                uid="example"
-                title="example"
+                uid="headernames"
+                title="header names"
                 fields={{
                     mydividerid: {
                         name: "Profile Setup",
@@ -352,111 +353,7 @@
             Some forms may ressemble styleguides from larger companies, which is
             only done for demonstration purposes only.
         </p>
-
-        <div>
-            <Note
-                ><span slot="icon">🙏</span>
-                <p>
-                    Please bear with me while I revise the Form component (which
-                    will greatly increase the number of styling combinations)!
-                </p>
-                <br />
-                <p>
-                    <strong>tldr;</strong> BEAUTIFUL examples coming soon!!
-                </p></Note
-            >
-            <!-- <CodeBlock
-                sideA={{ icon: "code", text: "code" }}
-                sideB={{ icon: "science", text: "demo" }}
-            >
-                <Form
-                    slot="a"
-                    uid="example-variant1"
-                    title="example"
-                    fields={{
-                        mydividerid: {
-                            name: "Profile Setup",
-                            uid: "mydividerid",
-                            type: "divider",
-                            tooltip:
-                                "Choose a display name and profile picture! ",
-                            hide: {
-                                label: true,
-                            },
-                            icon: "person",
-                            spellcheck: false,
-                        },
-                        mygroupid: {
-                            meta: {
-                                uid: "mygroupid",
-                                name: "group",
-                            },
-                            mytextid: {
-                                uid: "mytextid",
-                                name: "Display Name",
-                                type: "text",
-                                placeholder: "Display Name",
-                                dontSave: true,
-                                validity: function (value) {
-                                    const len =
-                                        value !== undefined && value.length;
-
-                                    return {
-                                        noSpecial: {
-                                            check:
-                                                typeof value === "string" &&
-                                                value.match(
-                                                    /^[a-zA-Z0-9]+$/
-                                                ) !== null,
-                                            true: "Special characters are not allowed",
-                                            false: "Special characters are not allowed 😞",
-                                        },
-                                        length: {
-                                            check:
-                                                typeof value === "string" &&
-                                                5 < len,
-                                            true: "Dispaly name length is just right 👨‍🍳",
-                                            false: `Length is too short, need ${
-                                                6 - len
-                                            } more character(s)!`,
-                                        },
-                                    };
-                                },
-                            },
-                            myfileid: {
-                                name: "Profile Picture",
-                                uid: "myfileid",
-                                type: "file",
-                                placeholder: "great",
-                                required: true,
-                                accept: "image/jpeg, image/png, image/gif",
-                                spellcheck: false,
-                            },
-                        },
-                        "751014b9-a6f1-42e0-a3f9-44877b8ebbec": {
-                            name: "Did You Smile Today?",
-                            uid: "751014b9-a6f1-42e0-a3f9-44877b8ebbec",
-                            type: "checkbox",
-                            tooltip: "",
-                            hide: {},
-                            placeholder: "Must accept before continuing!",
-                            required: true,
-                            validity: function (value) {
-                                return {
-                                    condition1: {
-                                        check: !!value,
-                                        true: "Glad you smiled today 😊",
-                                        false: "Must accept to continue!",
-                                    },
-                                };
-                            },
-                        },
-                    }}
-                    hide={{ title: true, submit: true, reset: true }}
-                />
-                <Code slot="b" lang="css" />
-            </CodeBlock> -->
-        </div>
+        <Examples />
     </Section>
     <Note>
         <span slot="icon" class="material-icons">task_alt</span>

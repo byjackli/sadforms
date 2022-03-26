@@ -10,10 +10,21 @@
 		field: Field,
 		group: Group = undefined,
 		functions: Record<string, Function>;
+	$: value =
+		group === undefined
+			? $FormStore[formid].value[field.uid]
+			: $FormStore[formid].value[group?.meta.uid][field.uid];
+
+	$: notEmpty =
+		typeof value === "string" && value.length
+			? $CustomStore.names.notEmpty_safe
+			: "";
 </script>
 
 <div
-	class={`form-block type:${field.type} ${field.disabled ? "disabled" : ""}`}
+	class={`form-block type:${field.type}${
+		field.disabled ? " disabled" : ""
+	} ${notEmpty}`}
 	id={`${$CustomStore.names.blockHeader}${field.uid}`}
 >
 	{#if !field.hidden}
@@ -31,9 +42,7 @@
 					aria-disabled={field.disabled}
 					aria-required={field.required}
 					spellcheck={`${field.spellcheck}`}
-					value={group === undefined
-						? $FormStore[formid].value[field.uid]
-						: $FormStore[formid].value[group?.meta.uid][field.uid]}
+					{value}
 					on:focus={() =>
 						functions.onFocus(field.uid, group?.meta.uid)}
 					on:blur={() => functions.onBlur(field.uid, group?.meta.uid)}
@@ -117,9 +126,7 @@
 					compact={field.compact}
 					options={field.options}
 					edit={field.edit}
-					value={group === undefined
-						? $FormStore[formid].value[field.uid]
-						: $FormStore[formid].value[group?.meta.uid][field.uid]}
+					{value}
 					data={fieldData(
 						formid,
 						{ action: "get" },
@@ -183,11 +190,7 @@
 					aria-labelledby={`${$CustomStore.names.label}${field.uid}`}
 					aria-disabled={field.disabled}
 					multiple={field.multiple ? true : null}
-					value={field.type === "file"
-						? null
-						: group === undefined
-						? $FormStore[formid].value[field.uid]
-						: $FormStore[formid].value[group?.meta.uid][field.uid]}
+					value={field.type === "file" ? null : value}
 					on:focus={() =>
 						functions.onFocus(field.uid, group?.meta.uid)}
 					on:blur={() => functions.onBlur(field.uid, group?.meta.uid)}
