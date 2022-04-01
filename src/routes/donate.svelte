@@ -1,3 +1,6 @@
+<svelte:head>
+    <title>❤ Donate - Sad Forms</title>
+</svelte:head>
 <main id="donate">
     <div class="hero">
         <h1>Donate</h1>

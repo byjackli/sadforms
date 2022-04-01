@@ -1,4 +1,8 @@
-<main class="fwfh">
+<svelte:head>
+    <title>💬 Feedback - Sad Forms</title>
+</svelte:head>
+
+<main class="fwfh" id="feedback">
     <div class="hero">
         <h1>Feedback</h1>
         <p>

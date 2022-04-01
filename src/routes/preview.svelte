@@ -17,6 +17,10 @@
     });
 </script>
 
+<svelte:head>
+    <title>👁 {$SadForms?.data?.title} - Sad Forms</title>
+</svelte:head>
+
 <main id="preview" class="fwfh">
     {#if SadForm}
         <Form {...SadForm} />

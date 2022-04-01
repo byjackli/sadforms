@@ -24,4 +24,7 @@
     };
 </script>
 
+<svelte:head>
+    <title>📃 Docs - Sad Forms</title>
+</svelte:head>
 <svelte:component this={views[subpage]} />

@@ -8,6 +8,9 @@
     onMount(() => (forms = getForms()));
 </script>
 
+<svelte:head>
+    <title>Sad Forms</title>
+</svelte:head>
 <main id="home">
     <div>
         <div class="hero">

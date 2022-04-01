@@ -31,16 +31,17 @@
     ".": "./components/Form.svelte"
   },
   "devDependencies": {
+    "@playwright/test": "^1.20.1",
     "@sveltejs/adapter-auto": "next",
     "@sveltejs/adapter-static": "^1.0.0-next.26",
     "@sveltejs/kit": "next",
+    "firebase": "^9.6.8",
     "svelte": "^3.44.0",
     "svelte-check": "^2.2.6",
     "svelte-preprocess": "^4.9.4",
     "svelte2tsx": "^0.5.5",
     "tslib": "^2.3.1",
-    "typescript": "^4.4.3",
-    "firebase": "^9.6.8"
+    "typescript": "^4.4.3"
   },
   "peerDependencies": {
     "svelte": "^3.44.0"

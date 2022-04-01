@@ -17,6 +17,9 @@
     });
 </script>
 
+<svelte:head>
+    <title>✏ {$SadForms?.data?.title} - Sad Forms</title>
+</svelte:head>
 {#if SadForm}
     <Editor />
 {:else}
