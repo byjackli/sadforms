@@ -1,6 +1,6 @@
 {
   "name": "sadforms",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Sad Forms - low-level accessible forms designed for Svelte programmers.",
   "license": "Apache-2.0",
   "author": "Jack Li",

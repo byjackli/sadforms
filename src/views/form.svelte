@@ -76,6 +76,7 @@
                 code={`
         export type Field = {
             uid: string,                // unique identifier
+            class?: string,             // custom class name(s)
             name: string,               // human-readable title
             type: string,               // input field type
             defaultValue?: Value,       // pre-filled field that the user can change

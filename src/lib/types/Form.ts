@@ -20,6 +20,7 @@ export type Form = {
 
 export type Field = {
     uid: string,
+    class?: string,
     name: string,
     type: string,
     defaultValue?: Value,
@@ -59,6 +60,7 @@ export type Hide = {
 export type Group = {
     meta: {
         uid: string,
+        class?: string,
         name: string,
         tooltip?: string,
         required?: boolean,

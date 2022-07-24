@@ -24,7 +24,7 @@
 <div
 	class={`form-block type:${field.type}${
 		field.disabled ? " disabled" : ""
-	} ${notEmpty}`}
+	}${field.class ? ` ${field.class}` : ""} ${notEmpty}`}
 	id={`${$CustomStore.names.blockHeader}${field.uid}`}
 >
 	{#if !field.hidden}
