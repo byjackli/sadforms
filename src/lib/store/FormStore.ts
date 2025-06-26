@@ -20,8 +20,8 @@ export function updateSave(formid: string, saveToLocal: boolean, saveToCloud: bo
 export function clearSave(formid: string, saveToLocal: boolean, saveToCloud: boolean): void {
     if (saveToLocal) localStorage.removeItem(`[SadForms]:${formid}`);
 }
-export function loadSave(formid: string, saveToLocal: boolean, saveToCloud: boolean, clean: boolean = false): void {
-    if (!stored[formid] || clean) {
+export function loadSave(formid: string, saveToLocal: boolean, saveToCloud: boolean, forceReset: boolean = false): void {
+    if (!stored[formid] || forceReset) {
         stored[formid] = {
             submit: { submitting: false, accepted: false, attempted: false },
             data: {},
@@ -38,7 +38,7 @@ export function loadSave(formid: string, saveToLocal: boolean, saveToCloud: bool
             group: {}
         }
     }
-    if (saveToLocal && !clean) {
+    if (saveToLocal && !forceReset) {
         const saveData = localStorage.getItem(`[SadForms]:${formid}`);
         if (saveData) stored[formid].data = JSON.parse(saveData);
     }

@@ -480,7 +480,7 @@
 		});
 	}
 
-	function load(clean, init = false) {
+	function load(forceReset, init = false) {
 		if (init) {
 			console.log(
 				"This app takes advantage of Sad Forms.\nLearn more at https://sadforms.com"
@@ -490,7 +490,7 @@
 		fieldsArr = Object.values(localFields);
 		loading = false;
 
-		loadSave(uid, saveToLocal, saveToCloud, clean);
+		loadSave(uid, saveToLocal, saveToCloud, forceReset);
 		loadAllFields();
 		updateSave(uid, saveToLocal, saveToCloud);
 		updateDebug();
