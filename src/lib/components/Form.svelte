@@ -5,13 +5,12 @@
 	import { belongs } from "../tools/kit";
 	import CustomStore from "../store/CustomStore";
 	import FormStore, {
-		setEntry,
-		getEntry,
-		existsEntry,
+		setFieldProp,
+		getFieldProp,
 		updateSave,
 		clearSave,
 		loadSave,
-		fieldData,
+		manageFieldStorage,
 	} from "../store/FormStore";
 	// NOTES: implement saveToCloud at critical points
 	//  ie setInterval, onVisibilityChange, onbeforeunload, changePage, manual saves
@@ -21,7 +20,7 @@
 		caption = undefined,
 		autocomplete = true,
 		fullscreen = false,
-		saveToLocal = false, // managed by Form (automatic)
+		saveToLocal = true, // managed by Form (automatic) - offline mode enabled by default
 		saveToCloud = false, // managed by developer (manual)
 		save = undefined,
 		onInput = undefined,
@@ -95,8 +94,8 @@
 	async function submit() {
 		const greenlight = (await checkValidity()).verdict;
 
-		setEntry(uid, "submit", true, "submitting");
-		setEntry(uid, "submit", true, "attempted");
+		setFieldProp(uid, "submit", true, "submitting");
+		setFieldProp(uid, "submit", true, "attempted");
 
 		if (!greenlight) {
 			//  updateFeedback
@@ -112,18 +111,18 @@
 						await checkValidity("field", key, undefined)
 					);
 
-			setEntry(uid, "submit", false, "accepted");
+			setFieldProp(uid, "submit", false, "accepted");
 		} else if (onSubmit) {
 			const success = await onSubmit($FormStore[uid]);
-			setEntry(uid, "submit", success, "accepted");
-		} else setEntry(uid, "submit", true, "accepted");
+			setFieldProp(uid, "submit", success, "accepted");
+		} else setFieldProp(uid, "submit", true, "accepted");
 
-		setEntry(uid, "submit", false, "submitting");
+		setFieldProp(uid, "submit", false, "submitting");
 		updateDebug();
 	}
 
 	function checkEmpty(fieldid, groupid) {
-		const field = fieldData(uid, { action: "get" }, fieldid, groupid);
+		const field = manageFieldStorage(uid, { action: "get" }, fieldid, groupid);
 		return (
 			field === "" ||
 			field === undefined ||
@@ -134,7 +133,7 @@
 
 	export async function checkValidity(type, fieldid, groupid) {
 		if (type === "form" || fieldid === undefined) {
-			for (const block of Object.values(getEntry(uid, "verdict"))) {
+			for (const block of Object.values(getFieldProp(uid, "verdict"))) {
 				const verdict = block.group
 					? block.group.verdict
 					: block.verdict;
@@ -144,17 +143,17 @@
 		}
 
 		const isEmpty = checkEmpty(fieldid, groupid),
-			isRequired = getEntry(uid, "required", fieldid, groupid);
+			isRequired = getFieldProp(uid, "required", fieldid, groupid);
 
 		let verdict = isRequired ? !(isRequired && isEmpty) : true,
 			raw = [],
 			group = undefined;
 
 		if (type === "field") {
-			const func = getEntry(uid, "validity", fieldid, groupid);
+			const func = getFieldProp(uid, "validity", fieldid, groupid);
 			if (func) {
 				const conditions = func(
-					fieldData(uid, { action: "get" }, fieldid, groupid)
+					manageFieldStorage(uid, { action: "get" }, fieldid, groupid)
 				);
 				for (const condition of Object.values(conditions)) {
 					const expression = await condition.check,
@@ -168,26 +167,26 @@
 				}
 			}
 		}
-		setEntry(uid, "verdict", { verdict, raw }, fieldid, groupid);
+		setFieldProp(uid, "verdict", { verdict, raw }, fieldid, groupid);
 
 		if (groupid || type === "group") {
 			group = { verdict: true, raw: [] };
 
 			for (const [key, value] of Object.entries(
-				getEntry(uid, "verdict", groupid)
+				getFieldProp(uid, "verdict", groupid)
 			)) {
 				if (key === "group") continue;
 				group.verdict = group.verdict && value.verdict;
 				if (Array.isArray(value.raw)) group.raw.push(...value.raw);
 			}
-			setEntry(uid, "verdict", group, "group", groupid);
+			setFieldProp(uid, "verdict", group, "group", groupid);
 		}
 
 		return { verdict, raw };
 	}
 	async function updateFeedback(fieldid, groupid, validation) {
 		const groupOnly =
-			groupid && getEntry(uid, "group", groupid)?.override?.feedback;
+			groupid && getFieldProp(uid, "group", groupid)?.override?.feedback;
 		let { verdict, raw } = validation,
 			block = document.getElementById(
 				`${$CustomStore.names.inputFeedback}${fieldid}`
@@ -198,7 +197,7 @@
 			block = document.getElementById(
 				`${$CustomStore.names.groupFeedback}${groupid}`
 			);
-			raw = getEntry(uid, "verdict", groupid).group.raw;
+			raw = getFieldProp(uid, "verdict", groupid).group.raw;
 		}
 		if (!block) return;
 
@@ -243,12 +242,12 @@
 
 		if (fieldVerdict === blockWarned)
 			block.classList.toggle($CustomStore.names.warn);
-		if (groupid && getEntry(uid, "group", groupid).required) {
+		if (groupid && getFieldProp(uid, "group", groupid).required) {
 			const group = document.getElementById(
 					`${$CustomStore.names.groupHeader}${groupid}`
 				),
 				groupWarned = group.classList.contains($CustomStore.names.warn),
-				groupVerdict = getEntry(uid, "verdict", groupid).group.verdict;
+				groupVerdict = getFieldProp(uid, "verdict", groupid).group.verdict;
 
 			if (
 				(!groupWarned && !groupVerdict) ||
@@ -258,7 +257,7 @@
 		}
 	}
 	function updatePreview(fieldid, groupid) {
-		const files = fieldData(uid, { action: "get" }, fieldid, groupid),
+		const files = manageFieldStorage(uid, { action: "get" }, fieldid, groupid),
 			block = document.getElementById(
 				`${$CustomStore.names.inputPreview}${fieldid}`
 			),
@@ -290,7 +289,18 @@
 	}
 	async function updateField(event, fieldid, groupid) {
 		let data = event.target.value,
-			localOnInput = getEntry(uid, "onInput", fieldid, groupid);
+			localOnInput = getFieldProp(uid, "onInput", fieldid, groupid);
+
+		let dontSave = false;
+		if (groupid) {
+			const group = fieldsArr.find(item => item.meta && item.meta.uid === groupid);
+			if (group) {
+				dontSave = group[fieldid]?.dontSave;
+			}
+		} else {
+			const field = fieldsArr.find(item => !item.meta && item.uid === fieldid);
+			dontSave = field?.dontSave
+		}
 
 		if (localOnInput) localOnInput(event.target);
 		if (event.type === "drop" || event?.target?.files) {
@@ -300,18 +310,18 @@
 					: await getData(event.target.files);
 		}
 
-		fieldData(uid, { action: "set", data }, fieldid, groupid);
+		manageFieldStorage(uid, { action: "set", data, dontSave }, fieldid, groupid);
 		fieldValue(fieldid, groupid);
 
-		if (getEntry(uid, "preview", fieldid, groupid))
+		if (getFieldProp(uid, "preview", fieldid, groupid))
 			updatePreview(fieldid, groupid);
-		if (getEntry(uid, "validity", fieldid, groupid))
+		if (getFieldProp(uid, "validity", fieldid, groupid))
 			updateFeedback(
 				fieldid,
 				groupid,
 				await checkValidity("field", fieldid, groupid)
 			);
-		else if (getEntry(uid, "required", fieldid, groupid))
+		else if (getFieldProp(uid, "required", fieldid, groupid))
 			updateWarn(
 				fieldid,
 				groupid,
@@ -327,14 +337,14 @@
 	}
 
 	async function onFocus(fieldid, groupid) {
-		setEntry(uid, "touched", true, fieldid, groupid);
-		setEntry(uid, "active", true, fieldid, groupid);
-		if (getEntry(uid, "redact", fieldid, groupid))
+		setFieldProp(uid, "touched", true, fieldid, groupid);
+		setFieldProp(uid, "active", true, fieldid, groupid);
+		if (getFieldProp(uid, "redact", fieldid, groupid))
 			fieldValue(fieldid, groupid);
-		if (getEntry(uid, "validity", fieldid, groupid)) {
+		if (getFieldProp(uid, "validity", fieldid, groupid)) {
 			const result = await checkValidity("field", fieldid, groupid);
 			if (!result.verdict) updateFeedback(fieldid, groupid, result);
-		} else if (getEntry(uid, "required", fieldid, groupid))
+		} else if (getFieldProp(uid, "required", fieldid, groupid))
 			updateWarn(
 				fieldid,
 				groupid,
@@ -343,23 +353,23 @@
 		updateDebug();
 	}
 	function onBlur(fieldid, groupid) {
-		setEntry(uid, "active", false, fieldid, groupid);
-		if (getEntry(uid, "redact", fieldid, groupid))
-			setEntry(uid, "value", "[redacted]", fieldid, groupid);
+		setFieldProp(uid, "active", false, fieldid, groupid);
+		if (getFieldProp(uid, "redact", fieldid, groupid))
+			setFieldProp(uid, "value", "[redacted]", fieldid, groupid);
 		updateDebug();
 	}
 
-	function fieldValue(fieldid, groupid, verdict) {
-		const exists = fieldData(
+	function fieldValue(fieldid, groupid, dontSave) {
+		const exists = manageFieldStorage(
 			uid,
-			{ verdict, action: "exists" },
+			{ dontSave, action: "exists" },
 			fieldid,
 			groupid
 		);
 		let data;
 
 		if (exists) {
-			data = fieldData(uid, { verdict, action: "get" }, fieldid, groupid);
+			data = manageFieldStorage(uid, { dontSave, action: "get" }, fieldid, groupid);
 
 			if (typeof data === "object") {
 				const array = Object.values(data);
@@ -367,7 +377,7 @@
 			}
 		} else data = "";
 
-		setEntry(uid, "value", data, fieldid, groupid);
+		setFieldProp(uid, "value", data, fieldid, groupid);
 	}
 
 	// TO DO: Turn this feature into a service worker.
@@ -413,42 +423,42 @@
 		else return "";
 	}
 	async function loadGroup(group) {
-		setEntry(uid, "group", group.meta, group.meta.uid);
+		setFieldProp(uid, "group", group.meta, group.meta.uid);
 	}
 	async function loadField(field, group) {
 		let g = group?.meta;
-		const verdict = field.dontSave || g?.dontSave;
+		const dontSave = field.dontSave || g?.dontSave;
 
-		if (!fieldData(uid, { action: "exists" }, field.uid, g?.uid)) {
+		if (!manageFieldStorage(uid, { action: "exists" }, field.uid, g?.uid)) {
 			const data =
 				field.defaultValue !== undefined && field.defaultValue !== null
 					? field.defaultValue
 					: loadBlank(field.type);
-			fieldData(
+			manageFieldStorage(
 				uid,
-				{ verdict, action: "init", data },
+				{ dontSave, action: "init", data },
 				field.uid,
 				g?.uid
 			);
-			setEntry(uid, "value", data, field.uid, g?.uid);
+			setFieldProp(uid, "value", data, field.uid, g?.uid);
 		}
 		if (field.onInput)
-			setEntry(uid, "onInput", field.onInput, field.uid, g?.uid);
+			setFieldProp(uid, "onInput", field.onInput, field.uid, g?.uid);
 
 		if (field.redact || (g && g.redact)) {
-			setEntry(
+			setFieldProp(
 				uid,
 				"redact",
 				(g && g.redact) || field.redact,
 				field.uid,
 				g?.uid
 			);
-			setEntry(uid, "value", "[redacted]", field.uid, g?.uid);
-		} else fieldValue(field.uid, g?.uid, verdict);
+			setFieldProp(uid, "value", "[redacted]", field.uid, g?.uid);
+		} else fieldValue(field.uid, g?.uid, dontSave);
 
-		setEntry(uid, "active", false, field.uid, g?.uid);
+		setFieldProp(uid, "active", false, field.uid, g?.uid);
 		if (field.required || (g && g.required)) {
-			setEntry(
+			setFieldProp(
 				uid,
 				"required",
 				g ? (g.required ? g.required : field.required) : field.required,
@@ -459,13 +469,13 @@
 		}
 
 		if (field.validity) {
-			setEntry(uid, "validity", field.validity, field.uid, g?.uid);
+			setFieldProp(uid, "validity", field.validity, field.uid, g?.uid);
 			await checkValidity("field", field.uid, g?.uid);
 		}
 
 		if (field.type === "file" && !field?.hide?.preview) {
-			setEntry(uid, "preview", true, field.uid, g?.uid);
-			if (fieldData(uid, { action: "get" }, field.uid, g?.uid))
+			setFieldProp(uid, "preview", true, field.uid, g?.uid);
+			if (manageFieldStorage(uid, { action: "get" }, field.uid, g?.uid))
 				updatePreview(field.uid);
 		}
 	}

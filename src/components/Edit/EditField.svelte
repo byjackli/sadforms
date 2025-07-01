@@ -11,6 +11,11 @@
         updateSave,
     } from "../../store/SadForms";
     import {
+        clearFieldFromStorage,
+        updateSave as updateFormSave,
+        manageFieldStorage,
+    } from "$lib/store/FormStore";
+    import {
         makeToData,
         makeToOptions,
         newType,
@@ -292,7 +297,7 @@
             };
         else if (
             ["text", "textarea", "email", "tel", "password"].includes(
-                value.type
+                value.type,
             )
         ) {
             plus = {
@@ -479,10 +484,10 @@
                                 standard: {
                                     check:
                                         ["true", "false"].includes(
-                                            value.toString()
+                                            value.toString(),
                                         ) ||
                                         !isNaN(
-                                            Number.parseInt(value.toString())
+                                            Number.parseInt(value.toString()),
                                         ),
                                     true: "😉 add looks good!",
                                     false: `🤭 add must be "true", "false", or a Number!`,
@@ -503,10 +508,10 @@
                                 standard: {
                                     check:
                                         ["true", "false"].includes(
-                                            value.toString()
+                                            value.toString(),
                                         ) ||
                                         !isNaN(
-                                            Number.parseInt(value.toString())
+                                            Number.parseInt(value.toString()),
                                         ),
                                     true: "😉 remove looks good!",
                                     false: `🤭 remove must be "true", "false", or a Number!`,
@@ -527,10 +532,10 @@
                                 standard: {
                                     check:
                                         ["undefined"].includes(
-                                            value.toString()
+                                            value.toString(),
                                         ) ||
                                         !isNaN(
-                                            Number.parseInt(value.toString())
+                                            Number.parseInt(value.toString()),
                                         ),
                                     true: "😉 limit looks good!",
                                     false: `🤭 limit must be "undefined" or a Number!`,
@@ -645,6 +650,59 @@
                 ...base[fieldid].edit,
             };
         base[fieldid] = details.data;
+        const newDontSave = details.data.dontSave;
+
+        const formId = data.uid;
+        const hasDataInRegular = manageFieldStorage(
+            formId,
+            { action: "exists", dontSave: false },
+            fieldid,
+            groupid,
+        );
+        const hasDataInSensitive = manageFieldStorage(
+            formId,
+            { action: "exists", dontSave: true },
+            fieldid,
+            groupid,
+        );
+
+        if (newDontSave && hasDataInRegular) {
+            const currentValue = manageFieldStorage(
+                formId,
+                { action: "get", dontSave: false },
+                fieldid,
+                groupid,
+            );
+            clearFieldFromStorage(formId, "data", fieldid, groupid);
+
+            if (currentValue !== undefined && currentValue !== "") {
+                manageFieldStorage(
+                    formId,
+                    { action: "set", data: currentValue, dontSave: true },
+                    fieldid,
+                    groupid,
+                );
+            }
+            updateFormSave(formId, true, false);
+        } else if (!newDontSave && hasDataInSensitive) {
+            const currentValue = manageFieldStorage(
+                formId,
+                { action: "get", dontSave: true },
+                fieldid,
+                groupid,
+            );
+            clearFieldFromStorage(formId, "dontSave", fieldid, groupid);
+
+            if (currentValue !== undefined && currentValue !== "") {
+                manageFieldStorage(
+                    formId,
+                    { action: "set", data: currentValue, dontSave: false },
+                    fieldid,
+                    groupid,
+                );
+            }
+            updateFormSave(formId, true, false);
+        }
 
         if (belongs(base[fieldid], "header")) delete base[fieldid].header;
 
@@ -653,7 +711,7 @@
             typeof details.data.autocomplete !== "string"
         )
             base[fieldid].autocomplete = Object.values(
-                details.data.autocomplete
+                details.data.autocomplete,
             )[0];
 
         if (

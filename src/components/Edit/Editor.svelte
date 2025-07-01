@@ -46,14 +46,14 @@
             toggler.focus();
         }
     }
-    function getFieldData(): Record<string, string> {
+    function getManageFieldStorage(): Record<string, string> {
         const { fieldid, groupid } = $SadForms.editing,
             base = groupid ? formData.fields[groupid] : formData.fields;
         console.info({ fieldid, groupid, base });
         return base[fieldid];
     }
     function copyToClipboard(): void {
-        const data = open && curView === "edit" ? getFieldData() : formData;
+        const data = open && curView === "edit" ? getManageFieldStorage() : formData;
         let clipboard = JSON.stringify(data, replacer, 2);
         navigator.clipboard.writeText(clipboard);
     }

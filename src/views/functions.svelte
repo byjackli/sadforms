@@ -155,10 +155,10 @@
                     slot="b"
                     lang="typescript"
                     code={`
-        function onInput(fieldData: any): void {
+        function onInput(manageFieldStorage: any): void {
             // your code goes here
 
-            // fieldData = {
+            // manageFieldStorage = {
             //      value: Value
             //
             //  (following are only preset in type Dropdown)

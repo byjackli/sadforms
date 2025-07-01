@@ -1,6 +1,6 @@
 <script lang="ts">
 	import CustomStore from "../store/CustomStore";
-	import FormStore, { fieldData } from "../store/FormStore";
+	import FormStore, { manageFieldStorage } from "../store/FormStore";
 	import Checkbox from "./Checkbox.svelte";
 	import Dropdown from "./Dropdown.svelte";
 	import Divider from "./Divider.svelte";
@@ -77,13 +77,13 @@
 					on:dragover={null}
 					on:dragleave={null}
 				>
-					{fieldData(
+					{manageFieldStorage(
 						formid,
 						{ action: "get" },
 						field.uid,
 						group?.meta.uid
 					)
-						? fieldData(
+						? manageFieldStorage(
 								formid,
 								{ action: "get" },
 								field.uid,
@@ -127,7 +127,7 @@
 					options={field.options}
 					edit={field.edit}
 					{value}
-					data={fieldData(
+					data={manageFieldStorage(
 						formid,
 						{ action: "get" },
 						field.uid,
@@ -153,7 +153,7 @@
 						: undefined}
 					disabled={field.disabled}
 					redact={field.redact}
-					data={fieldData(
+					data={manageFieldStorage(
 						formid,
 						{ action: "get" },
 						field.uid,
