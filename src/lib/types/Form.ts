@@ -48,7 +48,7 @@ export type Field = {
     icon?: string | { on: string, off: string }
 
 }
-export type Value = string | number | boolean | Record<string, string>
+export type Value = string | number | boolean | Record<string, string> | File | { base64: string; meta: any }[] | string[]
 export type Hide = {
     title?: boolean,
     caption?: boolean,
