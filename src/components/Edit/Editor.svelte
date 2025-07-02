@@ -49,7 +49,6 @@
     function getManageFieldStorage(): Record<string, string> {
         const { fieldid, groupid } = $SadForms.editing,
             base = groupid ? formData.fields[groupid] : formData.fields;
-        console.info({ fieldid, groupid, base });
         return base[fieldid];
     }
     function copyToClipboard(): void {

@@ -1,13 +1,14 @@
 import { writable } from 'svelte/store';
 import { belongs, janitor } from '../tools/kit'
 import type { Database } from '../types/Form'
+import { STORAGE_KEY_PREFIX, STORAGE_PROPS, STORAGE_ACTIONS, ERROR_MESSAGES } from '../constants'
 
 const stored: Database = {};
 
 export const FormStore = writable({ ...stored });
 
 function getFieldPropValue(formid: string, prop: string): Record<string, any> {
-    if (!belongs(stored[formid], prop)) throw "[FormStore] stored does not have this property!";
+    if (!belongs(stored[formid], prop)) throw ERROR_MESSAGES.FORM_STORE_MISSING_PROP;
     return stored[formid][prop];
 }
 
@@ -15,10 +16,10 @@ export function updateSave(formid: string, saveToLocal: boolean, saveToCloud: bo
     if (!saveToLocal) return;
     
     const { data } = stored[formid];    
-    localStorage.setItem(`[SadForms]:${formid}`, JSON.stringify(data));
+    localStorage.setItem(`${STORAGE_KEY_PREFIX}${formid}`, JSON.stringify(data));
 }
 export function clearSave(formid: string, saveToLocal: boolean, saveToCloud: boolean): void {
-    if (saveToLocal) localStorage.removeItem(`[SadForms]:${formid}`);
+    if (saveToLocal) localStorage.removeItem(`${STORAGE_KEY_PREFIX}${formid}`);
 }
 export function loadSave(formid: string, saveToLocal: boolean, saveToCloud: boolean, forceReset: boolean = false): void {
     if (!stored[formid] || forceReset) {
@@ -39,7 +40,7 @@ export function loadSave(formid: string, saveToLocal: boolean, saveToCloud: bool
         }
     }
     if (saveToLocal && !forceReset) {
-        const saveData = localStorage.getItem(`[SadForms]:${formid}`);
+        const saveData = localStorage.getItem(`${STORAGE_KEY_PREFIX}${formid}`);
         if (saveData) stored[formid].data = JSON.parse(saveData);
     }
 }
@@ -106,18 +107,18 @@ export function manageFieldStorage(uid: string, payload: ManageFieldStoragePaylo
     const useDontSave = getStorageRouting(payload, dontSaveExists);
 
     switch (payload.action) {
-        case "set":
-        case "init":
+        case STORAGE_ACTIONS.SET:
+        case STORAGE_ACTIONS.INIT:
             return handleSetAction(uid, payload, fieldid, groupid, useDontSave);
         
-        case "get":
+        case STORAGE_ACTIONS.GET:
             return handleGetAction(uid, fieldid, groupid, useDontSave);
         
-        case "exists":
+        case STORAGE_ACTIONS.EXISTS:
             return handleExistsAction(uid, fieldid, groupid, useDontSave);
         
         default:
-            throw new Error(`[manageFieldStorage] Unknown action: ${payload.action}`);
+            throw new Error(`[manageFieldStorage] ${ERROR_MESSAGES.UNKNOWN_STORAGE_ACTION}: ${payload.action}`);
     }
 }
 

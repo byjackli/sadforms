@@ -1,6 +1,5 @@
 <script>
 	import { afterUpdate, onDestroy, onMount } from "svelte";
-	import Extensions from "../static/extensions.json";
 	import Field from "./Field.svelte";
 	import { belongs } from "../tools/kit";
 	import CustomStore from "../store/CustomStore";
@@ -12,6 +11,14 @@
 		loadSave,
 		manageFieldStorage,
 	} from "../store/FormStore";
+	import { FIELD_TYPES, BRANDING } from "../constants";
+	import { loadBlank } from "../utils/formHelpers";
+	import {
+		checkValidity,
+		updateFeedback,
+		updateWarn,
+		updatePreview,
+	} from "../services/validationService";
 	// NOTES: implement saveToCloud at critical points
 	//  ie setInterval, onVisibilityChange, onbeforeunload, changePage, manual saves
 
@@ -33,9 +40,7 @@
 
 	let loading = true,
 		autoSaveInterval = undefined,
-		submitting = false,
-		section = null,
-		autoNav = [];
+		section = null;
 
 	$: localFields = $$props && fields;
 	$: fieldsArr = [];
@@ -92,7 +97,7 @@
 	// }
 
 	async function submit() {
-		const greenlight = (await checkValidity()).verdict;
+		const greenlight = (await checkValidity(uid, "form")).verdict;
 
 		setFieldProp(uid, "submit", true, "submitting");
 		setFieldProp(uid, "submit", true, "attempted");
@@ -103,12 +108,13 @@
 				if (belongs(value, "group")) {
 					for (const nested of Object.entries(value))
 						if (!nested[1].verdict)
-							updateFeedback(nested[0], key, nested[1]);
+							updateFeedback(uid, nested[0], key, nested[1]);
 				} else if (!value.verdict)
 					updateFeedback(
+						uid,
 						key,
 						undefined,
-						await checkValidity("field", key, undefined)
+						await checkValidity(uid, "field", key, undefined),
 					);
 
 			setFieldProp(uid, "submit", false, "accepted");
@@ -121,211 +127,57 @@
 		updateDebug();
 	}
 
-	function checkEmpty(fieldid, groupid) {
-		const field = manageFieldStorage(uid, { action: "get" }, fieldid, groupid);
-		return (
-			field === "" ||
-			field === undefined ||
-			field === null ||
-			(typeof field === "object" && Object.entries(field).length === 0)
-		);
-	}
-
-	export async function checkValidity(type, fieldid, groupid) {
-		if (type === "form" || fieldid === undefined) {
-			for (const block of Object.values(getFieldProp(uid, "verdict"))) {
-				const verdict = block.group
-					? block.group.verdict
-					: block.verdict;
-				if (!verdict) return { verdict };
-			}
-			return { verdict: true };
-		}
-
-		const isEmpty = checkEmpty(fieldid, groupid),
-			isRequired = getFieldProp(uid, "required", fieldid, groupid);
-
-		let verdict = isRequired ? !(isRequired && isEmpty) : true,
-			raw = [],
-			group = undefined;
-
-		if (type === "field") {
-			const func = getFieldProp(uid, "validity", fieldid, groupid);
-			if (func) {
-				const conditions = func(
-					manageFieldStorage(uid, { action: "get" }, fieldid, groupid)
-				);
-				for (const condition of Object.values(conditions)) {
-					const expression = await condition.check,
-						feedback =
-							condition[expression] === undefined
-								? condition.true
-								: condition[expression];
-
-					verdict = verdict && expression;
-					raw.push({ verdict: expression, feedback });
-				}
-			}
-		}
-		setFieldProp(uid, "verdict", { verdict, raw }, fieldid, groupid);
-
-		if (groupid || type === "group") {
-			group = { verdict: true, raw: [] };
-
-			for (const [key, value] of Object.entries(
-				getFieldProp(uid, "verdict", groupid)
-			)) {
-				if (key === "group") continue;
-				group.verdict = group.verdict && value.verdict;
-				if (Array.isArray(value.raw)) group.raw.push(...value.raw);
-			}
-			setFieldProp(uid, "verdict", group, "group", groupid);
-		}
-
-		return { verdict, raw };
-	}
-	async function updateFeedback(fieldid, groupid, validation) {
-		const groupOnly =
-			groupid && getFieldProp(uid, "group", groupid)?.override?.feedback;
-		let { verdict, raw } = validation,
-			block = document.getElementById(
-				`${$CustomStore.names.inputFeedback}${fieldid}`
-			),
-			count = 1;
-
-		if (groupOnly) {
-			block = document.getElementById(
-				`${$CustomStore.names.groupFeedback}${groupid}`
-			);
-			raw = getFieldProp(uid, "verdict", groupid).group.raw;
-		}
-		if (!block) return;
-
-		if (!block?.classList.contains("active"))
-			block.classList.toggle("active");
-
-		function build(feedback, expression) {
-			const p = document.createElement("p"),
-				t = document.createTextNode(feedback),
-				aria = document.createElement("span"),
-				ariaSays = document.createTextNode(
-					`feedback ${count} ${expression ? `is` : `is NOT`} valid;`
-				),
-				breathe = document.createElement("span"),
-				punc = document.createTextNode(".");
-			count++;
-
-			p.classList.add(`condition-${expression}`);
-			p.appendChild(t);
-
-			aria.setAttribute("class", "for-aria");
-			aria.appendChild(ariaSays);
-
-			breathe.setAttribute("class", "for-aria");
-			breathe.appendChild(punc);
-
-			p.prepend(aria);
-			p.append(breathe);
-			return p;
-		}
-
-		block.innerHTML = "";
-		for (const { feedback, verdict } of raw)
-			block.appendChild(build(feedback, verdict));
-		updateWarn(fieldid, groupid, verdict);
-	}
-	function updateWarn(fieldid, groupid, fieldVerdict) {
-		const block = document.getElementById(
-				`${$CustomStore.names.blockHeader}${fieldid}`
-			),
-			blockWarned = block?.classList.contains($CustomStore.names.warn);
-
-		if (fieldVerdict === blockWarned)
-			block.classList.toggle($CustomStore.names.warn);
-		if (groupid && getFieldProp(uid, "group", groupid).required) {
-			const group = document.getElementById(
-					`${$CustomStore.names.groupHeader}${groupid}`
-				),
-				groupWarned = group.classList.contains($CustomStore.names.warn),
-				groupVerdict = getFieldProp(uid, "verdict", groupid).group.verdict;
-
-			if (
-				(!groupWarned && !groupVerdict) ||
-				(groupWarned && groupVerdict)
-			)
-				group.classList.toggle($CustomStore.names.warn);
-		}
-	}
-	function updatePreview(fieldid, groupid) {
-		const files = manageFieldStorage(uid, { action: "get" }, fieldid, groupid),
-			block = document.getElementById(
-				`${$CustomStore.names.inputPreview}${fieldid}`
-			),
-			active = block.classList.contains("active");
-
-		if ((!active && files.length) || (active && !files.length))
-			block.classList.toggle("active");
-
-		let strings = ``;
-		for (const { base64, meta } of files) {
-			console.info(
-				"%c BLOB OF FILE",
-				"background-color: red; color: white;",
-				getBlob(base64)
-			);
-			let ext = meta.name.split(".");
-			ext = Extensions[ext[ext.length - 1]];
-
-			if (ext === undefined) ext = "insert_drive_file";
-			strings += `<div class="preview" title="${meta.name}"><span class="material-icons">${ext}</span><p>${meta.name}</p></div>`;
-		}
-		console.info(
-			"%c Preview ",
-			"background-color: indigo; color: skyblue; ",
-			files
-		);
-
-		block.innerHTML = strings;
-	}
 	async function updateField(event, fieldid, groupid) {
 		let data = event.target.value,
 			localOnInput = getFieldProp(uid, "onInput", fieldid, groupid);
 
 		let dontSave = false;
 		if (groupid) {
-			const group = fieldsArr.find(item => item.meta && item.meta.uid === groupid);
+			const group = fieldsArr.find(
+				(item) => item.meta && item.meta.uid === groupid,
+			);
 			if (group) {
 				dontSave = group[fieldid]?.dontSave;
 			}
 		} else {
-			const field = fieldsArr.find(item => !item.meta && item.uid === fieldid);
-			dontSave = field?.dontSave
+			const field = fieldsArr.find(
+				(item) => !item.meta && item.uid === fieldid,
+			);
+			dontSave = field?.dontSave;
 		}
 
 		if (localOnInput) localOnInput(event.target);
 		if (event.type === "drop" || event?.target?.files) {
+			const { getData } = await import("../utils/formHelpers");
 			data =
 				event.type === "drop"
 					? event.dataTransfer.files[0]
 					: await getData(event.target.files);
 		}
 
-		manageFieldStorage(uid, { action: "set", data, dontSave }, fieldid, groupid);
+		manageFieldStorage(
+			uid,
+			{ action: "set", data, dontSave },
+			fieldid,
+			groupid,
+		);
 		fieldValue(fieldid, groupid);
 
 		if (getFieldProp(uid, "preview", fieldid, groupid))
-			updatePreview(fieldid, groupid);
+			updatePreview(uid, fieldid, groupid);
 		if (getFieldProp(uid, "validity", fieldid, groupid))
 			updateFeedback(
+				uid,
 				fieldid,
 				groupid,
-				await checkValidity("field", fieldid, groupid)
+				await checkValidity(uid, "field", fieldid, groupid),
 			);
 		else if (getFieldProp(uid, "required", fieldid, groupid))
 			updateWarn(
+				uid,
 				fieldid,
 				groupid,
-				(await checkValidity("field", fieldid, groupid)).verdict
+				(await checkValidity(uid, "field", fieldid, groupid)).verdict,
 			);
 
 		if (typeof onInput === "function") onInput($FormStore[uid]);
@@ -342,13 +194,14 @@
 		if (getFieldProp(uid, "redact", fieldid, groupid))
 			fieldValue(fieldid, groupid);
 		if (getFieldProp(uid, "validity", fieldid, groupid)) {
-			const result = await checkValidity("field", fieldid, groupid);
-			if (!result.verdict) updateFeedback(fieldid, groupid, result);
+			const result = await checkValidity(uid, "field", fieldid, groupid);
+			if (!result.verdict) updateFeedback(uid, fieldid, groupid, result);
 		} else if (getFieldProp(uid, "required", fieldid, groupid))
 			updateWarn(
+				uid,
 				fieldid,
 				groupid,
-				(await checkValidity("field", fieldid, groupid)).verdict
+				(await checkValidity(uid, "field", fieldid, groupid)).verdict,
 			);
 		updateDebug();
 	}
@@ -364,12 +217,17 @@
 			uid,
 			{ dontSave, action: "exists" },
 			fieldid,
-			groupid
+			groupid,
 		);
 		let data;
 
 		if (exists) {
-			data = manageFieldStorage(uid, { dontSave, action: "get" }, fieldid, groupid);
+			data = manageFieldStorage(
+				uid,
+				{ dontSave, action: "get" },
+				fieldid,
+				groupid,
+			);
 
 			if (typeof data === "object") {
 				const array = Object.values(data);
@@ -380,48 +238,6 @@
 		setFieldProp(uid, "value", data, fieldid, groupid);
 	}
 
-	// TO DO: Turn this feature into a service worker.
-	async function getData(input) {
-		let arr = [];
-		for (const file of Object.values(input)) {
-			console.info(file);
-			const meta = {
-					name: file.name,
-					lastModified: file.lastModified,
-					lastModifiedDate: file.lastModifiedDate,
-				},
-				base64 = await getBase64(file);
-			console.info(
-				"%c file: ",
-				"background-color: brown; color: orange; ",
-				base64
-			);
-			arr.push({ base64, meta });
-		}
-
-		return arr;
-	}
-	async function getBase64(file) {
-		return new Promise((resolve, reject) => {
-			const reader = new FileReader();
-			reader.readAsDataURL(file);
-
-			reader.onload = () => resolve(reader.result);
-			reader.onerror = (error) => reject(error);
-		});
-	}
-	async function getBlob(base64) {
-		const res = await fetch(base64),
-			blob = await res.blob();
-		return blob;
-	}
-
-	function loadBlank(type) {
-		if (["dropdown", "radio"].includes(type)) return {};
-		else if (type === "checkbox") return undefined;
-		else if (type === "file") return undefined;
-		else return "";
-	}
 	async function loadGroup(group) {
 		setFieldProp(uid, "group", group.meta, group.meta.uid);
 	}
@@ -438,7 +254,7 @@
 				uid,
 				{ dontSave, action: "init", data },
 				field.uid,
-				g?.uid
+				g?.uid,
 			);
 			setFieldProp(uid, "value", data, field.uid, g?.uid);
 		}
@@ -451,7 +267,7 @@
 				"redact",
 				(g && g.redact) || field.redact,
 				field.uid,
-				g?.uid
+				g?.uid,
 			);
 			setFieldProp(uid, "value", "[redacted]", field.uid, g?.uid);
 		} else fieldValue(field.uid, g?.uid, dontSave);
@@ -463,20 +279,20 @@
 				"required",
 				g ? (g.required ? g.required : field.required) : field.required,
 				field.uid,
-				g?.uid
+				g?.uid,
 			);
-			await checkValidity("field", field.uid, g?.uid);
+			await checkValidity(uid, "field", field.uid, g?.uid);
 		}
 
 		if (field.validity) {
 			setFieldProp(uid, "validity", field.validity, field.uid, g?.uid);
-			await checkValidity("field", field.uid, g?.uid);
+			await checkValidity(uid, "field", field.uid, g?.uid);
 		}
 
-		if (field.type === "file" && !field?.hide?.preview) {
+		if (field.type === FIELD_TYPES.FILE && !field?.hide?.preview) {
 			setFieldProp(uid, "preview", true, field.uid, g?.uid);
 			if (manageFieldStorage(uid, { action: "get" }, field.uid, g?.uid))
-				updatePreview(field.uid);
+				updatePreview(uid, field.uid, g?.uid);
 		}
 	}
 	function loadAllFields() {
@@ -492,9 +308,7 @@
 
 	function load(forceReset, init = false) {
 		if (init) {
-			console.log(
-				"This app takes advantage of Sad Forms.\nLearn more at https://sadforms.com"
-			);
+			console.log(BRANDING.MESSAGE);
 		}
 
 		fieldsArr = Object.values(localFields);
@@ -511,7 +325,7 @@
 				save.saveAuto,
 				uid,
 				saveToCloud,
-				saveToLocal
+				saveToLocal,
 			);
 		if (fullscreen) section = fieldsArr[0];
 	}
@@ -585,7 +399,7 @@
 							<div
 								class="form-group-feedback"
 								id={`${$CustomStore.names.groupFeedback}${group.meta.uid}`}
-							/>
+							></div>
 						{/if}
 					</div>
 				{:else}
