@@ -23,12 +23,14 @@
         maValue: string = "";
 
     $: data = $SadForms.data;
+    $: formOnInput = data.onInput as ((formData: any) => void) | undefined;
+    $: formOnSubmit = data.onSubmit as ((formData: any, formId: string) => void | Promise<void>) | undefined;
 
     function modifyField(fieldid: string, groupid: string, event: any): void {
         genSubmit(event, () => {
             event.preventDefault();
             const list = (event.target as Element)?.closest(
-                ".button"
+                ".button",
             )?.classList;
 
             if (list.contains("modify-edit")) {
@@ -56,7 +58,7 @@
     function createModify(
         fieldid: string,
         groupid: string,
-        title?: boolean
+        title?: boolean,
     ): HTMLElement {
         if (title) {
             const container = document.createElement("div"),
@@ -75,10 +77,10 @@
             container.appendChild(setBtn);
 
             container.addEventListener("click", (event) =>
-                modifyField(fieldid, groupid, event)
+                modifyField(fieldid, groupid, event),
             );
             container.addEventListener("keydown", (event) =>
-                modifyField(fieldid, groupid, event)
+                modifyField(fieldid, groupid, event),
             );
 
             return container;
@@ -109,22 +111,22 @@
         container.appendChild(delBtn);
 
         container.addEventListener("click", (event) =>
-            modifyField(fieldid, groupid, event)
+            modifyField(fieldid, groupid, event),
         );
         container.addEventListener("keydown", (event) =>
-            modifyField(fieldid, groupid, event)
+            modifyField(fieldid, groupid, event),
         );
 
         return container;
     }
     function loadModify(): void {
         const oldChunks = Array.from(
-                document.querySelectorAll(".modify-block")
+                document.querySelectorAll(".modify-block"),
             ),
             chunks = Array.from(
                 document.querySelectorAll(
-                    "main#editor h2, main#editor div.form-block"
-                )
+                    "main#editor h2, main#editor div.form-block",
+                ),
             );
 
         if (oldChunks) oldChunks.forEach((oldChunk) => oldChunk.remove());
@@ -132,19 +134,19 @@
         for (const blockChunk of chunks) {
             const fieldid = blockChunk.id.slice(
                     blockChunk.id.indexOf("/") + 1,
-                    blockChunk.id.length
+                    blockChunk.id.length,
                 ),
                 groupChunk = blockChunk.closest("div.form-group"),
                 groupid = groupChunk
                     ? groupChunk.id.slice(
                           groupChunk.id.indexOf("/") + 1,
-                          groupChunk.id.length
+                          groupChunk.id.length,
                       )
                     : undefined,
                 modify = createModify(
                     fieldid,
                     groupid,
-                    blockChunk.tagName === "H2"
+                    blockChunk.tagName === "H2",
                 );
 
             blockChunk.appendChild(modify);
@@ -161,6 +163,8 @@
         bind:this={main}
         bind:debugData
         {...data}
+        onInput={formOnInput}
+        onSubmit={formOnSubmit}
         afterFormLoad={loadModify}
     />
     <div class="form-container">

@@ -8,10 +8,11 @@ import { checkValidity, updateFeedback, updateWarn, updatePreview } from './vali
 import { get } from 'svelte/store';
 import FormStore from '../store/FormStore';
 import type { Value } from '../types/Form';
+import { FormProps } from '$lib/constants';
 
 export interface FormEventConfig {
     formId: string;
-    fieldsArr: any[];
+    formFields: any[];
     onInput?: (formData: any) => void;
     save?: {
         saveOnInput?: boolean;
@@ -33,13 +34,13 @@ export async function handleFieldUpdate(
     groupId: string | undefined,
     config: FormEventConfig
 ): Promise<void> {
-    const { formId, fieldsArr, onInput, save, saveToLocal, saveToCloud, updateSave, updateDebug } = config;
-    
-    let data: Value = (event.target as HTMLInputElement).value;
-    const localOnInput = getFieldProp(formId, "onInput", fieldId, groupId);
+    const { formId, formFields, onInput, save, saveToLocal, saveToCloud, updateSave, updateDebug } = config;
+
+    let fieldValue: Value = (event.target as HTMLInputElement).value;
+    const localOnInput = getFieldProp(formId, FormProps.ON_INPUT, fieldId, groupId);
 
     // Determine if field should not be saved
-    const dontSave = getDontSaveFlag(fieldId, groupId, fieldsArr);
+    const dontSave = getDontSaveFlag(fieldId, groupId, formFields);
 
     // Execute field-level onInput callback
     if (localOnInput && typeof localOnInput === 'function') {
@@ -48,13 +49,13 @@ export async function handleFieldUpdate(
 
     // Handle file uploads
     if (event.type === "drop" || (event.target as HTMLInputElement)?.files) {
-        data = await handleFileUpload(event);
+        fieldValue = await handleFileUpload(event);
     }
 
-    // Store the field data
+    // Store the field fieldValue
     manageFieldStorage(
         formId,
-        { action: "set", data, dontSave },
+        { action: "set", fieldValue, dontSave },
         fieldId,
         groupId
     );
@@ -63,7 +64,7 @@ export async function handleFieldUpdate(
     updateFieldValue(formId, fieldId, groupId);
 
     // Update preview if needed
-    if (getFieldProp(formId, "preview", fieldId, groupId)) {
+    if (getFieldProp(formId, FormProps.PREVIEW, fieldId, groupId)) {
         updatePreview(formId, fieldId, groupId);
     }
 
@@ -97,11 +98,11 @@ export async function handleFieldFocus(
 ): Promise<void> {
     const { formId, updateDebug } = config;
 
-    setFieldProp(formId, "touched", true, fieldId, groupId);
-    setFieldProp(formId, "active", true, fieldId, groupId);
+    setFieldProp(formId, FormProps.TOUCHED, true, fieldId, groupId);
+    setFieldProp(formId, FormProps.ACTIVE, true, fieldId, groupId);
 
     // Handle redacted fields
-    if (getFieldProp(formId, "redact", fieldId, groupId)) {
+    if (getFieldProp(formId, FormProps.REDACT, fieldId, groupId)) {
         updateFieldValue(formId, fieldId, groupId);
     }
 
@@ -123,11 +124,11 @@ export function handleFieldBlur(
 ): void {
     const { formId, updateDebug } = config;
 
-    setFieldProp(formId, "active", false, fieldId, groupId);
+    setFieldProp(formId, FormProps.ACTIVE, false, fieldId, groupId);
 
     // Re-redact field if necessary
-    if (getFieldProp(formId, "redact", fieldId, groupId)) {
-        setFieldProp(formId, "value", "[redacted]", fieldId, groupId);
+    if (getFieldProp(formId, FormProps.REDACT, fieldId, groupId)) {
+        setFieldProp(formId, FormProps.DISPLAY_VALUES, "[redacted]", fieldId, groupId);
     }
 
     if (updateDebug) {
@@ -146,33 +147,34 @@ function updateFieldValue(formId: string, fieldId: string, groupId?: string, don
         groupId
     );
 
-    let data: Value;
+    let fieldValue: Value;
 
     if (exists) {
-        data = manageFieldStorage(
+        fieldValue = manageFieldStorage(
             formId,
             { dontSave, action: "get" },
             fieldId,
             groupId
         ) as Value;
 
-        // Handle object data (convert to array if needed)
-        if (typeof data === "object" && data !== null && !Array.isArray(data)) {
-            data = Object.values(data);
+        // Handle object fieldValue (convert to array if needed)
+        if (typeof fieldValue === "object" && fieldValue !== null && !Array.isArray(fieldValue)) {
+            fieldValue = Object.values(fieldValue);
         }
     } else {
-        data = "";
+        fieldValue = "";
     }
 
-    setFieldProp(formId, "value", data, fieldId, groupId);
+    setFieldProp(formId, FormProps.FIELD_VALUES, fieldValue, fieldId, groupId);
+    setFieldProp(formId, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
 }
 
 /**
  * Handles field validation and updates feedback/warnings
  */
 async function handleFieldValidation(formId: string, fieldId: string, groupId?: string): Promise<void> {
-    const hasCustomValidation = getFieldProp(formId, "validity", fieldId, groupId);
-    const isRequired = getFieldProp(formId, "required", fieldId, groupId);
+    const hasCustomValidation = getFieldProp(formId, FormProps.VALIDITY, fieldId, groupId);
+    const isRequired = getFieldProp(formId, FormProps.REQUIRED, fieldId, groupId);
 
     if (hasCustomValidation) {
         const result = await checkValidity(formId, "field", fieldId, groupId);
@@ -188,7 +190,7 @@ async function handleFieldValidation(formId: string, fieldId: string, groupId?: 
  */
 async function handleFileUpload(event: Event): Promise<Value> {
     const { getData } = await import("../utils/formHelpers");
-    
+
     if (event.type === "drop") {
         const dropEvent = event as DragEvent;
         return dropEvent.dataTransfer?.files?.[0] || "";
@@ -202,14 +204,14 @@ async function handleFileUpload(event: Event): Promise<Value> {
 /**
  * Determines if a field should not be saved based on its configuration
  */
-function getDontSaveFlag(fieldId: string, groupId: string | undefined, fieldsArr: any[]): boolean {
+function getDontSaveFlag(fieldId: string, groupId: string | undefined, formFields: any[]): boolean {
     if (groupId) {
-        const group = fieldsArr.find(
+        const group = formFields.find(
             (item) => item.meta && item.meta.uid === groupId
         );
         return group?.[fieldId]?.dontSave || false;
     } else {
-        const field = fieldsArr.find(
+        const field = formFields.find(
             (item) => !item.meta && item.uid === fieldId
         );
         return field?.dontSave || false;
@@ -217,7 +219,7 @@ function getDontSaveFlag(fieldId: string, groupId: string | undefined, fieldsArr
 }
 
 /**
- * Gets the current form store data
+ * Gets the current form store fieldValue
  */
 function getFormStore(formId: string): any {
     const store = get(FormStore);

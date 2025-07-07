@@ -37,21 +37,21 @@ export const OPTION_FIELD_TYPES = [
 ] as const;
 
 // Storage Properties
-export const STORAGE_PROPS = {
-  SUBMIT: 'submit',
-  DATA: 'data',
-  DONT_SAVE: 'dontSave',
-  REQUIRED: 'required',
-  ON_INPUT: 'onInput',
-  VALIDITY: 'validity',
-  VERDICT: 'verdict',
-  PREVIEW: 'preview',
-  REDACT: 'redact',
-  TOUCHED: 'touched',
-  VALUE: 'value',
-  ACTIVE: 'active',
-  GROUP: 'group'
-} as const;
+export enum FormProps {
+  SUBMIT = 'submit',
+  DONT_SAVE = 'dontSave',
+  REQUIRED = 'required',
+  ON_INPUT = 'onInput',
+  VALIDITY = 'validity',
+  VERDICT = 'verdict',
+  PREVIEW = 'preview',
+  REDACT = 'redact',
+  TOUCHED = 'touched',
+  FIELD_VALUES = 'fieldValues',
+  DISPLAY_VALUES = 'displayValues',
+  ACTIVE = 'active',
+  GROUP = 'group'
+};
 
 // Actions
 export const STORAGE_ACTIONS = {
@@ -71,8 +71,8 @@ export const VALIDATION_MESSAGES = {
 // Default Values
 export const DEFAULTS = {
   FIELD_TYPE: FIELD_TYPES.TEXT,
-  BLANK_CHECKBOX: undefined,
-  BLANK_FILE: undefined,
+  BLANK_CHECKBOX: false,
+  BLANK_FILE: null,
   BLANK_TEXT: '',
   BLANK_OPTIONS: {}
 } as const;

@@ -6,7 +6,7 @@
 import { setFieldProp, manageFieldStorage, updateSave, clearSave, loadSave } from '../store/FormStore';
 import { checkValidity, updatePreview } from './validationService';
 import { loadBlank } from '../utils/formHelpers';
-import { FIELD_TYPES, BRANDING } from '../constants';
+import { FIELD_TYPES, BRANDING, FormProps } from '../constants';
 import type { Field, Group, Value } from '../types/Form';
 
 export interface FormLifecycleConfig {
@@ -25,7 +25,7 @@ export interface FormLifecycleConfig {
 
 export interface FormLifecycleState {
     loading: boolean;
-    fieldsArr: (Field | Group)[];
+    formFields: (Field | Group)[];
     autoSaveInterval?: NodeJS.Timeout;
     section?: Field | Group | null;
 }
@@ -47,10 +47,10 @@ export async function initializeForm(
     }
 
     // Create new state
-    const newFieldsArr = Object.values(fields);
+    const newFormFields = Object.values(fields);
     const newState: FormLifecycleState = {
         ...state,
-        fieldsArr: newFieldsArr,
+        formFields: newFormFields,
         loading: false
     };
 
@@ -58,7 +58,7 @@ export async function initializeForm(
     loadSave(uid, saveToLocal, saveToCloud, forceReset);
 
     // Initialize all fields
-    await loadAllFields(uid, newState.fieldsArr, saveToLocal, saveToCloud);
+    await loadAllFields(uid, newState.formFields, saveToLocal, saveToCloud);
 
     // Save current state
     updateSave(uid, saveToLocal, saveToCloud);
@@ -73,8 +73,8 @@ export async function initializeForm(
     }
 
     // Setup fullscreen mode
-    if (fullscreen && newState.fieldsArr.length > 0) {
-        newState.section = newState.fieldsArr[0];
+    if (fullscreen && newState.formFields.length > 0) {
+        newState.section = newState.formFields[0];
     }
 
     return newState;
@@ -85,11 +85,11 @@ export async function initializeForm(
  */
 export async function loadAllFields(
     uid: string,
-    fieldsArr: (Field | Group)[],
+    formFields: (Field | Group)[],
     saveToLocal: boolean,
     saveToCloud: boolean
 ): Promise<void> {
-    for (const block of fieldsArr) {
+    for (const block of formFields) {
         if ('meta' in block) {
             // This is a Group
             await loadGroup(uid, block);
@@ -110,7 +110,7 @@ export async function loadAllFields(
  * Loads and initializes a group
  */
 export async function loadGroup(uid: string, group: Group): Promise<void> {
-    setFieldProp(uid, "group", group.meta, group.meta.uid);
+    setFieldProp(uid, FormProps.GROUP, group.meta, group.meta.uid);
 }
 
 /**
@@ -128,57 +128,59 @@ export async function loadField(
 
     // Initialize field data if it doesn't exist
     if (!manageFieldStorage(uid, { action: "exists" }, field.uid, groupMeta?.uid)) {
-        const defaultData = field.defaultValue !== undefined && field.defaultValue !== null
+        const defaultFieldValue = field.defaultValue !== undefined && field.defaultValue !== null
             ? field.defaultValue
             : loadBlank(field.type);
             
         manageFieldStorage(
             uid,
-            { dontSave, action: "init", data: defaultData },
+            { dontSave, action: "init", fieldValue: defaultFieldValue },
             field.uid,
             groupMeta?.uid
         );
-        setFieldProp(uid, "value", defaultData, field.uid, groupMeta?.uid);
+        setFieldProp(uid, FormProps.FIELD_VALUES, defaultFieldValue, field.uid, groupMeta?.uid);
+        setFieldProp(uid, FormProps.DISPLAY_VALUES, defaultFieldValue, field.uid, groupMeta?.uid);
+    } else {
+        // Field exists in storage, but we still need to ensure displayValues are set
+        updateFieldValue(uid, field.uid, groupMeta?.uid, dontSave);
     }
 
     // Setup field callbacks
     if (field.onInput) {
-        setFieldProp(uid, "onInput", field.onInput, field.uid, groupMeta?.uid);
+        setFieldProp(uid, FormProps.ON_INPUT, field.onInput, field.uid, groupMeta?.uid);
     }
 
     // Handle redacted fields
     if (field.redact || groupMeta?.redact) {
         setFieldProp(
             uid,
-            "redact",
+            FormProps.REDACT,
             groupMeta?.redact || field.redact,
             field.uid,
             groupMeta?.uid
         );
-        setFieldProp(uid, "value", "[redacted]", field.uid, groupMeta?.uid);
-    } else {
-        updateFieldValue(uid, field.uid, groupMeta?.uid, dontSave);
+        setFieldProp(uid, FormProps.DISPLAY_VALUES, "[redacted]", field.uid, groupMeta?.uid);
     }
 
     // Initialize field state
-    setFieldProp(uid, "active", false, field.uid, groupMeta?.uid);
+    setFieldProp(uid, FormProps.ACTIVE, false, field.uid, groupMeta?.uid);
 
     // Setup required field validation
     if (field.required || groupMeta?.required) {
         const isRequired = groupMeta?.required || field.required;
-        setFieldProp(uid, "required", isRequired, field.uid, groupMeta?.uid);
+        setFieldProp(uid, FormProps.REQUIRED, isRequired, field.uid, groupMeta?.uid);
         await checkValidity(uid, "field", field.uid, groupMeta?.uid);
     }
 
     // Setup custom validation
     if (field.validity) {
-        setFieldProp(uid, "validity", field.validity, field.uid, groupMeta?.uid);
+        setFieldProp(uid, FormProps.VALIDITY, field.validity, field.uid, groupMeta?.uid);
         await checkValidity(uid, "field", field.uid, groupMeta?.uid);
     }
 
     // Setup file preview for file fields
     if (field.type === FIELD_TYPES.FILE && !field.hide?.preview) {
-        setFieldProp(uid, "preview", true, field.uid, groupMeta?.uid);
+        setFieldProp(uid, FormProps.PREVIEW, true, field.uid, groupMeta?.uid);
         const hasFiles = manageFieldStorage(uid, { action: "get" }, field.uid, groupMeta?.uid);
         if (hasFiles) {
             updatePreview(uid, field.uid, groupMeta?.uid);
@@ -197,10 +199,10 @@ function updateFieldValue(uid: string, fieldId: string, groupId?: string, dontSa
         groupId
     );
 
-    let data: Value;
+    let fieldValue: Value;
 
     if (exists) {
-        data = manageFieldStorage(
+        fieldValue = manageFieldStorage(
             uid,
             { dontSave, action: "get" },
             fieldId,
@@ -208,14 +210,15 @@ function updateFieldValue(uid: string, fieldId: string, groupId?: string, dontSa
         ) as Value;
 
         // Convert object to array if needed
-        if (typeof data === "object" && data !== null && !Array.isArray(data)) {
-            data = Object.values(data);
+        if (typeof fieldValue === "object" && fieldValue !== null && !Array.isArray(fieldValue)) {
+            fieldValue = Object.values(fieldValue);
         }
     } else {
-        data = "";
+        fieldValue = "";
     }
 
-    setFieldProp(uid, "value", data, fieldId, groupId);
+    setFieldProp(uid, FormProps.FIELD_VALUES, fieldValue, fieldId, groupId);
+    setFieldProp(uid, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
 }
 
 /**
@@ -249,6 +252,6 @@ export function isFormLoading(state: FormLifecycleState): boolean {
 /**
  * Gets the current fields array
  */
-export function getFieldsArray(state: FormLifecycleState): (Field | Group)[] {
-    return state.fieldsArr;
+export function getFormFields(state: FormLifecycleState): (Field | Group)[] {
+    return state.formFields;
 }

@@ -34,7 +34,10 @@ export async function getBase64(file: File): Promise<string> {
 export async function getData(input: FileList): Promise<Array<{base64: string, meta: any}>> {
     const arr: Array<{base64: string, meta: any}> = [];
 
-    for (const file of input) {
+    // Convert FileList to array to ensure compatibility
+    const files = Array.from(input);
+    
+    for (const file of files) {
         const meta = {
                 name: file.name,
                 size: file.size,

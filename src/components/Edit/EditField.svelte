@@ -14,7 +14,12 @@
         clearFieldFromStorage,
         updateSave as updateFormSave,
         manageFieldStorage,
+        getFieldProp,
+        setFieldProp,
+        clearSave,
+        loadSave,
     } from "$lib/store/FormStore";
+    import { FormProps } from "$lib/constants";
     import {
         makeToData,
         makeToOptions,
@@ -636,12 +641,21 @@
         main.refresh();
     }
     function onInput(details): void {
+        
+        // Extract form data from the fieldValues (which contains actual field values)
+        const formData = details.fieldValues || {};
+        
+        if (!formData || Object.keys(formData).length === 0) {
+            console.error("onInput called with no field values:", details);
+            return;
+        }
+
         let base: Field | Group | Record<string, Field | Group> = groupid
                 ? data.fields[groupid]
                 : data.fields,
             oEdit: Edit;
 
-        if (base[fieldid].edit)
+        if (base[fieldid]?.edit)
             oEdit = {
                 add: false,
                 remove: false,
@@ -649,8 +663,8 @@
                 persist: false,
                 ...base[fieldid].edit,
             };
-        base[fieldid] = details.data;
-        const newDontSave = details.data.dontSave;
+        base[fieldid] = formData;
+        const newDontSave = formData.dontSave;
 
         const formId = data.uid;
         const hasDataInRegular = manageFieldStorage(
@@ -673,12 +687,17 @@
                 fieldid,
                 groupid,
             );
-            clearFieldFromStorage(formId, "data", fieldid, groupid);
+            clearFieldFromStorage(
+                formId,
+                FormProps.FIELD_VALUES,
+                fieldid,
+                groupid,
+            );
 
             if (currentValue !== undefined && currentValue !== "") {
                 manageFieldStorage(
                     formId,
-                    { action: "set", data: currentValue, dontSave: true },
+                    { action: "set", fieldValue: currentValue, dontSave: true },
                     fieldid,
                     groupid,
                 );
@@ -691,12 +710,21 @@
                 fieldid,
                 groupid,
             );
-            clearFieldFromStorage(formId, "dontSave", fieldid, groupid);
+            clearFieldFromStorage(
+                formId,
+                FormProps.DONT_SAVE,
+                fieldid,
+                groupid,
+            );
 
             if (currentValue !== undefined && currentValue !== "") {
                 manageFieldStorage(
                     formId,
-                    { action: "set", data: currentValue, dontSave: false },
+                    {
+                        action: "set",
+                        fieldValue: currentValue,
+                        dontSave: false,
+                    },
                     fieldid,
                     groupid,
                 );
@@ -707,31 +735,31 @@
         if (belongs(base[fieldid], "header")) delete base[fieldid].header;
 
         if (
-            details.data.autocomplete &&
-            typeof details.data.autocomplete !== "string"
+            formData.autocomplete &&
+            typeof formData.autocomplete !== "string"
         )
             base[fieldid].autocomplete = Object.values(
-                details.data.autocomplete,
+                formData.autocomplete,
             )[0];
 
         if (
-            details.data.onInput &&
-            checkFunc(details.data.onInput).validFunc.check
+            formData.onInput &&
+            checkFunc(formData.onInput).validFunc.check
         )
-            base[fieldid].onInput = reviver("onInput", details.data.onInput);
+            base[fieldid].onInput = reviver("onInput", formData.onInput);
         else delete base[fieldid].onInput;
 
         if (
-            details.data.validity &&
-            checkFunc(details.data.validity, "Rule").validFunc.check
+            formData.validity &&
+            checkFunc(formData.validity, "Rule").validFunc.check
         )
-            base[fieldid].validity = reviver("validity", details.data.validity);
+            base[fieldid].validity = reviver("validity", formData.validity);
         else delete base[fieldid].validity;
 
-        if (details.data.options) {
-            const opts = Array.isArray(details.data.options)
-                ? details.data.options
-                : makeToOptions(details.data.options);
+        if (formData.options) {
+            const opts = Array.isArray(formData.options)
+                ? formData.options
+                : makeToOptions(formData.options);
 
             let i = 0;
             for (i = opts.length - 1; 0 <= i; i--)
@@ -740,10 +768,10 @@
             base[fieldid].options = opts;
 
             base[fieldid].edit = {
-                add: convertEdit(details.data.edit.add, oEdit.add),
-                remove: convertEdit(details.data.edit.remove, oEdit.remove),
-                limit: convertEdit(details.data.edit.limit, oEdit.limit),
-                persist: !!details.data.edit.persist,
+                add: convertEdit(formData.edit.add, oEdit.add),
+                remove: convertEdit(formData.edit.remove, oEdit.remove),
+                limit: convertEdit(formData.edit.limit, oEdit.limit),
+                persist: !!formData.edit.persist,
             };
         }
         base[fieldid].hide = parseHide(base[fieldid].hide, true);
@@ -751,6 +779,25 @@
 
         updateForm(data);
         updateSave(data);
+
+        // If redaction was disabled, clear redaction state and restore actual value
+        if (!formData.redact) {
+            setFieldProp(formId, FormProps.REDACT, false, fieldid, groupid);
+            const actualValue = getFieldProp(
+                formId,
+                FormProps.FIELD_VALUES,
+                fieldid,
+                groupid,
+            );
+            setFieldProp(
+                formId,
+                FormProps.DISPLAY_VALUES,
+                actualValue,
+                fieldid,
+                groupid,
+            );
+        }
+
         main.refresh();
     }
 </script>
@@ -782,6 +829,17 @@
     {onInput}
     {fields}
     afterFormLoad={(refresh) => {
+        // Only clear localStorage, but preserve in-memory form state
+        clearSave("edit", true, false);
+        
+        // Load all field values from defaultValue in configuration
+        Object.entries(fields).forEach(([, field]) => {
+            if (field.defaultValue !== undefined) {
+                setFieldProp("edit", FormProps.FIELD_VALUES, field.defaultValue, field.uid);
+                setFieldProp("edit", FormProps.DISPLAY_VALUES, field.defaultValue, field.uid);
+            }
+        });
+        
         if ($SadForms.refresh) {
             setRefresh(false);
             refresh(true);

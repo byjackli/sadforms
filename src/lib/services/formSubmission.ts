@@ -7,7 +7,8 @@ import { get } from 'svelte/store';
 import FormStore, { setFieldProp, getFieldProp } from '../store/FormStore';
 import { checkValidity, updateFeedback } from './validationService';
 import { belongs } from '../tools/kit';
-import type { Form, Value } from '../types/Form';
+import type { Value } from '../types/Form';
+import { FormProps } from '$lib/constants';
 
 export interface SubmissionResult {
     success: boolean;
@@ -30,15 +31,15 @@ export async function submitForm(config: SubmissionConfig): Promise<SubmissionRe
     const isValid = validation.verdict;
 
     // Mark submission state
-    setFieldProp(formId, "submit", true, "submitting");
-    setFieldProp(formId, "submit", true, "attempted");
+    setFieldProp(formId, FormProps.SUBMIT, true, "submitting");
+    setFieldProp(formId, FormProps.SUBMIT, true, "attempted");
 
     if (!isValid) {
         // Update feedback for all invalid fields
         await updateInvalidFieldFeedback(formId);
-        setFieldProp(formId, "submit", false, "accepted");
+        setFieldProp(formId, FormProps.SUBMIT, false, "accepted");
         
-        setFieldProp(formId, "submit", false, "submitting");
+        setFieldProp(formId, FormProps.SUBMIT, false, "submitting");
         return { success: false, errors: ["Form validation failed"] };
     } 
 
@@ -54,8 +55,8 @@ export async function submitForm(config: SubmissionConfig): Promise<SubmissionRe
         }
     }
 
-    setFieldProp(formId, "submit", submissionSuccess, "accepted");
-    setFieldProp(formId, "submit", false, "submitting");
+    setFieldProp(formId, FormProps.SUBMIT, submissionSuccess, "accepted");
+    setFieldProp(formId, FormProps.SUBMIT, false, "submitting");
     
     return { success: submissionSuccess };
 }
@@ -90,7 +91,7 @@ async function updateInvalidFieldFeedback(formId: string): Promise<void> {
  */
 function getFormData(formId: string): Record<string, Value> {
     const formStore = get(FormStore);
-    const formData = formStore[formId]?.data;
+    const formData = formStore[formId]?.fieldValues;
     
     if (!formData) return {};
     
@@ -115,19 +116,19 @@ function getFormData(formId: string): Record<string, Value> {
  * Checks if form is currently submitting
  */
 export function isFormSubmitting(formId: string): boolean {
-    return !!getFieldProp(formId, "submit", "submitting");
+    return !!getFieldProp(formId, FormProps.SUBMIT, "submitting");
 }
 
 /**
  * Checks if form submission was attempted
  */
 export function isFormSubmissionAttempted(formId: string): boolean {
-    return !!getFieldProp(formId, "submit", "attempted");
+    return !!getFieldProp(formId, FormProps.SUBMIT, "attempted");
 }
 
 /**
  * Checks if form submission was accepted/successful
  */
 export function isFormSubmissionAccepted(formId: string): boolean {
-    return !!getFieldProp(formId, "submit", "accepted");
+    return !!getFieldProp(formId, FormProps.SUBMIT, "accepted");
 }

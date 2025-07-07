@@ -12,8 +12,8 @@
 		functions: Record<string, Function>;
 	$: value =
 		group === undefined
-			? $FormStore[formid].value[field.uid]
-			: $FormStore[formid].value[group?.meta.uid][field.uid];
+			? $FormStore[formid]?.displayValues?.[field.uid]
+			: $FormStore[formid]?.displayValues?.[group?.meta.uid]?.[field.uid];
 
 	$: notEmpty =
 		typeof value === "string" && value.length
@@ -50,7 +50,7 @@
 						await functions.updateField(
 							event,
 							field.uid,
-							group?.meta.uid
+							group?.meta.uid,
 						)}
 				/>
 			{:else if field.type === "file" && field.custom}
@@ -68,7 +68,7 @@
 						event.preventDefault();
 						document
 							.getElementById(
-								`${$CustomStore.names.inputHeader}${field.uid}`
+								`${$CustomStore.names.inputHeader}${field.uid}`,
 							)
 							.click();
 					}}
@@ -81,17 +81,17 @@
 						formid,
 						{ action: "get" },
 						field.uid,
-						group?.meta.uid
+						group?.meta.uid,
 					)
 						? manageFieldStorage(
 								formid,
 								{ action: "get" },
 								field.uid,
-								group?.meta.uid
-						  ).name
+								group?.meta.uid,
+							).name
 						: `click to choose ${
 								field.multiple ? `files` : `a file`
-						  }`}
+							}`}
 				</button>
 				<input
 					id={`${$CustomStore.names.inputHeader}${field.uid}`}
@@ -113,7 +113,7 @@
 						await functions.updateField(
 							event,
 							field.uid,
-							group?.meta.uid
+							group?.meta.uid,
 						)}
 				/>
 			{:else if ["dropdown", "radio"].includes(field.type)}
@@ -131,7 +131,7 @@
 						formid,
 						{ action: "get" },
 						field.uid,
-						group?.meta.uid
+						group?.meta.uid,
 					)}
 					focus={() => functions.onFocus(field.uid, group?.meta.uid)}
 					blur={() => functions.onBlur(field.uid, group?.meta.uid)}
@@ -139,7 +139,7 @@
 						await functions.updateField(
 							event,
 							field.uid,
-							group?.meta.uid
+							group?.meta.uid,
 						)}
 				/>
 			{:else if ["checkbox", "switch"].includes(field.type)}
@@ -157,7 +157,7 @@
 						formid,
 						{ action: "get" },
 						field.uid,
-						group?.meta.uid
+						group?.meta.uid,
 					)}
 					focus={() => functions.onFocus(field.uid, group?.meta.uid)}
 					blur={() => functions.onBlur(field.uid, group?.meta.uid)}
@@ -165,7 +165,7 @@
 						await functions.updateField(
 							event,
 							field.uid,
-							group?.meta.uid
+							group?.meta.uid,
 						)}
 				/>
 			{:else if field.type === "divider"}
@@ -198,7 +198,7 @@
 						await functions.updateField(
 							event,
 							field.uid,
-							group?.meta.uid
+							group?.meta.uid,
 						)}
 				/>
 			{/if}

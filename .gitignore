@@ -7,3 +7,7 @@ node_modules
 .env.*
 !.env.example
 .ignore
+
+# Playwright test results
+test-results/
+playwright-report/

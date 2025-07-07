@@ -4,12 +4,16 @@
 	import FormRenderer from "./FormRenderer.svelte";
 	import FormStore from "../store/FormStore";
 	import { submitForm } from "../services/formSubmission";
-	import { handleFieldUpdate, handleFieldFocus, handleFieldBlur } from "../services/formEventHandler";
-	import { 
-		initializeForm, 
-		cleanupForm, 
+	import {
+		handleFieldUpdate,
+		handleFieldFocus,
+		handleFieldBlur,
+	} from "../services/formEventHandler";
+	import {
+		initializeForm,
+		cleanupForm,
 		resetForm,
-		type FormLifecycleState 
+		type FormLifecycleState,
 	} from "../services/formLifecycle";
 	import type { FormLifecycleConfig } from "../services/formLifecycle";
 	import { updateSave } from "../store/FormStore";
@@ -23,26 +27,34 @@
 	export let fullscreen = false;
 	export let saveToLocal = true;
 	export let saveToCloud = false;
-	export let save: {
-		saveAuto: number | false;
-		saveOnInput: boolean;
-	} | undefined = undefined;
+	export let save:
+		| {
+				saveAuto: number | false;
+				saveOnInput: boolean;
+		  }
+		| undefined = undefined;
 	export let onInput: ((formData: any) => void) | undefined = undefined;
 	export let fields: Record<string, Field | Group> = {};
 	export let debug = false;
 	export let debugData: string | null = null;
-	export let onSubmit: ((formData: any, formId: string) => void | Promise<void>) | null = null;
-	export let hide: {
-		title?: boolean;
-		caption?: boolean;
-		submit?: boolean;
-		reset?: boolean;
-	} | undefined = undefined;
-	export let afterFormLoad: ((refresh: () => void) => void) | null = null;
+	export let onSubmit:
+		| ((formData: any, formId: string) => void | Promise<void>)
+		| null = null;
+	export let hide:
+		| {
+				title?: boolean;
+				caption?: boolean;
+				submit?: boolean;
+				reset?: boolean;
+		  }
+		| undefined = undefined;
+	export let afterFormLoad:
+		| ((refresh: (bool?: boolean) => void) => void)
+		| null = null;
 
 	// Internal state
 	let loading = true;
-	let fieldsArr: (Field | Group)[] = [];
+	let formFields: (Field | Group)[] = [];
 	let autoSaveInterval: NodeJS.Timeout | undefined = undefined;
 	let section: Field | Group | null = null;
 
@@ -56,21 +68,21 @@
 			save,
 			debug,
 			fullscreen,
-			afterFormLoad
+			afterFormLoad,
 		};
 	}
 
 	// Event handler configuration
 	$: eventConfig = {
 		formId: uid,
-		fieldsArr,
+		formFields,
 		onInput,
 		save,
 		saveToLocal,
 		saveToCloud,
 		debug,
 		updateSave,
-		updateDebug
+		updateDebug,
 	};
 
 	// Public API methods
@@ -88,13 +100,17 @@
 	async function submit(): Promise<void> {
 		await submitForm({
 			formId: uid,
-			onSubmit
+			onSubmit,
 		});
 		updateDebug();
 	}
 
 	// Field event handlers
-	async function updateField(event: Event, fieldId: string, groupId?: string): Promise<void> {
+	async function updateField(
+		event: Event,
+		fieldId: string,
+		groupId?: string,
+	): Promise<void> {
 		await handleFieldUpdate(event, fieldId, groupId, eventConfig);
 	}
 
@@ -109,40 +125,53 @@
 	// Create lifecycle state object
 	$: lifecycleState = {
 		loading,
-		fieldsArr,
+		formFields,
 		autoSaveInterval,
-		section
+		section,
 	};
 
 	// Form reset handler
 	async function reset(): Promise<void> {
-		const newState = await resetForm(getLifecycleConfig(), lifecycleState, updateDebug);
+		const newState = await resetForm(
+			getLifecycleConfig(),
+			lifecycleState,
+			updateDebug,
+		);
 		updateStateFromLifecycle(newState);
 	}
 
 	// Form loading
-	async function load(forceReset = false, isInitialLoad = false): Promise<void> {
-		const newState = await initializeForm(getLifecycleConfig(), lifecycleState, updateDebug, forceReset, isInitialLoad);
+	async function load(
+		forceReset = false,
+		isInitialLoad = false,
+	): Promise<void> {
+		const newState = await initializeForm(
+			getLifecycleConfig(),
+			lifecycleState,
+			updateDebug,
+			forceReset,
+			isInitialLoad,
+		);
 		updateStateFromLifecycle(newState);
 	}
 
 	// Update local state from lifecycle state
 	function updateStateFromLifecycle(newState: FormLifecycleState): void {
 		loading = newState.loading;
-		fieldsArr = newState.fieldsArr;
+		formFields = newState.formFields;
 		autoSaveInterval = newState.autoSaveInterval;
 		section = newState.section;
 	}
 
 	// Lifecycle hooks
 	onMount(() => load(false, true));
-	
+
 	afterUpdate(() => {
-		if (fieldsArr.length && typeof afterFormLoad === "function") {
+		if (formFields.length && typeof afterFormLoad === "function") {
 			afterFormLoad(refresh);
 		}
 	});
-	
+
 	onDestroy(() => {
 		cleanupForm(lifecycleState);
 	});
@@ -153,18 +182,18 @@
 		onBlur,
 		updateField,
 		submit,
-		reset
+		reset,
 	};
 </script>
 
-<FormRenderer 
+<FormRenderer
 	{uid}
 	{title}
 	{caption}
 	{hide}
 	{autocomplete}
 	{fullscreen}
-	{fieldsArr}
+	{formFields}
 	{loading}
 	functions={formFunctions}
 />

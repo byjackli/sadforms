@@ -7,6 +7,7 @@ import { setFieldProp, getFieldProp, manageFieldStorage } from '../store/FormSto
 import Extensions from '../static/extensions.json';
 import { get } from 'svelte/store';
 import CustomStore from '../store/CustomStore';
+import { FormProps } from '$lib/constants';
 
 /**
  * Checks if a field is empty based on its current value
@@ -32,7 +33,7 @@ export async function checkValidity(
 ): Promise<any> {
     // Handle form-level validation
     if (type === "form" || fieldid === undefined) {
-        for (const block of Object.values(getFieldProp(formId, "verdict"))) {
+        for (const block of Object.values(getFieldProp(formId, FormProps.VERDICT))) {
             const verdict = (block as any).group
                 ? (block as any).group.verdict
                 : (block as any).verdict;
@@ -42,7 +43,7 @@ export async function checkValidity(
     }
 
     const isEmpty = checkEmpty(formId, fieldid, groupid),
-        isRequired = getFieldProp(formId, "required", fieldid, groupid);
+        isRequired = getFieldProp(formId, FormProps.REQUIRED, fieldid, groupid);
 
     let verdict = isRequired ? !(isRequired && isEmpty) : true,
         raw: any[] = [],
@@ -50,7 +51,7 @@ export async function checkValidity(
 
     // Handle field-level validation
     if (type === "field") {
-        const func = getFieldProp(formId, "validity", fieldid, groupid);
+        const func = getFieldProp(formId, FormProps.VALIDITY, fieldid, groupid);
         if (func) {
             const conditions = func(
                 manageFieldStorage(formId, { action: "get" }, fieldid, groupid)
@@ -67,21 +68,21 @@ export async function checkValidity(
             }
         }
     }
-    
-    setFieldProp(formId, "verdict", { verdict, raw }, fieldid, groupid);
+
+    setFieldProp(formId, FormProps.VERDICT, { verdict, raw }, fieldid, groupid);
 
     // Handle group-level validation
     if (groupid || type === "group") {
         group = { verdict: true, raw: [] };
 
         for (const [key, value] of Object.entries(
-            getFieldProp(formId, "verdict", groupid)
+            getFieldProp(formId, FormProps.VERDICT, groupid)
         )) {
             if (key === "group") continue;
             group.verdict = group.verdict && (value as any).verdict;
             if (Array.isArray((value as any).raw)) group.raw.push(...(value as any).raw);
         }
-        setFieldProp(formId, "verdict", group, "group", groupid);
+        setFieldProp(formId, FormProps.VERDICT, group, "group", groupid);
     }
 
     return { verdict, raw, group };
@@ -98,7 +99,7 @@ export function updateFeedback(
 ): void {
     const customStore = get(CustomStore);
     const groupOnly =
-        groupid && getFieldProp(formId, "group", groupid)?.override?.feedback;
+        groupid && getFieldProp(formId, FormProps.GROUP, groupid)?.override?.feedback;
     let { verdict, raw } = validation,
         block = document.getElementById(
             `${customStore.names.inputFeedback}${fieldid}`
@@ -109,7 +110,7 @@ export function updateFeedback(
         block = document.getElementById(
             `${customStore.names.groupFeedback}${groupid}`
         );
-        raw = getFieldProp(formId, "verdict", groupid).group.raw;
+        raw = getFieldProp(formId, FormProps.VERDICT, groupid).group.raw;
     }
     if (!block) return;
 
@@ -158,18 +159,18 @@ export function updateWarn(
 ): void {
     const customStore = get(CustomStore);
     const block = document.getElementById(
-            `${customStore.names.blockHeader}${fieldid}`
-        ),
+        `${customStore.names.blockHeader}${fieldid}`
+    ),
         blockWarned = block?.classList.contains(customStore.names.warn);
 
     if (fieldVerdict === blockWarned)
         block.classList.toggle(customStore.names.warn);
-    if (groupid && getFieldProp(formId, "group", groupid).required) {
+    if (groupid && getFieldProp(formId, FormProps.GROUP, groupid).required) {
         const group = document.getElementById(
-                `${customStore.names.groupHeader}${groupid}`
-            ),
+            `${customStore.names.groupHeader}${groupid}`
+        ),
             groupWarned = group.classList.contains(customStore.names.warn),
-            groupVerdict = getFieldProp(formId, "verdict", groupid).group.verdict;
+            groupVerdict = getFieldProp(formId, FormProps.VERDICT, groupid).group.verdict;
 
         if (
             (!groupWarned && !groupVerdict) ||

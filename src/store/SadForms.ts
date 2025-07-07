@@ -755,7 +755,7 @@ const sampleForm: Form = {
     "fullscreen": false,
     "onSubmit": undefined,
     "hide": {},
-    "debug": true
+    "debug": false,
 }
 function loadSample(): void {
     data = sampleForm

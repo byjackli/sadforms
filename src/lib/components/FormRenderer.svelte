@@ -14,7 +14,7 @@
 	} | undefined = undefined;
 	export let autocomplete = true;
 	export let fullscreen = false;
-	export let fieldsArr: (FieldType | Group)[] = [];
+	export let formFields: (FieldType | Group)[] = [];
 	export let loading = false;
 	export let functions: {
 		onFocus: (fieldId: string, groupId?: string) => void;
@@ -26,7 +26,7 @@
 </script>
 
 <div id={uid} class="sf sf-container">
-	{#if fieldsArr && fieldsArr.length > 0 && !loading}
+	{#if formFields && formFields.length > 0 && !loading}
 		{#if !fullscreen && !hide?.title}<h2>{title}</h2>{/if}
 		{#if !hide?.caption && caption !== undefined}<p>{caption}</p>{/if}
 		<form
@@ -34,7 +34,7 @@
 			tabindex="-1"
 			on:submit|preventDefault={functions.submit}
 		>
-			{#each fieldsArr as group (group)}
+			{#each formFields as group (group)}
 				{#if 'meta' in group}
 					<!-- Group rendering -->
 					<div
