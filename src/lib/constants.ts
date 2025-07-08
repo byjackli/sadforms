@@ -6,21 +6,21 @@
 export const STORAGE_KEY_PREFIX = '[SadForms]:';
 
 // Field Types
-export const FIELD_TYPES = {
-  DIVIDER: 'divider',
-  SWITCH: 'switch',
-  DROPDOWN: 'dropdown',
-  RADIO: 'radio',
-  CHECKBOX: 'checkbox',
-  FILE: 'file',
-  TEXT: 'text',
-  TEXTAREA: 'textarea',
-  EMAIL: 'email',
-  TEL: 'tel',
-  PASSWORD: 'password',
-  NUMBER: 'number',
-  TIME: 'time'
-} as const;
+export enum FIELD_TYPES {
+  DIVIDER = 'divider',
+  SWITCH = 'switch',
+  DROPDOWN = 'dropdown',
+  RADIO = 'radio',
+  CHECKBOX = 'checkbox',
+  FILE = 'file',
+  TEXT = 'text',
+  TEXTAREA = 'textarea',
+  EMAIL = 'email',
+  TEL = 'tel',
+  PASSWORD = 'password',
+  NUMBER = 'number',
+  TIME = 'time'
+};
 
 // Field Type Groups
 export const TEXT_FIELD_TYPES = [
@@ -43,7 +43,7 @@ export enum FormProps {
   REQUIRED = 'required',
   ON_INPUT = 'onInput',
   VALIDITY = 'validity',
-  VERDICT = 'verdict',
+  VALIDATION_RESULT = 'validationResult',
   PREVIEW = 'preview',
   REDACT = 'redact',
   TOUCHED = 'touched',

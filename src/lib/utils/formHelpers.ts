@@ -31,19 +31,19 @@ export async function getBase64(file: File): Promise<string> {
 /**
  * Processes FileList into array of base64 data with metadata
  */
-export async function getData(input: FileList): Promise<Array<{base64: string, meta: any}>> {
-    const arr: Array<{base64: string, meta: any}> = [];
+export async function getData(input: FileList): Promise<Array<{ base64: string, meta: any }>> {
+    const arr: Array<{ base64: string, meta: any }> = [];
 
     // Convert FileList to array to ensure compatibility
     const files = Array.from(input);
-    
+
     for (const file of files) {
         const meta = {
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                lastModified: file.lastModified,
-            },
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            lastModified: file.lastModified,
+        },
             base64 = await getBase64(file);
         arr.push({ base64, meta });
     }
@@ -63,7 +63,10 @@ export async function getBlob(base64: string): Promise<Blob> {
 /**
  * Checks if a field value is considered empty
  */
-export function checkEmpty(value: any, fieldType?: string): boolean {
+export function checkEmpty(
+    value: unknown,
+    fieldType?: FIELD_TYPES
+): boolean {
     if (value === undefined || value === null) return true;
     if (typeof value === 'string' && value.trim() === '') return true;
     if (fieldType === FIELD_TYPES.FILE && !value) return true;

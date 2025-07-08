@@ -18,7 +18,7 @@ test.describe('Debug dontSave localStorage Issue', () => {
     await page.waitForTimeout(3000);
 
     // Take a screenshot to see what's on the page
-    await page.screenshot({ path: 'debug-form-builder.png', fullPage: true });
+    await page.screenshot({ fullPage: true });
 
     // Get page structure
     const pageInfo = await page.evaluate(() => ({
@@ -137,7 +137,7 @@ test.describe('Debug dontSave localStorage Issue', () => {
     });
 
     // Take screenshot
-    await page.screenshot({ path: 'debug-sample-form.png', fullPage: true });
+    await page.screenshot({ fullPage: true });
 
     // Check what's on the page
     const formInfo = await page.evaluate(() => ({

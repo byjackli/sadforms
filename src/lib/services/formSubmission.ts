@@ -66,7 +66,7 @@ export async function submitForm(config: SubmissionConfig): Promise<SubmissionRe
  */
 async function updateInvalidFieldFeedback(formId: string): Promise<void> {
     const formStore = get(FormStore);
-    const verdicts = formStore[formId]?.verdict;
+    const verdicts = formStore[formId]?.validationResult;
     
     if (!verdicts) return;
 

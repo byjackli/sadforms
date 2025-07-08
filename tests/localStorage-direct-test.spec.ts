@@ -26,7 +26,7 @@ test.describe('Direct localStorage Security Test', () => {
     await page.waitForTimeout(5000); // Give more time for async loading
 
     // Take screenshot to see current state
-    await page.screenshot({ path: 'form-editor-loaded.png', fullPage: true });
+    await page.screenshot({ fullPage: true });
 
     // Check if the editor has loaded
     const editorPresent = await page.locator('#editor').isVisible();
@@ -140,7 +140,7 @@ test.describe('Direct localStorage Security Test', () => {
       }
     });
 
-    await page.screenshot({ path: 'sample-form.png', fullPage: true });
+    await page.screenshot({ fullPage: true });
 
     // Check for actual form fields
     const forms = await page.locator('form').all();

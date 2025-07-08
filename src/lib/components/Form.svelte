@@ -12,7 +12,7 @@
 	import {
 		initializeForm,
 		cleanupForm,
-		resetForm,
+		resetForm as hardResetForm,
 		type FormLifecycleState,
 	} from "../services/formLifecycle";
 	import type { FormLifecycleConfig } from "../services/formLifecycle";
@@ -86,15 +86,20 @@
 	};
 
 	// Public API methods
-	export const details = () => get(FormStore)[uid];
-	export const refresh = () => load(false);
+	export const getFormState = () => get(FormStore)[uid];
+	export const reload = () => initialize(false);
 
 	// Debug functionality
 	function updateDebug(): void {
 		if (debug) {
 			debugData = JSON.stringify({ ...get(FormStore)[uid] }, null, 4);
+		} else {
+			debugData = null;
 		}
 	}
+
+	// Reactive statement to update debug data when debug prop changes
+	$: if (uid && debug !== undefined) updateDebug();
 
 	// Form submission handler
 	async function submit(): Promise<void> {
@@ -132,7 +137,7 @@
 
 	// Form reset handler
 	async function reset(): Promise<void> {
-		const newState = await resetForm(
+		const newState = await hardResetForm(
 			getLifecycleConfig(),
 			lifecycleState,
 			updateDebug,
@@ -140,8 +145,8 @@
 		updateStateFromLifecycle(newState);
 	}
 
-	// Form loading
-	async function load(
+	// Form initialization
+	async function initialize(
 		forceReset = false,
 		isInitialLoad = false,
 	): Promise<void> {
@@ -164,11 +169,11 @@
 	}
 
 	// Lifecycle hooks
-	onMount(() => load(false, true));
+	onMount(() => initialize(false, true));
 
 	afterUpdate(() => {
 		if (formFields.length && typeof afterFormLoad === "function") {
-			afterFormLoad(refresh);
+			afterFormLoad(reload);
 		}
 	});
 
@@ -197,7 +202,3 @@
 	{loading}
 	functions={formFunctions}
 />
-
-{#if debug && debugData}
-	<pre>{debugData}</pre>
-{/if}

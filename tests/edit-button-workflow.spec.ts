@@ -106,7 +106,7 @@ test.describe('Edit Button Workflow', () => {
       const fields = Array.from(document.querySelectorAll('.form-block input')).map(input => ({
         name: input.getAttribute('name'),
         id: input.id,
-        type: input.type
+        type: (input as HTMLInputElement).type
       }));
       return fields;
     });

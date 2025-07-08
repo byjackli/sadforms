@@ -154,8 +154,37 @@ export type Edit = {
     persist: boolean,
 }
 
-/** Form database storing all form instances */
-export type Database = Record<string, FormInstance>
+/**
+ * Validation rule definition
+ */
+export type Rule = {
+    /** Validation condition result */
+    check: boolean,
+    /** Message when validation passes */
+    true: string,
+    /** Message when validation fails */
+    false?: string,
+    /** Message during async validation */
+    loading?: string
+}
+
+/** Field validation function or simple boolean */
+export type Validity = ((value: string) => Record<string, Rule>) | boolean
+
+export type RuleFeedback = { verdict: boolean, feedback: string }
+export type RuleFeedbackCollection = RuleFeedback[]
+
+/**
+ * Validation result
+ */
+export type ValidationResult = {
+    /** Overall validation result */
+    verdict: boolean,
+    /** Detailed validation feedback */
+    raw?: RuleFeedbackCollection,
+    /** Group validation result (present when validating groups) */
+    group?: { verdict: boolean, raw: RuleFeedbackCollection }
+}
 
 /**
  * Internal form data structure that stores all form state
@@ -172,7 +201,7 @@ type FormInstance = {
     /** Validation functions */
     validity: Record<string, (Validity | Record<string, Validity>)>,
     /** Validation results */
-    verdict: Record<string, (Verdict | Record<string, Verdict>)>,
+    validationResult: Record<string, (ValidationResult | Record<string, ValidationResult>)>,
     /** Preview visibility flags */
     preview: Record<string, (boolean | Record<string, boolean>)>,
     /** Redaction flags for sensitive fields */
@@ -189,29 +218,7 @@ type FormInstance = {
     group: Record<string, Group>
 }
 
-/**
- * Validation rule definition
- */
-export type Rule = {
-    /** Validation condition result */
-    check: boolean,
-    /** Message when validation passes */
-    true: string,
-    /** Message when validation fails */
-    false?: string,
-    /** Message during async validation */
-    loading?: string
-}
-/** Field validation function or simple boolean */
-export type Validity = ((value: string) => Record<string, Rule>) | boolean
-/**
- * Validation result
- */
-export type Verdict = {
-    /** Overall validation result */
-    verdict: boolean,
-    /** Detailed validation feedback */
-    raw?: { verdict: boolean, feedback: string }[]
-}
+/** Form database storing all form instances */
+export type Database = Record<string, FormInstance>
 
 export default Form

@@ -51,7 +51,7 @@ describe('validationService', () => {
       const result = await checkValidity(formId, 'form');
       
       expect(result.verdict).toBe(true);
-      expect(mockFormStore.getFieldProp).toHaveBeenCalledWith(formId, 'verdict');
+      expect(mockFormStore.getFieldProp).toHaveBeenCalledWith(formId, 'validationResult');
     });
 
     it('should return false for form with invalid fields', async () => {
@@ -78,7 +78,7 @@ describe('validationService', () => {
       expect(result.verdict).toBe(false); // Empty required field should be invalid
       expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
         formId, 
-        'verdict', 
+        'validationResult', 
         { verdict: false, raw: [] }, 
         fieldId, 
         undefined
@@ -128,7 +128,7 @@ describe('validationService', () => {
       expect(result.group.raw).toEqual(expect.arrayContaining([{ verdict: false, feedback: 'Error' }]));
       expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
         formId,
-        'verdict',
+        'validationResult',
         expect.objectContaining({ verdict: false }),
         'group',
         groupId

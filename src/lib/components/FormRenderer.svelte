@@ -50,7 +50,7 @@
 								</legend>
 							{/if}
 							{#each Object.entries(group) as [key, field]}
-								{#if key !== 'meta' && typeof field === 'object' && field !== null && 'uid' in field}
+								{#if key !== 'meta' && typeof field === 'object' && field !== null && 'uid' in field && 'name' in field && 'type' in field}
 									<Field
 										formid={uid}
 										field={field}

@@ -29,7 +29,7 @@ export function loadSave(formid: string, saveToLocal: boolean, saveToCloud: bool
             required: {},
             onInput: {},
             validity: {},
-            verdict: {},
+            validationResult: {},
             preview: {},
             redact: {},
             touched: {},
