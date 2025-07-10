@@ -4,7 +4,7 @@
  */
 
 import { setFieldProp, getFieldProp, manageFieldStorage } from '../store/FormStore';
-import { loadBlank } from '../utils/formHelpers';
+import { loadBlank, isGroup } from '../utils/formHelpers';
 import type { Field, Group } from '../types/Form';
 import { FormProps } from '$lib/constants';
 
@@ -71,16 +71,20 @@ export async function loadGroup(uid: string, group: Group): Promise<void> {
  */
 export async function loadAllFields(
     uid: string,
-    formFields: any[],
+    formFields: (Field | Group)[],
     saveToLocal: boolean = true,
     saveToCloud: boolean = false
 ): Promise<void> {
-    formFields.forEach((block) => {
-        if (block.meta) {
-            Object.values(block).forEach((field: any, i) => {
-                if (i) loadField(uid, field, block, saveToLocal, saveToCloud);
-                else loadGroup(uid, block);
-            });
-        } else loadField(uid, block, undefined, saveToLocal, saveToCloud);
-    });
+    for (const block of formFields) {
+        if (isGroup(block)) {
+            await loadGroup(uid, block);
+            for (const [key, field] of Object.entries(block)) {
+                if (key !== 'meta') {
+                    await loadField(uid, field as Field, block, saveToLocal, saveToCloud);
+                }
+            }
+        } else {
+            await loadField(uid, block, undefined, saveToLocal, saveToCloud);
+        }
+    }
 }

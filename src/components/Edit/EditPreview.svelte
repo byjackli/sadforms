@@ -3,6 +3,7 @@
     import Form from "$lib/components/Form.svelte";
     import Dropdown from "$lib/components/Dropdown.svelte";
     import { genSubmit, uuidV4 } from "$lib/tools/kit";
+    import type { Value } from "$lib/types/Form";
 
     import { newType } from "../../presets";
     import SadForms, {
@@ -23,8 +24,8 @@
         maValue: string = "";
 
     $: data = $SadForms.data;
-    $: formOnInput = data.onInput as ((formData: any) => void) | undefined;
-    $: formOnSubmit = data.onSubmit as ((formData: any, formId: string) => void | Promise<void>) | undefined;
+    $: formOnInput = data.onInput as ((formData: Record<string, Value>) => void) | undefined;
+    $: formOnSubmit = data.onSubmit as ((formData: Record<string, Value>, formId: string) => void | Promise<void>) | undefined;
 
     function modifyField(fieldid: string, groupid: string, event: any): void {
         genSubmit(event, () => {
@@ -48,7 +49,7 @@
                 }
                 updateForm(data);
                 updateSave();
-                main.refresh();
+                main.reload();
             } else if (list.contains("modify-title")) {
                 if (!open) togglePanel();
                 swapView("settings");
@@ -202,7 +203,7 @@
                     data.fields[uid] = newType(maValue, uid);
                     updateForm(data);
                     updateSave();
-                    main.refresh();
+                    main.reload();
                 }}
             />
         </div>

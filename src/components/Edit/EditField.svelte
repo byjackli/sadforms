@@ -37,7 +37,7 @@
     $: groupid = $SadForms.editing.groupid;
     $: fields = $SadForms && editFields();
 
-    function groupFields(): Record<string, any> {
+    function groupFields(): Record<string, Field> {
         const value = data.fields[groupid] as Group;
 
         return {
@@ -127,13 +127,13 @@
                     };
                     updateForm(data);
                     updateSave();
-                    main.refresh();
+                    main.reload();
                 },
                 hide: { label: true },
             },
         };
     }
-    function editFields(): Record<string, any> {
+    function editFields(): Record<string, Field> {
         const value = groupid
             ? data.fields[groupid][fieldid]
             : data.fields[fieldid];
@@ -166,6 +166,7 @@
                 type: {
                     uid: "type",
                     name: "field type",
+                    type: "text",
                     defaultValue: value.type,
                     disabled: true,
                 },
@@ -616,14 +617,17 @@
         return { ...basics, ...midware, ...plus };
     }
 
-    function convertEdit(value: string, original: any): any {
-        let res = original;
+    function convertEdit(
+        value: string,
+        original: string | number | boolean,
+    ): string | number | boolean {
+        let res: string | number | boolean = original;
         if (value === "true") res = true;
         else if (value === "false") res = false;
         else if (value === "undefined") res = "undefined";
         else if (!isNaN(Number.parseInt(value))) res = Number.parseInt(value);
 
-        if (res !== original) main.refresh();
+        if (res !== original) main.reload();
 
         return res;
     }
@@ -638,13 +642,12 @@
 
         updateForm(data);
         updateSave(data);
-        main.refresh();
+        main.reload();
     }
     function onInput(details): void {
-        
         // Extract form data from the fieldValues (which contains actual field values)
         const formData = details.fieldValues || {};
-        
+
         if (!formData || Object.keys(formData).length === 0) {
             console.error("onInput called with no field values:", details);
             return;
@@ -734,18 +737,12 @@
 
         if (belongs(base[fieldid], "header")) delete base[fieldid].header;
 
-        if (
-            formData.autocomplete &&
-            typeof formData.autocomplete !== "string"
-        )
+        if (formData.autocomplete && typeof formData.autocomplete !== "string")
             base[fieldid].autocomplete = Object.values(
                 formData.autocomplete,
             )[0];
 
-        if (
-            formData.onInput &&
-            checkFunc(formData.onInput).validFunc.check
-        )
+        if (formData.onInput && checkFunc(formData.onInput).validFunc.check)
             base[fieldid].onInput = reviver("onInput", formData.onInput);
         else delete base[fieldid].onInput;
 
@@ -798,7 +795,7 @@
             );
         }
 
-        main.refresh();
+        main.reload();
     }
 </script>
 
@@ -814,7 +811,7 @@
         afterFormLoad={(refresh) => {
             if ($SadForms.refresh) {
                 refresh(true);
-                main.refresh();
+                main.reload();
             }
         }}
     />
@@ -831,19 +828,30 @@
     afterFormLoad={(refresh) => {
         // Only clear localStorage, but preserve in-memory form state
         clearSave("edit", true, false);
-        
+
         // Load all field values from defaultValue in configuration
         Object.entries(fields).forEach(([, field]) => {
             if (field.defaultValue !== undefined) {
-                setFieldProp("edit", FormProps.FIELD_VALUES, field.defaultValue, field.uid);
-                setFieldProp("edit", FormProps.DISPLAY_VALUES, field.defaultValue, field.uid);
+                const { defaultValue } = field;
+                setFieldProp(
+                    "edit",
+                    FormProps.FIELD_VALUES,
+                    defaultValue,
+                    field.uid,
+                );
+                setFieldProp(
+                    "edit",
+                    FormProps.DISPLAY_VALUES,
+                    defaultValue,
+                    field.uid,
+                );
             }
         });
-        
+
         if ($SadForms.refresh) {
             setRefresh(false);
             refresh(true);
-            main.refresh();
+            main.reload();
         }
     }}
 />

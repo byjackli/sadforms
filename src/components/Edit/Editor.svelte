@@ -125,7 +125,7 @@
                     >
                         {JSON.stringify(
                             formData,
-                            (k, v) => replacer(k, v, true),
+                            (k, v) => replacer(k, v),
                             2
                         )}
                     </div>

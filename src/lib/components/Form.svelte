@@ -17,7 +17,7 @@
 	} from "../services/formLifecycle";
 	import type { FormLifecycleConfig } from "../services/formLifecycle";
 	import { updateSave } from "../store/FormStore";
-	import type { Field, Group } from "../types/Form";
+	import type { Field, Group, FormData } from "../types/Form";
 
 	// Form configuration props
 	export let uid: string;
@@ -33,12 +33,12 @@
 				saveOnInput: boolean;
 		  }
 		| undefined = undefined;
-	export let onInput: ((formData: any) => void) | undefined = undefined;
+	export let onInput: ((formData: FormData) => void) | undefined = undefined;
 	export let fields: Record<string, Field | Group> = {};
 	export let debug = false;
 	export let debugData: string | null = null;
 	export let onSubmit:
-		| ((formData: any, formId: string) => void | Promise<void>)
+		| ((formData: FormData, formId: string) => void | Promise<void>)
 		| null = null;
 	export let hide:
 		| {

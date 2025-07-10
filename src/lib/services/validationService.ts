@@ -8,7 +8,7 @@ import Extensions from '../static/extensions.json';
 import { get } from 'svelte/store';
 import CustomStore from '../store/CustomStore';
 import { FormProps } from '$lib/constants';
-import type { ValidationResult, Rule } from '$lib/types/Form';
+import type { ValidationResult, Rule, Validity, Group } from '$lib/types/Form';
 
 /**
  * Checks if a field is empty based on its current value
@@ -52,10 +52,10 @@ export async function checkValidity(
 
     // Handle field-level validation
     if (type === "field") {
-        const func = getFieldProp(formId, FormProps.VALIDITY, fieldid, groupid);
-        if (func) {
+        const func = getFieldProp(formId, FormProps.VALIDITY, fieldid, groupid) as Validity;
+        if (func && typeof func === 'function') {
             const conditions = func(
-                manageFieldStorage(formId, { action: "get" }, fieldid, groupid)
+                manageFieldStorage(formId, { action: "get" }, fieldid, groupid) as string
             );
             for (const condition of Object.values(conditions)) {
                 const rule = condition as Rule;
@@ -94,11 +94,11 @@ export function updateFeedback(
     formId: string,
     fieldid: string,
     groupid: string | undefined,
-    validation: any
+    validation: ValidationResult
 ): void {
     const customStore = get(CustomStore);
     const groupOnly =
-        groupid && getFieldProp(formId, FormProps.GROUP, groupid)?.override?.feedback;
+        groupid && (getFieldProp(formId, FormProps.GROUP, groupid) as Group['meta'])?.override?.feedback;
     let { verdict, raw } = validation,
         block = document.getElementById(
             `${customStore.names.inputFeedback}${fieldid}`
@@ -109,7 +109,7 @@ export function updateFeedback(
         block = document.getElementById(
             `${customStore.names.groupFeedback}${groupid}`
         );
-        raw = getFieldProp(formId, FormProps.VALIDATION_RESULT, groupid).group.raw;
+        raw = (getFieldProp(formId, FormProps.VALIDATION_RESULT, groupid) as ValidationResult).group?.raw || [];
     }
     if (!block) return;
 
@@ -163,13 +163,13 @@ export function updateWarn(
         blockWarned = block?.classList.contains(customStore.names.warn);
 
     if (fieldVerdict === blockWarned)
-        block.classList.toggle(customStore.names.warn);
-    if (groupid && getFieldProp(formId, FormProps.GROUP, groupid).required) {
+        block?.classList.toggle(customStore.names.warn);
+    if (groupid && (getFieldProp(formId, FormProps.GROUP, groupid) as Group['meta'])?.required) {
         const group = document.getElementById(
             `${customStore.names.groupHeader}${groupid}`
         ),
-            groupWarned = group.classList.contains(customStore.names.warn),
-            groupVerdict = getFieldProp(formId, FormProps.VALIDATION_RESULT, groupid).group.verdict;
+            groupWarned = group?.classList.contains(customStore.names.warn),
+            groupVerdict = (getFieldProp(formId, FormProps.VALIDATION_RESULT, groupid) as ValidationResult).group?.verdict;
 
         if (
             (!groupWarned && !groupVerdict) ||
@@ -188,7 +188,7 @@ export function updatePreview(
     groupid: string | undefined
 ): void {
     const customStore = get(CustomStore);
-    const files = manageFieldStorage(formId, { action: "get" }, fieldid, groupid),
+    const files = manageFieldStorage(formId, { action: "get" }, fieldid, groupid) as any[],
         block = document.getElementById(
             `${customStore.names.inputPreview}${fieldid}`
         ),

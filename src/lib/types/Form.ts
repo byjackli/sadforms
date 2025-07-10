@@ -80,6 +80,8 @@ export type Field = {
     compact?: boolean,
     /** Dropdown/select options */
     options?: Options,
+    /** Dropdown data values */
+    data?: Record<string, string>,
     /** File input accepted types */
     accept?: string,
     /** Enable custom option creation */
@@ -95,8 +97,16 @@ export type Field = {
     /** Field icon configuration */
     icon?: string | { on: string, off: string }
 }
+/** File metadata structure */
+export interface FileMetadata {
+    name: string;
+    size: number;
+    type: string;
+    lastModified: number;
+}
+
 /** Possible field value types */
-export type Value = string | number | boolean | Record<string, string> | File | { base64: string; meta: any }[] | string[]
+export type Value = string | number | boolean | Record<string, string | boolean> | File | { base64: string; meta: FileMetadata }[] | string[]
 /**
  * UI element visibility configuration
  */
@@ -189,7 +199,7 @@ export type ValidationResult = {
 /**
  * Internal form data structure that stores all form state
  */
-type FormInstance = {
+export type FormInstance = {
     /** Form submission state */
     submit: { submitting: boolean, accepted: boolean, attempted: boolean },
     /** Fields excluded from saving */
@@ -220,5 +230,15 @@ type FormInstance = {
 
 /** Form database storing all form instances */
 export type Database = Record<string, FormInstance>
+
+/** Form data structure passed to callbacks - can be field values or full form data */
+export type FormData = Record<string, Value | Record<string, Value>> | {
+    /** Form field values */
+    fieldValues: Record<string, Value | Record<string, Value>>,
+    /** Form submission state */
+    submit: { submitting: boolean, accepted: boolean, attempted: boolean },
+    /** Other form-related data */
+    [key: string]: unknown
+}
 
 export default Form

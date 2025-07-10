@@ -7,13 +7,14 @@ import { setFieldProp, getFieldProp, manageFieldStorage } from '../store/FormSto
 import { checkValidity, updateFeedback, updateWarn, updatePreview } from './validationService';
 import { get } from 'svelte/store';
 import FormStore from '../store/FormStore';
-import type { Value } from '../types/Form';
+import type { Value, Field, Group, FormInstance } from '../types/Form';
 import { FormProps } from '$lib/constants';
+import { isGroup } from '../utils/formHelpers';
 
 export interface FormEventConfig {
     formId: string;
-    formFields: any[];
-    onInput?: (formData: any) => void;
+    formFields: (Field | Group)[];
+    onInput?: (formData: FormInstance) => void;
     save?: {
         saveOnInput?: boolean;
         saveAuto?: number | false;
@@ -204,24 +205,24 @@ async function handleFileUpload(event: Event): Promise<Value> {
 /**
  * Determines if a field should not be saved based on its configuration
  */
-function getDontSaveFlag(fieldId: string, groupId: string | undefined, formFields: any[]): boolean {
+function getDontSaveFlag(fieldId: string, groupId: string | undefined, formFields: (Field | Group)[]): boolean {
     if (groupId) {
         const group = formFields.find(
-            (item) => item.meta && item.meta.uid === groupId
+            (item) => isGroup(item) && item.meta.uid === groupId
         );
-        return group?.[fieldId]?.dontSave || false;
+        return group && isGroup(group) ? (group[fieldId] as Field)?.dontSave || false : false;
     } else {
         const field = formFields.find(
-            (item) => !item.meta && item.uid === fieldId
+            (item) => !isGroup(item) && item.uid === fieldId
         );
-        return field?.dontSave || false;
+        return field && !isGroup(field) ? field.dontSave || false : false;
     }
 }
 
 /**
  * Gets the current form store fieldValue
  */
-function getFormStore(formId: string): any {
+function getFormStore(formId: string): FormInstance {
     const store = get(FormStore);
-    return store[formId] || {};
+    return store[formId] || {} as FormInstance;
 }

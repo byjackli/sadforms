@@ -4,12 +4,13 @@
  */
 
 import { FIELD_TYPES, OPTION_FIELD_TYPES, DEFAULTS } from '../constants';
+import type { Field, Group, FileMetadata } from '../types/Form';
 
 /**
  * Generates blank/default values for different field types
  */
-export function loadBlank(type: string): any {
-    if (OPTION_FIELD_TYPES.includes(type as any)) return DEFAULTS.BLANK_OPTIONS;
+export function loadBlank(type: string): unknown {
+    if (OPTION_FIELD_TYPES.some(optionType => optionType === type)) return DEFAULTS.BLANK_OPTIONS;
     else if (type === FIELD_TYPES.CHECKBOX) return DEFAULTS.BLANK_CHECKBOX;
     else if (type === FIELD_TYPES.FILE) return DEFAULTS.BLANK_FILE;
     else return DEFAULTS.BLANK_TEXT;
@@ -31,8 +32,8 @@ export async function getBase64(file: File): Promise<string> {
 /**
  * Processes FileList into array of base64 data with metadata
  */
-export async function getData(input: FileList): Promise<Array<{ base64: string, meta: any }>> {
-    const arr: Array<{ base64: string, meta: any }> = [];
+export async function getData(input: FileList): Promise<Array<{ base64: string, meta: FileMetadata }>> {
+    const arr: Array<{ base64: string, meta: FileMetadata }> = [];
 
     // Convert FileList to array to ensure compatibility
     const files = Array.from(input);
@@ -78,8 +79,15 @@ export function checkEmpty(
 /**
  * Validates field value based on type and requirements
  */
-export function validateFieldValue(value: any, field: any): boolean {
-    if (field.required && checkEmpty(value, field.type)) return false;
+export function validateFieldValue(value: unknown, field: Field): boolean {
+    if (field.required && checkEmpty(value, field.type as FIELD_TYPES)) return false;
     // Add more validation logic as needed
     return true;
+}
+
+/**
+ * Type guard to check if an object is a Group
+ */
+export function isGroup(block: Field | Group): block is Group {
+    return 'meta' in block;
 }

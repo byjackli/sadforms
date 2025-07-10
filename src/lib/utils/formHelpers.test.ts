@@ -175,25 +175,25 @@ describe('formHelpers', () => {
 
   describe('validateFieldValue', () => {
     it('should return false for required fields with empty values', () => {
-      const field = { required: true, type: 'text' };
+      const field = { uid: 'test', name: 'Test', required: true, type: 'text' };
       expect(validateFieldValue('', field)).toBe(false);
       expect(validateFieldValue(null, field)).toBe(false);
       expect(validateFieldValue(undefined, field)).toBe(false);
     });
 
     it('should return true for required fields with valid values', () => {
-      const field = { required: true, type: 'text' };
+      const field = { uid: 'test', name: 'Test', required: true, type: 'text' };
       expect(validateFieldValue('hello', field)).toBe(true);
     });
 
     it('should return true for non-required fields even with empty values', () => {
-      const field = { required: false, type: 'text' };
+      const field = { uid: 'test', name: 'Test', required: false, type: 'text' };
       expect(validateFieldValue('', field)).toBe(true);
       expect(validateFieldValue(null, field)).toBe(true);
     });
 
     it('should return true for non-required fields with valid values', () => {
-      const field = { required: false, type: 'text' };
+      const field = { uid: 'test', name: 'Test', required: false, type: 'text' };
       expect(validateFieldValue('hello', field)).toBe(true);
     });
   });

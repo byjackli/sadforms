@@ -23,6 +23,19 @@
 		submit: () => void;
 		reset: () => void;
 	};
+
+	function isField(field: unknown): field is FieldType {
+		return (
+			typeof field === 'object' &&
+			field !== null &&
+			'uid' in field &&
+			'name' in field &&
+			'type' in field &&
+			typeof (field as any).uid === 'string' &&
+			typeof (field as any).name === 'string' &&
+			typeof (field as any).type === 'string'
+		);
+	}
 </script>
 
 <div id={uid} class="sf sf-container">
@@ -50,7 +63,7 @@
 								</legend>
 							{/if}
 							{#each Object.entries(group) as [key, field]}
-								{#if key !== 'meta' && typeof field === 'object' && field !== null && 'uid' in field && 'name' in field && 'type' in field}
+								{#if key !== 'meta' && isField(field)}
 									<Field
 										formid={uid}
 										field={field}

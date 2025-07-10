@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { belongs, janitor } from '../tools/kit'
-import type { Database } from '../types/Form'
+import type { Database, Value, ValidationResult, Validity, Group } from '../types/Form'
 import { STORAGE_KEY_PREFIX, FormProps, STORAGE_ACTIONS, ERROR_MESSAGES } from '../constants'
 
 const stored: Database = {};
@@ -49,7 +49,7 @@ export function loadSave(formid: string, saveToLocal: boolean, saveToCloud: bool
 type ManageFieldStorageAction = "set" | "init" | "get" | "exists";
 type ManageFieldStoragePayload = {
     action: ManageFieldStorageAction;
-    fieldValue?: any;
+    fieldValue?: unknown;
     dontSave?: boolean;
 };
 type StorageTypes = FormProps.FIELD_VALUES | FormProps.DONT_SAVE;
@@ -102,7 +102,7 @@ function getStorageRouting(payload: ManageFieldStoragePayload, dontSaveExists: b
  * @returns Stored data for set/init, retrieved data for get, existence boolean for exists
  * 
  */
-export function manageFieldStorage(uid: string, payload: ManageFieldStoragePayload, fieldid: string, groupid?: string): any {
+export function manageFieldStorage(uid: string, payload: ManageFieldStoragePayload, fieldid: string, groupid?: string): unknown {
     // Determine storage routing based on current configuration
     const dontSaveExists = hasFieldProp(uid, FormProps.DONT_SAVE, fieldid, groupid);
     const useDontSave = getStorageRouting(payload, dontSaveExists);
@@ -123,15 +123,15 @@ export function manageFieldStorage(uid: string, payload: ManageFieldStoragePaylo
     }
 }
 
-function handleSetAction(uid: string, payload: ManageFieldStoragePayload, fieldid: string, groupid: string | undefined, useDontSave: boolean): any {
+function handleSetAction(uid: string, payload: ManageFieldStoragePayload, fieldid: string, groupid: string | undefined, useDontSave: boolean): unknown {
     return useDontSave
-        ? setFieldProp(uid, FormProps.DONT_SAVE, { dontSave: true, fieldValue: payload.fieldValue }, fieldid, groupid)
+        ? setFieldProp(uid, FormProps.DONT_SAVE, payload.fieldValue, fieldid, groupid)
         : setFieldProp(uid, FormProps.FIELD_VALUES, payload.fieldValue, fieldid, groupid);
 }
 
-function handleGetAction(uid: string, fieldid: string, groupid: string | undefined, useDontSave: boolean): any {
+function handleGetAction(uid: string, fieldid: string, groupid: string | undefined, useDontSave: boolean): unknown {
     return useDontSave
-        ? getFieldProp(uid, FormProps.DONT_SAVE, fieldid, groupid)?.fieldValue
+        ? getFieldProp(uid, FormProps.DONT_SAVE, fieldid, groupid)
         : getFieldProp(uid, FormProps.FIELD_VALUES, fieldid, groupid);
 }
 
@@ -140,13 +140,13 @@ function handleExistsAction(uid: string, fieldid: string, groupid: string | unde
         ? hasFieldProp(uid, FormProps.DONT_SAVE, fieldid, groupid)
         : hasFieldProp(uid, FormProps.FIELD_VALUES, fieldid, groupid);
 }
-export function hasFieldProp(formid: string, prop: FormProps, fieldid: string, groupid?: string): boolean {
-    const slot: Record<string, unknown> = getFieldPropValue(formid, prop);
+export function hasFieldProp<T extends FormProps>(formid: string, prop: T, fieldid: string, groupid?: string): boolean {
+    const slot = getFieldPropValue(formid, prop);
     if (groupid === undefined) return belongs(slot, fieldid);
     return belongs(slot, groupid) && belongs(slot[groupid], fieldid);
 }
 
-export function setFieldProp(formid: string, prop: FormProps, fieldValue: unknown, fieldid: string, groupid?: string): any {
+export function setFieldProp(formid: string, prop: FormProps, fieldValue: unknown, fieldid: string, groupid?: string): unknown {
     const slot: Record<string, unknown> = getFieldPropValue(formid, prop)
     if (slot === undefined) return undefined
 
@@ -159,7 +159,7 @@ export function setFieldProp(formid: string, prop: FormProps, fieldValue: unknow
     return fieldValue;
 }
 
-export function getFieldProp(formid: string, prop: FormProps, fieldid?: string, groupid?: string): any {
+export function getFieldProp(formid: string, prop: FormProps, fieldid?: string, groupid?: string): unknown {
     const slot: Record<string, unknown> = getFieldPropValue(formid, prop);
     if (slot === undefined) return undefined
 

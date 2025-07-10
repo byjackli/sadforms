@@ -7,7 +7,10 @@ import { Field, Group } from '$lib/types/Form';
 
 // Mock dependencies
 vi.mock('../store/FormStore');
-vi.mock('../utils/formHelpers');
+vi.mock('../utils/formHelpers', () => ({
+  loadBlank: vi.fn(),
+  isGroup: vi.fn()
+}));
 
 const mockFormStore = FormStore as any;
 const mockFormHelpers = FormHelpers as any;
@@ -17,6 +20,11 @@ describe('fieldManager', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    
+    // Set up default mock behavior for isGroup
+    mockFormHelpers.isGroup.mockImplementation((block: any) => {
+      return 'meta' in block && block.meta !== undefined;
+    });
   });
 
   describe('loadGroup', () => {
@@ -322,8 +330,8 @@ describe('fieldManager', () => {
   describe('loadAllFields', () => {
     it('should process individual fields correctly', async () => {
       const formFields = [
-        { uid: 'field-1', type: 'text' },
-        { uid: 'field-2', type: 'email' }
+        { uid: 'field-1', name: 'Field 1', type: 'text' },
+        { uid: 'field-2', name: 'Field 2', type: 'email' }
       ];
 
       // Mock field storage to not exist
@@ -343,9 +351,14 @@ describe('fieldManager', () => {
     it('should process groups and their fields correctly', async () => {
       const formFields = [
         {
-          meta: { uid: 'group-1', name: 'Group 1' },
-          'field-1': { uid: 'field-1', type: 'text' },
-          'field-2': { uid: 'field-2', type: 'email' }
+          meta: { 
+            uid: 'group-1', 
+            name: 'Group 1',
+            required: false,
+            override: { label: false, feedback: false }
+          },
+          'field-1': { uid: 'field-1', name: 'Field 1', type: 'text' },
+          'field-2': { uid: 'field-2', name: 'Field 2', type: 'email' }
         }
       ];
 
@@ -353,44 +366,55 @@ describe('fieldManager', () => {
 
       await loadAllFields(uid, formFields);
 
-      // Verify group was set
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      // The test expects specific call patterns, let's check all calls
+      const allCalls = mockFormStore.setFieldProp.mock.calls;
+      
+      // Check that group was set
+      expect(allCalls).toContainEqual([
         uid, FormProps.GROUP, formFields[0].meta, 'group-1'
-      );
+      ]);
 
-      // Verify fields were processed
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      // Check that fields were processed with group context
+      expect(allCalls).toContainEqual([
         uid, FormProps.FIELD_VALUES, 'default-value', 'field-1', 'group-1'
-      );
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      ]);
+      expect(allCalls).toContainEqual([
         uid, FormProps.FIELD_VALUES, 'default-value', 'field-2', 'group-1'
-      );
+      ]);
     });
 
     it('should handle mixed individual fields and groups correctly', async () => {
       const formFields = [
-        { uid: 'field-1', type: 'text' },
+        { uid: 'field-1', name: 'Field 1', type: 'text' },
         {
-          meta: { uid: 'group-1', name: 'Group 1' },
-          'field-2': { uid: 'field-2', type: 'email' }
+          meta: { 
+            uid: 'group-1', 
+            name: 'Group 1',
+            required: false,
+            override: { label: false, feedback: false }
+          },
+          'field-2': { uid: 'field-2', name: 'Field 2', type: 'email' }
         },
-        { uid: 'field-3', type: 'password' }
+        { uid: 'field-3', name: 'Field 3', type: 'password' }
       ];
 
       mockFormStore.manageFieldStorage.mockReturnValue(false);
 
       await loadAllFields(uid, formFields);
 
+      // Check all calls to verify proper processing
+      const allCalls = mockFormStore.setFieldProp.mock.calls;
+      
       // Verify all fields were processed
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      expect(allCalls).toContainEqual([
         uid, FormProps.FIELD_VALUES, 'default-value', 'field-1', undefined
-      );
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      ]);
+      expect(allCalls).toContainEqual([
         uid, FormProps.FIELD_VALUES, 'default-value', 'field-2', 'group-1'
-      );
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      ]);
+      expect(allCalls).toContainEqual([
         uid, FormProps.FIELD_VALUES, 'default-value', 'field-3', undefined
-      );
+      ]);
     });
   });
 });

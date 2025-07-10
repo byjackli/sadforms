@@ -155,7 +155,11 @@
                     slot="b"
                     lang="typescript"
                     code={`
-        function onInput(manageFieldStorage: any): void {
+        function onInput(manageFieldStorage: {
+            value: unknown;
+            submit?: boolean;
+            persist?: Record<string, string>;
+        }): void {
             // your code goes here
 
             // manageFieldStorage = {

@@ -1,4 +1,5 @@
 import type Form from '$lib/types/Form';
+import type { Rule } from '$lib/types/Form';
 import { writable } from 'svelte/store'
 import { belongs, uuidV4 } from '$lib/tools/kit';
 
@@ -54,7 +55,7 @@ export function loadEmpty(custom?: { uid?: string, title?: string }): void {
     SadForms.update(() => ({ data, editing, refresh }))
     updateSave()
 }
-export function updateSave(force?: any): void {
+export function updateSave(force?: Form): void {
     localStorage.setItem(`SadForms:${data.uid} |`, JSON.stringify(force ? force : data, replacer))
 }
 export function deleteForm(custom?: { uid?: string }): void {
@@ -63,20 +64,21 @@ export function deleteForm(custom?: { uid?: string }): void {
     localStorage.removeItem(`[SadForms]:${uid}`)
 }
 
-export function replacer(key: string, value: any, clean = false): any {
+export function replacer(key: string, value: unknown): unknown {
     if (["validity", "afterFormLoad", "onInput"].includes(key) && value)
         value = value.toString();
     return value
 }
-export function reviver(key: string, value: any): any {
-    if (["validity", "afterFormLoad", "onInput"].includes(key))
+export function reviver(key: string, value: unknown): unknown {
+    if (["validity", "afterFormLoad", "onInput"].includes(key) && typeof value === 'string')
         value = new Function("value", `return ${value}`)()
     return value
 }
-export function checkFunc(value: string, type?: string): Record<string, any> {
+export function checkFunc(value: string, type?: string): Record<string, Rule> {
     let check = true;
     try {
-        const res = reviver("validity", value)();
+        const revivedFunc = reviver("validity", value);
+        const res = typeof revivedFunc === 'function' ? revivedFunc() : revivedFunc;
 
         // run additional checks
         if (type === "boolean" && typeof res !== "boolean") check = false
