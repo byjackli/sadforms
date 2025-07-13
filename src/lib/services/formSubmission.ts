@@ -5,7 +5,7 @@
 
 import { get } from 'svelte/store';
 import FormStore, { setFieldProp, getFieldProp } from '../store/FormStore';
-import { checkValidity, updateFeedback } from './validationService';
+import { checkValidity } from './validationService';
 import { belongs } from '../tools/kit';
 import type { Value } from '../types/Form';
 import { FormProps } from '$lib/constants';
@@ -72,16 +72,19 @@ async function updateInvalidFieldFeedback(formId: string): Promise<void> {
 
     for (const [key, value] of Object.entries(verdicts)) {
         if (belongs(value, "group")) {
-            // Handle grouped fields
+            // Handle grouped fields - revalidate any failing fields
             for (const [fieldId, fieldVerdict] of Object.entries(value as Record<string, any>)) {
                 if (fieldId !== "group" && !fieldVerdict.verdict) {
-                    updateFeedback(formId, fieldId, key, fieldVerdict);
+                    // Mark field as touched so validation feedback shows
+                    setFieldProp(formId, FormProps.TOUCHED, true, fieldId, key);
+                    await checkValidity(formId, "field", fieldId, key);
                 }
             }
         } else if (!(value as any).verdict) {
             // Handle individual fields
-            const fieldValidation = await checkValidity(formId, "field", key, undefined);
-            updateFeedback(formId, key, undefined, fieldValidation);
+            // Mark field as touched so validation feedback shows
+            setFieldProp(formId, FormProps.TOUCHED, true, key, undefined);
+            await checkValidity(formId, "field", key, undefined);
         }
     }
 }

@@ -4,7 +4,6 @@
  */
 
 import { setFieldProp, manageFieldStorage, updateSave, clearSave, loadSave } from '../store/FormStore';
-import { checkValidity, updatePreview } from './validationService';
 import { loadBlank } from '../utils/formHelpers';
 import { FIELD_TYPES, BRANDING, FormProps } from '../constants';
 import type { Field, Group, Value } from '../types/Form';
@@ -165,26 +164,20 @@ export async function loadField(
     // Initialize field state
     setFieldProp(uid, FormProps.ACTIVE, false, field.uid, groupMeta?.uid);
 
-    // Setup required field validation
+    // Setup required field validation (don't validate on init - wait for user interaction)
     if (field.required || groupMeta?.required) {
         const isRequired = groupMeta?.required || field.required;
         setFieldProp(uid, FormProps.REQUIRED, isRequired, field.uid, groupMeta?.uid);
-        await checkValidity(uid, "field", field.uid, groupMeta?.uid);
     }
 
-    // Setup custom validation
+    // Setup custom validation (don't validate on init - wait for user interaction)
     if (field.validity) {
         setFieldProp(uid, FormProps.VALIDITY, field.validity, field.uid, groupMeta?.uid);
-        await checkValidity(uid, "field", field.uid, groupMeta?.uid);
     }
 
     // Setup file preview for file fields
     if (field.type === FIELD_TYPES.FILE && !field.hide?.preview) {
         setFieldProp(uid, FormProps.PREVIEW, true, field.uid, groupMeta?.uid);
-        const hasFiles = manageFieldStorage(uid, { action: "get" }, field.uid, groupMeta?.uid);
-        if (hasFiles) {
-            updatePreview(uid, field.uid, groupMeta?.uid);
-        }
     }
 }
 

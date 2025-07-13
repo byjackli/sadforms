@@ -4,7 +4,7 @@
  */
 
 import { setFieldProp, getFieldProp, manageFieldStorage } from '../store/FormStore';
-import { checkValidity, updateFeedback, updateWarn, updatePreview } from './validationService';
+import { checkValidity } from './validationService';
 import { get } from 'svelte/store';
 import FormStore from '../store/FormStore';
 import type { Value, Field, Group, FormInstance } from '../types/Form';
@@ -63,11 +63,6 @@ export async function handleFieldUpdate(
 
     // Update field value in store
     updateFieldValue(formId, fieldId, groupId);
-
-    // Update preview if needed
-    if (getFieldProp(formId, FormProps.PREVIEW, fieldId, groupId)) {
-        updatePreview(formId, fieldId, groupId);
-    }
 
     // Handle validation and feedback
     await handleFieldValidation(formId, fieldId, groupId);
@@ -177,12 +172,8 @@ async function handleFieldValidation(formId: string, fieldId: string, groupId?: 
     const hasCustomValidation = getFieldProp(formId, FormProps.VALIDITY, fieldId, groupId);
     const isRequired = getFieldProp(formId, FormProps.REQUIRED, fieldId, groupId);
 
-    if (hasCustomValidation) {
-        const result = await checkValidity(formId, "field", fieldId, groupId);
-        updateFeedback(formId, fieldId, groupId, result);
-    } else if (isRequired) {
-        const result = await checkValidity(formId, "field", fieldId, groupId);
-        updateWarn(formId, fieldId, groupId, result.verdict);
+    if (hasCustomValidation || isRequired) {
+        await checkValidity(formId, "field", fieldId, groupId);
     }
 }
 

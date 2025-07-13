@@ -4,12 +4,16 @@
 	import Checkbox from "./Checkbox.svelte";
 	import Dropdown from "./Dropdown.svelte";
 	import Divider from "./Divider.svelte";
-	import type { Field, Group } from "../types/Form";
+	import { FormProps } from "../constants";
+	import Extensions from "../static/extensions.json";
+	import type { Field, Group, ValidationResult } from "../types/Form";
 
 	export let formid: string,
 		field: Field,
 		group: Group = undefined,
 		functions: Record<string, Function>;
+	
+	// Existing reactive statements
 	$: value =
 		group === undefined
 			? $FormStore[formid]?.displayValues?.[field.uid]
@@ -19,12 +23,45 @@
 		typeof value === "string" && value.length
 			? $CustomStore.names.notEmpty_safe
 			: "";
+
+	// NEW: Reactive validation feedback handling
+	$: validationResult = group === undefined
+		? $FormStore[formid]?.[FormProps.VALIDATION_RESULT]?.[field.uid] as ValidationResult
+		: $FormStore[formid]?.[FormProps.VALIDATION_RESULT]?.[group?.meta.uid]?.[field.uid] as ValidationResult;
+	
+	// Check if field has been touched
+	$: isTouched = group === undefined
+		? $FormStore[formid]?.[FormProps.TOUCHED]?.[field.uid] || false
+		: $FormStore[formid]?.[FormProps.TOUCHED]?.[group?.meta.uid]?.[field.uid] || false;
+	
+	// Only show validation feedback if field has been touched
+	$: feedbackItems = (isTouched && validationResult?.raw) ? validationResult.raw : [];
+	$: hasValidationErrors = isTouched && validationResult && !validationResult.verdict;
+	$: feedbackActive = feedbackItems.length > 0;
+
+	// NEW: Reactive warning class handling (only when touched)
+	$: warningClass = hasValidationErrors ? $CustomStore.names.warn : "";
+
+	// NEW: Reactive file preview handling
+	$: fieldFiles = group === undefined
+		? $FormStore[formid]?.[FormProps.FIELD_VALUES]?.[field.uid]
+		: $FormStore[formid]?.[FormProps.FIELD_VALUES]?.[group?.meta.uid]?.[field.uid];
+	
+	$: files = Array.isArray(fieldFiles) ? fieldFiles : [];
+	$: hasFiles = files.length > 0;
+	$: previewActive = hasFiles && field.type === "file" && !field?.hide?.preview;
+
+	// Helper function for file icon mapping
+	function getFileIcon(filename: string): string {
+		const ext = filename.split(".").pop();
+		return (Extensions as any)[ext || ""] || "insert_drive_file";
+	}
 </script>
 
 <div
 	class={`form-block type:${field.type}${
 		field.disabled ? " disabled" : ""
-	} ${notEmpty}`}
+	} ${notEmpty} ${warningClass}`}
 	id={`${$CustomStore.names.blockHeader}${field.uid}`}
 >
 	{#if !field.hidden}
@@ -232,18 +269,33 @@
 	{/if}
 	{#if !group?.meta?.override?.feedback && field.validity}
 		<div
-			class="container-validity"
+			class={`container-validity ${feedbackActive ? "active" : ""}`}
 			id={`${$CustomStore.names.inputFeedback}${field.uid}`}
 			aria-live="polite"
-		/>
+		>
+			{#each feedbackItems as item, index}
+				<p class="condition-{item.verdict}">
+					<span class="for-aria">feedback {index + 1} {item.verdict ? 'is' : 'is NOT'} valid;</span>
+					{item.feedback}
+					<span class="for-aria">.</span>
+				</p>
+			{/each}
+		</div>
 	{/if}
 	{#if field.type === "file" && !field?.hide?.preview}
 		<div
-			class={`container-preview ${
+			class={`container-preview ${previewActive ? "active" : ""} ${
 				field.redact ? $CustomStore.names.redact : ""
 			}`}
 			id={`${$CustomStore.names.inputPreview}${field.uid}`}
 			aria-live="polite"
-		/>
+		>
+			{#each files as file}
+				<div class="preview" title={file.meta.name}>
+					<span class="material-icons">{getFileIcon(file.meta.name)}</span>
+					<p>{file.meta.name}</p>
+				</div>
+			{/each}
+		</div>
 	{/if}
 </div>
