@@ -4,12 +4,12 @@
  */
 
 import { setFieldProp, getFieldProp, manageFieldStorage } from '../store/FormStore';
-import { checkValidity } from './validationService';
 import { get } from 'svelte/store';
 import FormStore from '../store/FormStore';
 import type { Value, Field, Group, FormInstance } from '../types/Form';
 import { FormProps } from '$lib/constants';
 import { isGroup } from '../utils/formHelpers';
+import EventBus, { createFormEvent, EVENT_TYPES } from './EventBus';
 
 export interface FormEventConfig {
     formId: string;
@@ -64,8 +64,12 @@ export async function handleFieldUpdate(
     // Update field value in store
     updateFieldValue(formId, fieldId, groupId);
 
-    // Handle validation and feedback
-    await handleFieldValidation(formId, fieldId, groupId);
+    // Emit field input event for validation
+    const eventBus = EventBus.getInstance();
+    eventBus.emit(createFormEvent(EVENT_TYPES.FIELD_INPUT, formId, fieldId, groupId, { 
+        value: fieldValue,
+        originalEvent: event 
+    }));
 
     // Execute form-level onInput callback
     if (typeof onInput === 'function') {
@@ -102,8 +106,9 @@ export async function handleFieldFocus(
         updateFieldValue(formId, fieldId, groupId);
     }
 
-    // Handle validation on focus
-    await handleFieldValidation(formId, fieldId, groupId);
+    // Emit field focus event
+    const eventBus = EventBus.getInstance();
+    eventBus.emit(createFormEvent(EVENT_TYPES.FIELD_FOCUS, formId, fieldId, groupId));
 
     if (updateDebug) {
         updateDebug();
@@ -126,6 +131,10 @@ export function handleFieldBlur(
     if (getFieldProp(formId, FormProps.REDACT, fieldId, groupId)) {
         setFieldProp(formId, FormProps.DISPLAY_VALUES, "[redacted]", fieldId, groupId);
     }
+
+    // Emit field blur event
+    const eventBus = EventBus.getInstance();
+    eventBus.emit(createFormEvent(EVENT_TYPES.FIELD_BLUR, formId, fieldId, groupId));
 
     if (updateDebug) {
         updateDebug();
@@ -165,17 +174,6 @@ function updateFieldValue(formId: string, fieldId: string, groupId?: string, don
     setFieldProp(formId, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
 }
 
-/**
- * Handles field validation and updates feedback/warnings
- */
-async function handleFieldValidation(formId: string, fieldId: string, groupId?: string): Promise<void> {
-    const hasCustomValidation = getFieldProp(formId, FormProps.VALIDITY, fieldId, groupId);
-    const isRequired = getFieldProp(formId, FormProps.REQUIRED, fieldId, groupId);
-
-    if (hasCustomValidation || isRequired) {
-        await checkValidity(formId, "field", fieldId, groupId);
-    }
-}
 
 /**
  * Handles file upload processing

@@ -7,6 +7,7 @@ import { setFieldProp, manageFieldStorage, updateSave, clearSave, loadSave } fro
 import { loadBlank } from '../utils/formHelpers';
 import { FIELD_TYPES, BRANDING, FormProps } from '../constants';
 import type { Field, Group, Value } from '../types/Form';
+import { initializeValidationEventHandler } from './ValidationEventHandler';
 
 export interface FormLifecycleConfig {
     uid: string;
@@ -43,6 +44,8 @@ export async function initializeForm(
 
     if (isInitialLoad) {
         console.log(BRANDING.MESSAGE);
+        // Initialize event-driven validation handler
+        initializeValidationEventHandler();
     }
 
     // Create new state

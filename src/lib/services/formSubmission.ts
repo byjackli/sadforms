@@ -9,6 +9,7 @@ import { checkValidity } from './validationService';
 import { belongs } from '../tools/kit';
 import type { Value } from '../types/Form';
 import { FormProps } from '$lib/constants';
+import EventBus, { createFormEvent, EVENT_TYPES } from './EventBus';
 
 export interface SubmissionResult {
     success: boolean;
@@ -26,6 +27,11 @@ export interface SubmissionConfig {
 export async function submitForm(config: SubmissionConfig): Promise<SubmissionResult> {
     const { formId, onSubmit } = config;
     
+    const eventBus = EventBus.getInstance();
+    
+    // Emit form submit event
+    eventBus.emit(createFormEvent(EVENT_TYPES.FORM_SUBMIT, formId, undefined, undefined, { config }));
+    
     // Validate the entire form
     const validation = await checkValidity(formId, "form");
     const isValid = validation.verdict;
@@ -38,8 +44,14 @@ export async function submitForm(config: SubmissionConfig): Promise<SubmissionRe
         // Update feedback for all invalid fields
         await updateInvalidFieldFeedback(formId);
         setFieldProp(formId, FormProps.SUBMIT, false, "accepted");
-        
         setFieldProp(formId, FormProps.SUBMIT, false, "submitting");
+        
+        // Emit form submit failed event
+        eventBus.emit(createFormEvent(EVENT_TYPES.FORM_SUBMIT_FAILED, formId, undefined, undefined, { 
+            reason: "validation",
+            validation 
+        }));
+        
         return { success: false, errors: ["Form validation failed"] };
     } 
 
@@ -52,11 +64,24 @@ export async function submitForm(config: SubmissionConfig): Promise<SubmissionRe
         } catch (error) {
             submissionSuccess = false;
             console.error('Form submission error:', error);
+            
+            // Emit form submit failed event for callback errors
+            eventBus.emit(createFormEvent(EVENT_TYPES.FORM_SUBMIT_FAILED, formId, undefined, undefined, { 
+                reason: "callback_error",
+                error: error instanceof Error ? error.message : String(error)
+            }));
         }
     }
 
     setFieldProp(formId, FormProps.SUBMIT, submissionSuccess, "accepted");
     setFieldProp(formId, FormProps.SUBMIT, false, "submitting");
+    
+    // Emit appropriate success/failure event
+    if (submissionSuccess) {
+        eventBus.emit(createFormEvent(EVENT_TYPES.FORM_SUBMIT_SUCCESS, formId, undefined, undefined, { 
+            formData: getFormData(formId)
+        }));
+    }
     
     return { success: submissionSuccess };
 }
