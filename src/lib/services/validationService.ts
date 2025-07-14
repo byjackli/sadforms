@@ -3,7 +3,9 @@
  * Handles field validation, feedback, and preview functionality
  */
 
-import { setFieldProp, getFieldProp, manageFieldStorage } from '../store/FormStore';
+import { manageFieldStorage } from '../store/FormStore';
+import { setValidationResult, getValidationResult } from '../store/FormValidationStore';
+import { getConfigValue } from '../store/FormConfigStore';
 import { FormProps } from '$lib/constants';
 import type { ValidationResult, Rule, Validity } from '$lib/types/Form';
 
@@ -31,7 +33,8 @@ export async function checkValidity(
 ): Promise<ValidationResult> {
     // Handle form-level validation
     if (type === "form" || fieldid === undefined) {
-        for (const block of Object.values(getFieldProp(formId, FormProps.VALIDATION_RESULT))) {
+        const validationResults = getValidationResult(formId, FormProps.VALIDATION_RESULT) || {};
+        for (const block of Object.values(validationResults)) {
             const verdict = (block as ValidationResult).group
                 ? (block as ValidationResult).group!.verdict
                 : (block as ValidationResult).verdict;
@@ -41,7 +44,7 @@ export async function checkValidity(
     }
 
     const isEmpty = checkEmpty(formId, fieldid, groupid),
-        isRequired = getFieldProp(formId, FormProps.REQUIRED, fieldid, groupid);
+        isRequired = getConfigValue(formId, FormProps.REQUIRED, fieldid, groupid);
 
     let verdict = isRequired ? !(isRequired && isEmpty) : true,
         raw: { verdict: boolean, feedback: string }[] = [],
@@ -49,7 +52,7 @@ export async function checkValidity(
 
     // Handle field-level validation
     if (type === "field") {
-        const func = getFieldProp(formId, FormProps.VALIDITY, fieldid, groupid) as Validity;
+        const func = getValidationResult(formId, FormProps.VALIDITY, fieldid, groupid) as Validity;
         if (func && typeof func === 'function') {
             const conditions = func(
                 manageFieldStorage(formId, { action: "get" }, fieldid, groupid) as string
@@ -65,22 +68,20 @@ export async function checkValidity(
         }
     }
 
-    setFieldProp(formId, FormProps.VALIDATION_RESULT, { verdict, raw }, fieldid, groupid);
+    setValidationResult(formId, { verdict, raw }, fieldid, groupid);
 
     // Handle group-level validation
     if (groupid || type === "group") {
         group = { verdict: true, raw: [] };
 
-        for (const [key, value] of Object.entries(
-            getFieldProp(formId, FormProps.VALIDATION_RESULT, groupid)
-        )) {
+        const groupValidationResults = getValidationResult(formId, FormProps.VALIDATION_RESULT, undefined, groupid) || {};
+        for (const [key, value] of Object.entries(groupValidationResults)) {
             if (key === "group") continue;
             group.verdict = group.verdict && (value as ValidationResult).verdict;
             if (Array.isArray((value as ValidationResult).raw)) group.raw.push(...(value as ValidationResult).raw!);
         }
-        setFieldProp(formId, FormProps.VALIDATION_RESULT, group, "group", groupid);
+        setValidationResult(formId, group, "group", groupid);
     }
 
     return { verdict, raw, group };
 }
-

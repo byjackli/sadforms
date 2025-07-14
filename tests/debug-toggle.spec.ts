@@ -13,13 +13,12 @@ test.describe('Debug Toggle Functionality', () => {
     
     // Wait for page to load and form to initialize
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(3000); // Give time for form to initialize
 
     // Verify we're on the right page with the sample form
     await expect(page).toHaveTitle('Sad Forms');
     
     // Wait for form to be visible and loaded
-    await page.waitForSelector('#editor', { state: 'visible' });
+    await expect(page.locator('#editor')).toBeVisible();
     
     console.log('Looking for debug button...');
     
@@ -32,7 +31,19 @@ test.describe('Debug Toggle Functionality', () => {
     
     // Click the debug button to open debug panel
     await debugButton.click();
-    await page.waitForTimeout(1000); // Give time for panel to open
+    
+    // Wait for any debug UI changes
+    await page.waitForFunction(() => {
+      // Check if debug panel opened or any debug-related elements appeared
+      const debugElements = document.querySelectorAll('[class*="debug"], [id*="debug"], .sf pre, .sf code');
+      const formDataElements = document.querySelectorAll('pre, code');
+      const hasJsonContent = Array.from(document.querySelectorAll('*')).some(el => {
+        const text = el.textContent || '';
+        return text.trim().startsWith('{') && text.includes('uid') && text.includes('title');
+      });
+      
+      return debugElements.length > 0 || formDataElements.length > 0 || hasJsonContent;
+    }, { timeout: 5000 }).catch(() => {});
     
     // Look for debug-related UI elements or any change in the page
     const hasDebugElements = await page.evaluate(() => {
@@ -86,7 +97,7 @@ test.describe('Debug Toggle Functionality', () => {
   test('should find debug controls', async ({ page }) => {
     await page.goto('/edit?uid=sample');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await expect(page.locator('#editor')).toBeVisible();
 
     // Try to find debug-related controls
     const debugControls = await page.evaluate(() => {

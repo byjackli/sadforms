@@ -3,7 +3,8 @@
  * Listens to field events and triggers validation as needed
  */
 
-import { getFieldProp } from '../store/FormStore';
+import { getValidationResult } from '../store/FormValidationStore';
+import { getConfigValue } from '../store/FormConfigStore';
 import { checkValidity } from './validationService';
 import { FormProps } from '$lib/constants';
 import EventBus, { EVENT_TYPES, type FormEvent } from './EventBus';
@@ -50,8 +51,8 @@ export class ValidationEventHandler {
         if (!fieldId) return;
 
         // Check if field has validation rules
-        const hasCustomValidation = getFieldProp(formId, FormProps.VALIDITY, fieldId, groupId);
-        const isRequired = getFieldProp(formId, FormProps.REQUIRED, fieldId, groupId);
+        const hasCustomValidation = getValidationResult(formId, FormProps.VALIDITY, fieldId, groupId);
+        const isRequired = getConfigValue(formId, FormProps.REQUIRED, fieldId, groupId);
 
         if (hasCustomValidation || isRequired) {
             try {

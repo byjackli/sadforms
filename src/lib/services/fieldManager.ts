@@ -3,7 +3,10 @@
  * Handles field and group initialization and updates
  */
 
-import { setFieldProp, getFieldProp, manageFieldStorage } from '../store/FormStore';
+import { manageFieldStorage } from '../store/FormStore';
+import { setFieldValue } from '../store/FormFieldStore';
+import { setValidity } from '../store/FormValidationStore';
+import { setRequired, setOnInput, setRedact, setGroup } from '../store/FormConfigStore';
 import { loadBlank, isGroup } from '../utils/formHelpers';
 import type { Field, Group } from '../types/Form';
 import { FormProps } from '$lib/constants';
@@ -31,39 +34,33 @@ export async function loadField(
             field.uid,
             g?.uid
         );
-        setFieldProp(uid, FormProps.FIELD_VALUES, fieldValue, field.uid, g?.uid);
-        setFieldProp(uid, FormProps.DISPLAY_VALUES, fieldValue, field.uid, g?.uid);
+        setFieldValue(uid, FormProps.FIELD_VALUES, fieldValue, field.uid, g?.uid);
+        setFieldValue(uid, FormProps.DISPLAY_VALUES, fieldValue, field.uid, g?.uid);
     }
     
     if (field.onInput)
-        setFieldProp(uid, FormProps.ON_INPUT, field.onInput, field.uid, g?.uid);
+        setOnInput(uid, field.onInput, field.uid, g?.uid);
 
     if (field.redact || (g && g.redact)) {
-        setFieldProp(
-            uid,
-            FormProps.REDACT,
-            { redact: true, data: field.redact || g.redact },
-            field.uid,
-            g?.uid
-        );
+        setRedact(uid, true, field.uid, g?.uid);
     } else {
         // Clear redaction when disabled
-        setFieldProp(uid, FormProps.REDACT, false, field.uid, g?.uid);
+        setRedact(uid, false, field.uid, g?.uid);
     }
 
     if (field.required || (g && g.required)) {
-        setFieldProp(uid, FormProps.REQUIRED, true, field.uid, g?.uid);
+        setRequired(uid, true, field.uid, g?.uid);
     }
 
     if (field.validity)
-        setFieldProp(uid, FormProps.VALIDITY, field.validity, field.uid, g?.uid);
+        setValidity(uid, field.validity, field.uid, g?.uid);
 }
 
 /**
  * Loads and initializes a field group
  */
 export async function loadGroup(uid: string, group: Group): Promise<void> {
-    setFieldProp(uid, FormProps.GROUP, group.meta, group.meta.uid);
+    setGroup(uid, group, group.meta.uid);
 }
 
 /**

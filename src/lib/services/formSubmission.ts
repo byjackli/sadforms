@@ -4,7 +4,8 @@
  */
 
 import { get } from 'svelte/store';
-import FormStore, { setFieldProp, getFieldProp } from '../store/FormStore';
+import FormStore from '../store/FormStore';
+import { setSubmitState, setTouched, getMetaValue } from '../store/FormMetaStore';
 import { checkValidity } from './validationService';
 import { belongs } from '../tools/kit';
 import type { Value } from '../types/Form';
@@ -37,14 +38,14 @@ export async function submitForm(config: SubmissionConfig): Promise<SubmissionRe
     const isValid = validation.verdict;
 
     // Mark submission state
-    setFieldProp(formId, FormProps.SUBMIT, true, "submitting");
-    setFieldProp(formId, FormProps.SUBMIT, true, "attempted");
+    setSubmitState(formId, true, "submitting");
+    setSubmitState(formId, true, "attempted");
 
     if (!isValid) {
         // Update feedback for all invalid fields
         await updateInvalidFieldFeedback(formId);
-        setFieldProp(formId, FormProps.SUBMIT, false, "accepted");
-        setFieldProp(formId, FormProps.SUBMIT, false, "submitting");
+        setSubmitState(formId, false, "accepted");
+        setSubmitState(formId, false, "submitting");
         
         // Emit form submit failed event
         eventBus.emit(createFormEvent(EVENT_TYPES.FORM_SUBMIT_FAILED, formId, undefined, undefined, { 
@@ -73,8 +74,8 @@ export async function submitForm(config: SubmissionConfig): Promise<SubmissionRe
         }
     }
 
-    setFieldProp(formId, FormProps.SUBMIT, submissionSuccess, "accepted");
-    setFieldProp(formId, FormProps.SUBMIT, false, "submitting");
+    setSubmitState(formId, submissionSuccess, "accepted");
+    setSubmitState(formId, false, "submitting");
     
     // Emit appropriate success/failure event
     if (submissionSuccess) {
@@ -101,14 +102,14 @@ async function updateInvalidFieldFeedback(formId: string): Promise<void> {
             for (const [fieldId, fieldVerdict] of Object.entries(value as Record<string, any>)) {
                 if (fieldId !== "group" && !fieldVerdict.verdict) {
                     // Mark field as touched so validation feedback shows
-                    setFieldProp(formId, FormProps.TOUCHED, true, fieldId, key);
+                    setTouched(formId, true, fieldId, key);
                     await checkValidity(formId, "field", fieldId, key);
                 }
             }
         } else if (!(value as any).verdict) {
             // Handle individual fields
             // Mark field as touched so validation feedback shows
-            setFieldProp(formId, FormProps.TOUCHED, true, key, undefined);
+            setTouched(formId, true, key, undefined);
             await checkValidity(formId, "field", key, undefined);
         }
     }
@@ -144,19 +145,19 @@ function getFormData(formId: string): Record<string, Value> {
  * Checks if form is currently submitting
  */
 export function isFormSubmitting(formId: string): boolean {
-    return !!getFieldProp(formId, FormProps.SUBMIT, "submitting");
+    return !!getMetaValue(formId, FormProps.SUBMIT, "submitting");
 }
 
 /**
  * Checks if form submission was attempted
  */
 export function isFormSubmissionAttempted(formId: string): boolean {
-    return !!getFieldProp(formId, FormProps.SUBMIT, "attempted");
+    return !!getMetaValue(formId, FormProps.SUBMIT, "attempted");
 }
 
 /**
  * Checks if form submission was accepted/successful
  */
 export function isFormSubmissionAccepted(formId: string): boolean {
-    return !!getFieldProp(formId, FormProps.SUBMIT, "accepted");
+    return !!getMetaValue(formId, FormProps.SUBMIT, "accepted");
 }

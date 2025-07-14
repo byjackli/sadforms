@@ -1,18 +1,27 @@
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { loadField, loadGroup, loadAllFields } from './fieldManager';
 import * as FormStore from '../store/FormStore';
+import * as FormFieldStore from '../store/FormFieldStore';
+import * as FormValidationStore from '../store/FormValidationStore';
+import * as FormConfigStore from '../store/FormConfigStore';
 import * as FormHelpers from '../utils/formHelpers';
 import { FormProps } from '$lib/constants';
 import { Field, Group } from '$lib/types/Form';
 
 // Mock dependencies
 vi.mock('../store/FormStore');
+vi.mock('../store/FormFieldStore');
+vi.mock('../store/FormValidationStore');
+vi.mock('../store/FormConfigStore');
 vi.mock('../utils/formHelpers', () => ({
   loadBlank: vi.fn(),
   isGroup: vi.fn()
 }));
 
 const mockFormStore = FormStore as any;
+const mockFormFieldStore = FormFieldStore as any;
+const mockFormValidationStore = FormValidationStore as any;
+const mockFormConfigStore = FormConfigStore as any;
 const mockFormHelpers = FormHelpers as any;
 
 describe('fieldManager', () => {
@@ -43,10 +52,9 @@ describe('fieldManager', () => {
 
       await loadGroup(uid, group);
 
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      expect(mockFormConfigStore.setGroup).toHaveBeenCalledWith(
         uid,
-        'group',
-        group.meta,
+        group,
         group.meta.uid
       );
     });
@@ -84,9 +92,17 @@ describe('fieldManager', () => {
         undefined
       );
 
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      expect(mockFormFieldStore.setFieldValue).toHaveBeenCalledWith(
         uid,
         FormProps.FIELD_VALUES,
+        'default-value',
+        field.uid,
+        undefined
+      );
+
+      expect(mockFormFieldStore.setFieldValue).toHaveBeenCalledWith(
+        uid,
+        FormProps.DISPLAY_VALUES,
         'default-value',
         field.uid,
         undefined
@@ -159,9 +175,8 @@ describe('fieldManager', () => {
 
       await loadField(uid, field);
 
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      expect(mockFormConfigStore.setOnInput).toHaveBeenCalledWith(
         uid,
-        FormProps.ON_INPUT,
         onInputHandler,
         field.uid,
         undefined
@@ -180,10 +195,9 @@ describe('fieldManager', () => {
 
       await loadField(uid, field);
 
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      expect(mockFormConfigStore.setRedact).toHaveBeenCalledWith(
         uid,
-        FormProps.REDACT,
-        { redact: true, data: true },
+        true,
         field.uid,
         undefined
       );
@@ -213,10 +227,9 @@ describe('fieldManager', () => {
 
       await loadField(uid, field, group);
 
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      expect(mockFormConfigStore.setRedact).toHaveBeenCalledWith(
         uid,
-        FormProps.REDACT,
-        { redact: true, data: true },
+        true,
         field.uid,
         group.meta.uid
       );
@@ -234,9 +247,8 @@ describe('fieldManager', () => {
 
       await loadField(uid, field);
 
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      expect(mockFormConfigStore.setRequired).toHaveBeenCalledWith(
         uid,
-        FormProps.REQUIRED,
         true,
         field.uid,
         undefined
@@ -267,9 +279,8 @@ describe('fieldManager', () => {
 
       await loadField(uid, field, group);
 
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      expect(mockFormConfigStore.setRequired).toHaveBeenCalledWith(
         uid,
-        FormProps.REQUIRED,
         true,
         field.uid,
         group.meta.uid
@@ -289,9 +300,8 @@ describe('fieldManager', () => {
 
       await loadField(uid, field);
 
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      expect(mockFormValidationStore.setValidity).toHaveBeenCalledWith(
         uid,
-        FormProps.VALIDITY,
         validityFn,
         field.uid,
         undefined
@@ -339,11 +349,11 @@ describe('fieldManager', () => {
 
       await loadAllFields(uid, formFields);
 
-      // Verify setFieldProp was called for each field
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      // Verify setFieldValue was called for each field
+      expect(mockFormFieldStore.setFieldValue).toHaveBeenCalledWith(
         uid, FormProps.FIELD_VALUES, 'default-value', 'field-1', undefined
       );
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      expect(mockFormFieldStore.setFieldValue).toHaveBeenCalledWith(
         uid, FormProps.FIELD_VALUES, 'default-value', 'field-2', undefined
       );
     });
@@ -366,21 +376,18 @@ describe('fieldManager', () => {
 
       await loadAllFields(uid, formFields);
 
-      // The test expects specific call patterns, let's check all calls
-      const allCalls = mockFormStore.setFieldProp.mock.calls;
-      
       // Check that group was set
-      expect(allCalls).toContainEqual([
-        uid, FormProps.GROUP, formFields[0].meta, 'group-1'
-      ]);
+      expect(mockFormConfigStore.setGroup).toHaveBeenCalledWith(
+        uid, formFields[0], 'group-1'
+      );
 
       // Check that fields were processed with group context
-      expect(allCalls).toContainEqual([
+      expect(mockFormFieldStore.setFieldValue).toHaveBeenCalledWith(
         uid, FormProps.FIELD_VALUES, 'default-value', 'field-1', 'group-1'
-      ]);
-      expect(allCalls).toContainEqual([
+      );
+      expect(mockFormFieldStore.setFieldValue).toHaveBeenCalledWith(
         uid, FormProps.FIELD_VALUES, 'default-value', 'field-2', 'group-1'
-      ]);
+      );
     });
 
     it('should handle mixed individual fields and groups correctly', async () => {
@@ -402,19 +409,16 @@ describe('fieldManager', () => {
 
       await loadAllFields(uid, formFields);
 
-      // Check all calls to verify proper processing
-      const allCalls = mockFormStore.setFieldProp.mock.calls;
-      
       // Verify all fields were processed
-      expect(allCalls).toContainEqual([
+      expect(mockFormFieldStore.setFieldValue).toHaveBeenCalledWith(
         uid, FormProps.FIELD_VALUES, 'default-value', 'field-1', undefined
-      ]);
-      expect(allCalls).toContainEqual([
+      );
+      expect(mockFormFieldStore.setFieldValue).toHaveBeenCalledWith(
         uid, FormProps.FIELD_VALUES, 'default-value', 'field-2', 'group-1'
-      ]);
-      expect(allCalls).toContainEqual([
+      );
+      expect(mockFormFieldStore.setFieldValue).toHaveBeenCalledWith(
         uid, FormProps.FIELD_VALUES, 'default-value', 'field-3', undefined
-      ]);
+      );
     });
   });
 });

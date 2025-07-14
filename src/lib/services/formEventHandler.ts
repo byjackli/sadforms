@@ -3,7 +3,10 @@
  * Handles field updates, focus/blur events, and form interactions
  */
 
-import { setFieldProp, getFieldProp, manageFieldStorage } from '../store/FormStore';
+import { manageFieldStorage } from '../store/FormStore';
+import { setFieldValue } from '../store/FormFieldStore';
+import { setTouched, setActive } from '../store/FormMetaStore';
+import { getConfigValue } from '../store/FormConfigStore';
 import { get } from 'svelte/store';
 import FormStore from '../store/FormStore';
 import type { Value, Field, Group, FormInstance } from '../types/Form';
@@ -38,7 +41,7 @@ export async function handleFieldUpdate(
     const { formId, formFields, onInput, save, saveToLocal, saveToCloud, updateSave, updateDebug } = config;
 
     let fieldValue: Value = (event.target as HTMLInputElement).value;
-    const localOnInput = getFieldProp(formId, FormProps.ON_INPUT, fieldId, groupId);
+    const localOnInput = getConfigValue(formId, FormProps.ON_INPUT, fieldId, groupId);
 
     // Determine if field should not be saved
     const dontSave = getDontSaveFlag(fieldId, groupId, formFields);
@@ -98,11 +101,11 @@ export async function handleFieldFocus(
 ): Promise<void> {
     const { formId, updateDebug } = config;
 
-    setFieldProp(formId, FormProps.TOUCHED, true, fieldId, groupId);
-    setFieldProp(formId, FormProps.ACTIVE, true, fieldId, groupId);
+    setTouched(formId, true, fieldId, groupId);
+    setActive(formId, true, fieldId, groupId);
 
     // Handle redacted fields
-    if (getFieldProp(formId, FormProps.REDACT, fieldId, groupId)) {
+    if (getConfigValue(formId, FormProps.REDACT, fieldId, groupId)) {
         updateFieldValue(formId, fieldId, groupId);
     }
 
@@ -125,11 +128,11 @@ export function handleFieldBlur(
 ): void {
     const { formId, updateDebug } = config;
 
-    setFieldProp(formId, FormProps.ACTIVE, false, fieldId, groupId);
+    setActive(formId, false, fieldId, groupId);
 
     // Re-redact field if necessary
-    if (getFieldProp(formId, FormProps.REDACT, fieldId, groupId)) {
-        setFieldProp(formId, FormProps.DISPLAY_VALUES, "[redacted]", fieldId, groupId);
+    if (getConfigValue(formId, FormProps.REDACT, fieldId, groupId)) {
+        setFieldValue(formId, FormProps.DISPLAY_VALUES, "[redacted]", fieldId, groupId);
     }
 
     // Emit field blur event
@@ -170,8 +173,8 @@ function updateFieldValue(formId: string, fieldId: string, groupId?: string, don
         fieldValue = "";
     }
 
-    setFieldProp(formId, FormProps.FIELD_VALUES, fieldValue, fieldId, groupId);
-    setFieldProp(formId, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
+    setFieldValue(formId, FormProps.FIELD_VALUES, fieldValue, fieldId, groupId);
+    setFieldValue(formId, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
 }
 
 

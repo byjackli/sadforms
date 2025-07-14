@@ -1,16 +1,21 @@
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { checkValidity } from './validationService';
 import * as FormStore from '../store/FormStore';
+import * as FormValidationStore from '../store/FormValidationStore';
+import * as FormConfigStore from '../store/FormConfigStore';
 import * as CustomStore from '../store/CustomStore';
 import { get } from 'svelte/store';
 
 // Mock dependencies
 vi.mock('../store/FormStore');
+vi.mock('../store/FormValidationStore');
+vi.mock('../store/FormConfigStore');
 vi.mock('../store/CustomStore');
 vi.mock('svelte/store');
 
 const mockFormStore = FormStore as any;
-const mockCustomStore = CustomStore as any;
+const mockFormValidationStore = FormValidationStore as any;
+const mockFormConfigStore = FormConfigStore as any;
 const mockGet = get as Mock;
 
 describe('validationService', () => {
@@ -46,12 +51,12 @@ describe('validationService', () => {
         field2: { verdict: true }
       };
       
-      mockFormStore.getFieldProp.mockReturnValue(mockVerdict);
+      mockFormValidationStore.getValidationResult.mockReturnValue(mockVerdict);
       
       const result = await checkValidity(formId, 'form');
       
       expect(result.verdict).toBe(true);
-      expect(mockFormStore.getFieldProp).toHaveBeenCalledWith(formId, 'validationResult');
+      expect(mockFormValidationStore.getValidationResult).toHaveBeenCalledWith(formId, 'validationResult');
     });
 
     it('should return false for form with invalid fields', async () => {
@@ -60,7 +65,7 @@ describe('validationService', () => {
         field2: { verdict: false }
       };
       
-      mockFormStore.getFieldProp.mockReturnValue(mockVerdict);
+      mockFormValidationStore.getValidationResult.mockReturnValue(mockVerdict);
       
       const result = await checkValidity(formId, 'form');
       
@@ -69,16 +74,15 @@ describe('validationService', () => {
 
     it('should validate field-level for required fields', async () => {
       mockFormStore.manageFieldStorage.mockReturnValue('');
-      mockFormStore.getFieldProp
+      mockFormConfigStore.getConfigValue
         .mockReturnValueOnce(true) // required = true
         .mockReturnValueOnce(null); // validity function = null
       
       const result = await checkValidity(formId, 'field', fieldId);
       
       expect(result.verdict).toBe(false); // Empty required field should be invalid
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      expect(mockFormValidationStore.setValidationResult).toHaveBeenCalledWith(
         formId, 
-        'validationResult', 
         { verdict: false, raw: [] }, 
         fieldId, 
         undefined
@@ -87,7 +91,7 @@ describe('validationService', () => {
 
     it('should validate field-level for non-required fields', async () => {
       mockFormStore.manageFieldStorage.mockReturnValue('');
-      mockFormStore.getFieldProp.mockReturnValue(false); // required = false
+      mockFormConfigStore.getConfigValue.mockReturnValue(false); // required = false
       
       const result = await checkValidity(formId, 'field', fieldId);
       
@@ -104,9 +108,8 @@ describe('validationService', () => {
       });
       
       mockFormStore.manageFieldStorage.mockReturnValue('test-value');
-      mockFormStore.getFieldProp
-        .mockReturnValueOnce(false) // required = false
-        .mockReturnValueOnce(mockValidationFn); // validity function
+      mockFormConfigStore.getConfigValue.mockReturnValueOnce(false); // required = false
+      mockFormValidationStore.getValidationResult.mockReturnValueOnce(mockValidationFn); // validity function
       
       const result = await checkValidity(formId, 'field', fieldId);
       
@@ -120,15 +123,14 @@ describe('validationService', () => {
         field2: { verdict: false, raw: [{ verdict: false, feedback: 'Error' }] }
       };
       
-      mockFormStore.getFieldProp.mockReturnValue(mockGroupVerdict);
+      mockFormValidationStore.getValidationResult.mockReturnValue(mockGroupVerdict);
       
       const result = await checkValidity(formId, 'group', fieldId, groupId);
       
       expect(result.group.verdict).toBe(false);
       expect(result.group.raw).toEqual(expect.arrayContaining([{ verdict: false, feedback: 'Error' }]));
-      expect(mockFormStore.setFieldProp).toHaveBeenCalledWith(
+      expect(mockFormValidationStore.setValidationResult).toHaveBeenCalledWith(
         formId,
-        'validationResult',
         expect.objectContaining({ verdict: false }),
         'group',
         groupId

@@ -1,10 +1,12 @@
 <script lang="ts">
 	import CustomStore from "../store/CustomStore";
-	import FormStore, { manageFieldStorage } from "../store/FormStore";
+	import { manageFieldStorage } from "../store/FormStore";
+	import FormFieldStore from "../store/FormFieldStore";
+	import FormValidationStore from "../store/FormValidationStore";
+	import FormMetaStore from "../store/FormMetaStore";
 	import Checkbox from "./Checkbox.svelte";
 	import Dropdown from "./Dropdown.svelte";
 	import Divider from "./Divider.svelte";
-	import { FormProps } from "../constants";
 	import Extensions from "../static/extensions.json";
 	import type { Field, Group, ValidationResult } from "../types/Form";
 
@@ -13,26 +15,26 @@
 		group: Group = undefined,
 		functions: Record<string, Function>;
 	
-	// Existing reactive statements
+	// Existing reactive statements - now using FormFieldStore
 	$: value =
 		group === undefined
-			? $FormStore[formid]?.displayValues?.[field.uid]
-			: $FormStore[formid]?.displayValues?.[group?.meta.uid]?.[field.uid];
+			? $FormFieldStore[formid]?.displayValues?.[field.uid]
+			: $FormFieldStore[formid]?.displayValues?.[group?.meta.uid]?.[field.uid];
 
 	$: notEmpty =
 		typeof value === "string" && value.length
 			? $CustomStore.names.notEmpty_safe
 			: "";
 
-	// NEW: Reactive validation feedback handling
+	// NEW: Reactive validation feedback handling - now using FormValidationStore
 	$: validationResult = group === undefined
-		? $FormStore[formid]?.[FormProps.VALIDATION_RESULT]?.[field.uid] as ValidationResult
-		: $FormStore[formid]?.[FormProps.VALIDATION_RESULT]?.[group?.meta.uid]?.[field.uid] as ValidationResult;
+		? $FormValidationStore[formid]?.validationResult?.[field.uid] as ValidationResult
+		: $FormValidationStore[formid]?.validationResult?.[group?.meta.uid]?.[field.uid] as ValidationResult;
 	
-	// Check if field has been touched
+	// Check if field has been touched - now using FormMetaStore
 	$: isTouched = group === undefined
-		? $FormStore[formid]?.[FormProps.TOUCHED]?.[field.uid] || false
-		: $FormStore[formid]?.[FormProps.TOUCHED]?.[group?.meta.uid]?.[field.uid] || false;
+		? $FormMetaStore[formid]?.touched?.[field.uid] || false
+		: $FormMetaStore[formid]?.touched?.[group?.meta.uid]?.[field.uid] || false;
 	
 	// Only show validation feedback if field has been touched
 	$: feedbackItems = (isTouched && validationResult?.raw) ? validationResult.raw : [];
@@ -42,10 +44,10 @@
 	// NEW: Reactive warning class handling (only when touched)
 	$: warningClass = hasValidationErrors ? $CustomStore.names.warn : "";
 
-	// NEW: Reactive file preview handling
+	// NEW: Reactive file preview handling - now using FormFieldStore
 	$: fieldFiles = group === undefined
-		? $FormStore[formid]?.[FormProps.FIELD_VALUES]?.[field.uid]
-		: $FormStore[formid]?.[FormProps.FIELD_VALUES]?.[group?.meta.uid]?.[field.uid];
+		? $FormFieldStore[formid]?.fieldValues?.[field.uid]
+		: $FormFieldStore[formid]?.fieldValues?.[group?.meta.uid]?.[field.uid];
 	
 	$: files = Array.isArray(fieldFiles) ? fieldFiles : [];
 	$: hasFiles = files.length > 0;

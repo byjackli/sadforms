@@ -3,7 +3,11 @@
  * Handles form loading, initialization, field management, and cleanup
  */
 
-import { setFieldProp, manageFieldStorage, updateSave, clearSave, loadSave } from '../store/FormStore';
+import { manageFieldStorage, updateSave, clearSave, loadSave } from '../store/FormStore';
+import { setFieldValue, initFieldStore } from '../store/FormFieldStore';
+import { setValidity, initValidationStore } from '../store/FormValidationStore';
+import { setTouched, setActive, initMetaStore } from '../store/FormMetaStore';
+import { setRequired, setOnInput, setRedact, setPreview, setGroup, initConfigStore } from '../store/FormConfigStore';
 import { loadBlank } from '../utils/formHelpers';
 import { FIELD_TYPES, BRANDING, FormProps } from '../constants';
 import type { Field, Group, Value } from '../types/Form';
@@ -59,6 +63,12 @@ export async function initializeForm(
     // Load saved data
     loadSave(uid, saveToLocal, saveToCloud, forceReset);
 
+    // Initialize specialized stores
+    initFieldStore(uid);
+    initValidationStore(uid);
+    initMetaStore(uid);
+    initConfigStore(uid);
+
     // Initialize all fields
     await loadAllFields(uid, newState.formFields, saveToLocal, saveToCloud);
 
@@ -112,7 +122,7 @@ export async function loadAllFields(
  * Loads and initializes a group
  */
 export async function loadGroup(uid: string, group: Group): Promise<void> {
-    setFieldProp(uid, FormProps.GROUP, group.meta, group.meta.uid);
+    setGroup(uid, group, group.meta.uid);
 }
 
 /**
@@ -140,8 +150,8 @@ export async function loadField(
             field.uid,
             groupMeta?.uid
         );
-        setFieldProp(uid, FormProps.FIELD_VALUES, defaultFieldValue, field.uid, groupMeta?.uid);
-        setFieldProp(uid, FormProps.DISPLAY_VALUES, defaultFieldValue, field.uid, groupMeta?.uid);
+        setFieldValue(uid, FormProps.FIELD_VALUES, defaultFieldValue, field.uid, groupMeta?.uid);
+        setFieldValue(uid, FormProps.DISPLAY_VALUES, defaultFieldValue, field.uid, groupMeta?.uid);
     } else {
         // Field exists in storage, but we still need to ensure displayValues are set
         updateFieldValue(uid, field.uid, groupMeta?.uid, dontSave);
@@ -149,38 +159,32 @@ export async function loadField(
 
     // Setup field callbacks
     if (field.onInput) {
-        setFieldProp(uid, FormProps.ON_INPUT, field.onInput, field.uid, groupMeta?.uid);
+        setOnInput(uid, field.onInput, field.uid, groupMeta?.uid);
     }
 
     // Handle redacted fields
     if (field.redact || groupMeta?.redact) {
-        setFieldProp(
-            uid,
-            FormProps.REDACT,
-            groupMeta?.redact || field.redact,
-            field.uid,
-            groupMeta?.uid
-        );
-        setFieldProp(uid, FormProps.DISPLAY_VALUES, "[redacted]", field.uid, groupMeta?.uid);
+        setRedact(uid, groupMeta?.redact || field.redact, field.uid, groupMeta?.uid);
+        setFieldValue(uid, FormProps.DISPLAY_VALUES, "[redacted]", field.uid, groupMeta?.uid);
     }
 
     // Initialize field state
-    setFieldProp(uid, FormProps.ACTIVE, false, field.uid, groupMeta?.uid);
+    setActive(uid, false, field.uid, groupMeta?.uid);
 
     // Setup required field validation (don't validate on init - wait for user interaction)
     if (field.required || groupMeta?.required) {
         const isRequired = groupMeta?.required || field.required;
-        setFieldProp(uid, FormProps.REQUIRED, isRequired, field.uid, groupMeta?.uid);
+        setRequired(uid, isRequired, field.uid, groupMeta?.uid);
     }
 
     // Setup custom validation (don't validate on init - wait for user interaction)
     if (field.validity) {
-        setFieldProp(uid, FormProps.VALIDITY, field.validity, field.uid, groupMeta?.uid);
+        setValidity(uid, field.validity, field.uid, groupMeta?.uid);
     }
 
     // Setup file preview for file fields
     if (field.type === FIELD_TYPES.FILE && !field.hide?.preview) {
-        setFieldProp(uid, FormProps.PREVIEW, true, field.uid, groupMeta?.uid);
+        setPreview(uid, true, field.uid, groupMeta?.uid);
     }
 }
 
@@ -213,8 +217,8 @@ function updateFieldValue(uid: string, fieldId: string, groupId?: string, dontSa
         fieldValue = "";
     }
 
-    setFieldProp(uid, FormProps.FIELD_VALUES, fieldValue, fieldId, groupId);
-    setFieldProp(uid, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
+    setFieldValue(uid, FormProps.FIELD_VALUES, fieldValue, fieldId, groupId);
+    setFieldValue(uid, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
 }
 
 /**
