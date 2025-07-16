@@ -50,7 +50,9 @@ export enum FormProps {
   FIELD_VALUES = 'fieldValues',
   DISPLAY_VALUES = 'displayValues',
   ACTIVE = 'active',
-  GROUP = 'group'
+  GROUP = 'group',
+  SAVE_TO_LOCAL = 'saveToLocal',
+  SAVE_TO_CLOUD = 'saveToCloud'
 };
 
 // Actions

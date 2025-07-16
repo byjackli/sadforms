@@ -6,11 +6,13 @@
 import { hasField, setField, getField, updateSave, loadSave } from '../store/FormFieldStore';
 import { setFieldValue, initFieldStore } from '../store/FormFieldStore';
 import { setValidity, initValidationStore } from '../store/FormValidationStore';
-import { setTouched, setActive, initMetaStore } from '../store/FormMetaStore';
+import { setTouched, setActive, initMetaStore, setStorageConfig } from '../store/FormMetaStore';
 import { setRequired, setOnInput, setRedact, setPreview, setGroup, initConfigStore } from '../store/FormConfigStore';
 import { loadBlank } from '../utils/formHelpers';
 import { FIELD_TYPES, BRANDING, FormProps } from '../constants';
 import type { Field, Group, Value } from '../types/Form';
+import { initializeStorage } from './storageService';
+import { LocalStorageProvider } from './providers/LocalStorageProvider';
 
 export interface FormLifecycleConfig {
     uid: string;
@@ -47,7 +49,9 @@ export async function initializeForm(
 
     if (isInitialLoad) {
         console.log(BRANDING.MESSAGE);
-        // Initialize event-driven validation handler
+        // Initialize StorageService on first load
+        const localStorage = new LocalStorageProvider();
+        await initializeStorage(localStorage, []); // No secondary providers by default
     }
 
     // Create new state
@@ -59,31 +63,30 @@ export async function initializeForm(
     };
 
     // Load saved data
-    loadSave(uid, saveToLocal, saveToCloud, forceReset);
+    await loadSave(uid, forceReset);
 
     // Initialize specialized stores
     initFieldStore(uid);
     initValidationStore(uid);
     initMetaStore(uid);
     initConfigStore(uid);
-
-    // Initialize specialized stores
-    initFieldStore(uid);
-    initValidationStore(uid);
-    initMetaStore(uid);
-    initConfigStore(uid);
+    
+    // Store the storage configuration in FormMetaStore
+    setStorageConfig(uid, saveToLocal, saveToCloud);
 
     // Initialize all fields
-    await loadAllFields(uid, newState.formFields, saveToLocal, saveToCloud);
+    await loadAllFields(uid, newState.formFields);
 
     // Save current state
-    updateSave(uid, saveToLocal, saveToCloud);
+    await updateSave(uid);
     updateDebug();
 
     // Setup auto-save interval
     if (typeof save?.saveAuto === "number") {
         newState.autoSaveInterval = setInterval(
-            () => updateSave(uid, saveToLocal, saveToCloud),
+            () => updateSave(uid).catch(error => 
+                console.warn(`Auto-save failed for form ${uid}:`, error)
+            ),
             save.saveAuto
         );
     }
@@ -101,9 +104,7 @@ export async function initializeForm(
  */
 export async function loadAllFields(
     uid: string,
-    formFields: (Field | Group)[],
-    saveToLocal: boolean,
-    saveToCloud: boolean
+    formFields: (Field | Group)[]
 ): Promise<void> {
     for (const block of formFields) {
         if ('meta' in block) {
@@ -112,12 +113,12 @@ export async function loadAllFields(
             // Load all fields in the group (exclude the 'meta' property)
             for (const [key, field] of Object.entries(block)) {
                 if (key !== 'meta' && field && typeof field === 'object' && 'uid' in field) {
-                    await loadField(uid, field as Field, block, saveToLocal, saveToCloud);
+                    await loadField(uid, field as Field, block);
                 }
             }
         } else {
             // This is a standalone Field
-            await loadField(uid, block, undefined, saveToLocal, saveToCloud);
+            await loadField(uid, block);
         }
     }
 }
@@ -136,9 +137,7 @@ export async function loadGroup(uid: string, group: Group): Promise<void> {
 export async function loadField(
     uid: string,
     field: Field,
-    group?: Group,
-    saveToLocal = true,
-    saveToCloud = false
+    group?: Group
 ): Promise<void> {
     const groupMeta = group?.meta;
     const dontSave = field.dontSave || groupMeta?.dontSave;
@@ -149,7 +148,7 @@ export async function loadField(
             ? field.defaultValue
             : loadBlank(field.type);
             
-        setField(uid, field.uid, defaultFieldValue, groupMeta?.uid, dontSave);
+        setField(uid, field.uid, defaultFieldValue as Value, groupMeta?.uid, dontSave);
         setFieldValue(uid, FormProps.FIELD_VALUES, defaultFieldValue, field.uid, groupMeta?.uid);
         setFieldValue(uid, FormProps.DISPLAY_VALUES, defaultFieldValue, field.uid, groupMeta?.uid);
     } else {

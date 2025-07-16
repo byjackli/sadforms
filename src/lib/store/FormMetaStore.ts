@@ -7,6 +7,7 @@ interface MetaData {
     touched: Record<string, boolean | Record<string, boolean>>;
     active: Record<string, boolean | Record<string, boolean>>;
     submit: { submitting: boolean; accepted: boolean; attempted: boolean };
+    storage: { saveToLocal: boolean; saveToCloud: boolean };
 }
 
 // Store data: formId -> meta data
@@ -23,7 +24,8 @@ function initializeMetaData(formId: string): MetaData {
         metaData[formId] = {
             touched: {},
             active: {},
-            submit: { submitting: false, accepted: false, attempted: false }
+            submit: { submitting: false, accepted: false, attempted: false },
+            storage: { saveToLocal: true, saveToCloud: false }  // Default values
         };
         // Trigger store update when new form is initialized
         FormMetaStore.update(() => ({ ...metaData }));
@@ -34,7 +36,7 @@ function initializeMetaData(formId: string): MetaData {
 /**
  * Get the appropriate meta property storage
  */
-function getMetaPropValue(formId: string, prop: FormProps.TOUCHED | FormProps.ACTIVE | FormProps.SUBMIT): Record<string, any> | any {
+function getMetaPropValue(formId: string, prop: FormProps.TOUCHED | FormProps.ACTIVE | FormProps.SUBMIT | FormProps.SAVE_TO_LOCAL | FormProps.SAVE_TO_CLOUD): Record<string, any> | any {
     const data = initializeMetaData(formId);
     switch (prop) {
         case FormProps.TOUCHED:
@@ -43,6 +45,10 @@ function getMetaPropValue(formId: string, prop: FormProps.TOUCHED | FormProps.AC
             return data.active;
         case FormProps.SUBMIT:
             return data.submit;
+        case FormProps.SAVE_TO_LOCAL:
+            return data.storage.saveToLocal;
+        case FormProps.SAVE_TO_CLOUD:
+            return data.storage.saveToCloud;
         default:
             throw new Error(`${ERROR_MESSAGES.FORM_STORE_MISSING_PROP}: ${prop}`);
     }
@@ -114,17 +120,43 @@ export function setSubmitState(
 }
 
 /**
+ * Set storage configuration for a form
+ */
+export function setStorageConfig(
+    formId: string, 
+    saveToLocal: boolean, 
+    saveToCloud: boolean
+): void {
+    const data = initializeMetaData(formId);
+    data.storage.saveToLocal = saveToLocal;
+    data.storage.saveToCloud = saveToCloud;
+    
+    FormMetaStore.update(() => ({ ...metaData }));
+}
+
+/**
+ * Get storage configuration for a form
+ */
+export function getStorageConfig(formId: string): { saveToLocal: boolean; saveToCloud: boolean } {
+    const data = initializeMetaData(formId);
+    return {
+        saveToLocal: data.storage.saveToLocal,
+        saveToCloud: data.storage.saveToCloud
+    };
+}
+
+/**
  * Get a meta value from the store
  */
 export function getMetaValue(
     formId: string, 
-    prop: FormProps.TOUCHED | FormProps.ACTIVE | FormProps.SUBMIT, 
+    prop: FormProps.TOUCHED | FormProps.ACTIVE | FormProps.SUBMIT | FormProps.SAVE_TO_LOCAL | FormProps.SAVE_TO_CLOUD, 
     fieldId?: string, 
     groupId?: string
 ): unknown {
     const slot = getMetaPropValue(formId, prop);
     
-    if (prop === FormProps.SUBMIT) {
+    if (prop === FormProps.SUBMIT || prop === FormProps.SAVE_TO_LOCAL || prop === FormProps.SAVE_TO_CLOUD) {
         return fieldId ? (slot as any)[fieldId] : slot;
     }
     

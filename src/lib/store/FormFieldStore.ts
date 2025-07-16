@@ -1,7 +1,8 @@
 import { writable } from 'svelte/store';
 import { belongs } from '../tools/kit';
 import type { Value } from '../types/Form';
-import { FormProps, ERROR_MESSAGES, STORAGE_KEY_PREFIX } from '../constants';
+import { FormProps, ERROR_MESSAGES } from '../constants';
+import { saveForm, getForm, removeForm } from '../services/storageService';
 
 // Type definition for field data structure
 interface FieldData {
@@ -195,29 +196,36 @@ export function clearFieldFromStorage(formid: string, storageType: StorageTypes,
 }
 
 /**
- * Save field values to localStorage
+ * Save field values using StorageService
  * MOVED FROM FormStore.ts - now only handles field data
  */
-export function updateSave(formid: string, saveToLocal: boolean, saveToCloud: boolean): void {
-    if (!saveToLocal) return;
-
+export async function updateSave(formid: string): Promise<void> {
     const data = initializeFieldData(formid);
-    localStorage.setItem(`${STORAGE_KEY_PREFIX}${formid}`, JSON.stringify(data.fieldValues));
+    
+    try {
+        await saveForm(formid, data.fieldValues as Record<string, Value>);
+    } catch (error) {
+        console.warn(`Failed to save form ${formid}:`, error);
+    }
 }
 
 /**
- * Clear saved field values from localStorage
+ * Clear saved field values using StorageService
  * MOVED FROM FormStore.ts - now only handles field data
  */
-export function clearSave(formid: string, saveToLocal: boolean, saveToCloud: boolean): void {
-    if (saveToLocal) localStorage.removeItem(`${STORAGE_KEY_PREFIX}${formid}`);
+export async function clearSave(formid: string): Promise<void> {
+    try {
+        await removeForm(formid);
+    } catch (error) {
+        console.warn(`Failed to clear form ${formid}:`, error);
+    }
 }
 
 /**
- * Load saved field values from localStorage and initialize field store
+ * Load saved field values using StorageService and initialize field store
  * MOVED FROM FormStore.ts - now only handles field data, other stores handle their own initialization
  */
-export function loadSave(formid: string, saveToLocal: boolean, saveToCloud: boolean, forceReset: boolean = false): void {
+export async function loadSave(formid: string, forceReset: boolean = false): Promise<void> {
     // Initialize field data structure
     if (!fieldData[formid] || forceReset) {
         fieldData[formid] = {
@@ -227,16 +235,16 @@ export function loadSave(formid: string, saveToLocal: boolean, saveToCloud: bool
         };
     }
     
-    // Load field values from localStorage if available
-    if (saveToLocal && !forceReset) {
-        const saveFieldValue = localStorage.getItem(`${STORAGE_KEY_PREFIX}${formid}`);
-        if (saveFieldValue) {
-            try {
-                fieldData[formid].fieldValues = JSON.parse(saveFieldValue);
-            } catch (error) {
-                console.warn(`Failed to parse saved data for form ${formid}:`, error);
-                fieldData[formid].fieldValues = {};
+    // Load field values from StorageService if available
+    if (!forceReset) {
+        try {
+            const formData = await getForm(formid);
+            if (formData) {
+                fieldData[formid].fieldValues = formData.fieldValues;
             }
+        } catch (error) {
+            console.warn(`Failed to load saved data for form ${formid}:`, error);
+            fieldData[formid].fieldValues = {};
         }
     }
     

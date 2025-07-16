@@ -22,10 +22,8 @@ export interface FormEventConfig {
         saveOnInput?: boolean;
         saveAuto?: number | false;
     };
-    saveToLocal: boolean;
-    saveToCloud: boolean;
     debug: boolean;
-    updateSave?: (formId: string, saveToLocal: boolean, saveToCloud: boolean) => void;
+    updateSave?: (formId: string) => Promise<void>;
     updateDebug?: () => void;
 }
 
@@ -38,7 +36,7 @@ export async function handleFieldUpdate(
     groupId: string | undefined,
     config: FormEventConfig
 ): Promise<void> {
-    const { formId, formFields, onInput, save, saveToLocal, saveToCloud, updateSave, updateDebug } = config;
+    const { formId, formFields, onInput, save, updateDebug } = config;
 
     let fieldValue: Value = (event.target as HTMLInputElement).value;
     const localOnInput = getConfigValue(formId, FormProps.ON_INPUT, fieldId, groupId);
@@ -72,8 +70,10 @@ export async function handleFieldUpdate(
     }
 
     // Auto-save if configured
-    if (save?.saveOnInput && updateSave) {
-        updateSave(formId, saveToLocal, saveToCloud);
+    if (save?.saveOnInput && config.updateSave) {
+        config.updateSave(formId).catch((error: any) => 
+            console.warn(`Save on input failed for form ${formId}:`, error)
+        );
     }
 
     // Update debug info
