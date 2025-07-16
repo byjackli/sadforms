@@ -11,7 +11,6 @@ import { checkValidity } from './validationService';
 import { belongs } from '../tools/kit';
 import type { Value } from '../types/Form';
 import { FormProps } from '$lib/constants';
-import EventBus, { createFormEvent, EVENT_TYPES } from './EventBus';
 
 export interface SubmissionResult {
     success: boolean;
@@ -24,15 +23,27 @@ export interface SubmissionConfig {
 }
 
 /**
- * Handles form submission with validation and callback execution
+ * Callback interfaces to replace EventBus pattern
  */
-export async function submitForm(config: SubmissionConfig): Promise<SubmissionResult> {
-    const { formId, onSubmit } = config;
+export interface SubmissionCallbacks {
+    onSubmitStart?: (formId: string, config: SubmissionConfig) => void;
+    onSubmitSuccess?: (formId: string, formData: Record<string, Value>) => void;
+    onSubmitFailed?: (formId: string, reason: 'validation' | 'callback_error', details?: any) => void;
+}
+
+export interface SubmissionConfigWithCallbacks extends SubmissionConfig {
+    callbacks?: SubmissionCallbacks;
+}
+
+/**
+ * Handles form submission with validation and callback execution (with callbacks)
+ * This version replaces EventBus with direct callbacks
+ */
+export async function submitFormWithCallbacks(config: SubmissionConfigWithCallbacks): Promise<SubmissionResult> {
+    const { formId, onSubmit, callbacks } = config;
     
-    const eventBus = EventBus.getInstance();
-    
-    // Emit form submit event
-    eventBus.emit(createFormEvent(EVENT_TYPES.FORM_SUBMIT, formId, undefined, undefined, { config }));
+    // Call onSubmitStart callback instead of emitting event
+    callbacks?.onSubmitStart?.(formId, config);
     
     // Validate the entire form
     const validation = await checkValidity(formId, "form");
@@ -48,11 +59,8 @@ export async function submitForm(config: SubmissionConfig): Promise<SubmissionRe
         setSubmitState(formId, false, "accepted");
         setSubmitState(formId, false, "submitting");
         
-        // Emit form submit failed event
-        eventBus.emit(createFormEvent(EVENT_TYPES.FORM_SUBMIT_FAILED, formId, undefined, undefined, { 
-            reason: "validation",
-            validation 
-        }));
+        // Call onSubmitFailed callback instead of emitting event
+        callbacks?.onSubmitFailed?.(formId, "validation", validation);
         
         return { success: false, errors: ["Form validation failed"] };
     } 
@@ -67,23 +75,68 @@ export async function submitForm(config: SubmissionConfig): Promise<SubmissionRe
             submissionSuccess = false;
             console.error('Form submission error:', error);
             
-            // Emit form submit failed event for callback errors
-            eventBus.emit(createFormEvent(EVENT_TYPES.FORM_SUBMIT_FAILED, formId, undefined, undefined, { 
-                reason: "callback_error",
+            // Call onSubmitFailed callback instead of emitting event
+            callbacks?.onSubmitFailed?.(formId, "callback_error", {
                 error: error instanceof Error ? error.message : String(error)
-            }));
+            });
         }
     }
 
     setSubmitState(formId, submissionSuccess, "accepted");
     setSubmitState(formId, false, "submitting");
     
-    // Emit appropriate success/failure event
+    // Call onSubmitSuccess callback instead of emitting event
     if (submissionSuccess) {
-        eventBus.emit(createFormEvent(EVENT_TYPES.FORM_SUBMIT_SUCCESS, formId, undefined, undefined, { 
-            formData: getFormData(formId)
-        }));
+        callbacks?.onSubmitSuccess?.(formId, getFormData(formId));
     }
+    
+    return { success: submissionSuccess };
+}
+
+/**
+ * Handles form submission with validation and callback execution (legacy EventBus version)
+ * TODO: Remove this after migrating all callers to submitFormWithCallbacks
+ */
+export async function submitForm(config: SubmissionConfig): Promise<SubmissionResult> {
+    const { formId, onSubmit } = config;
+    
+    // Validate the entire form
+    const validation = await checkValidity(formId, "form");
+    const isValid = validation.verdict;
+
+    // Mark submission state
+    setSubmitState(formId, true, "submitting");
+    setSubmitState(formId, true, "attempted");
+
+    if (!isValid) {
+        // Update feedback for all invalid fields
+        await updateInvalidFieldFeedback(formId);
+        setSubmitState(formId, false, "accepted");
+        setSubmitState(formId, false, "submitting");
+        
+        // Form validation failed (no event emission needed)
+        
+        return { success: false, errors: ["Form validation failed"] };
+    } 
+
+    // Form is valid, execute submission callback
+    let submissionSuccess = true;
+    if (onSubmit) {
+        try {
+            const formData = getFormData(formId);
+            await onSubmit(formData, formId);
+        } catch (error) {
+            submissionSuccess = false;
+            console.error('Form submission error:', error);
+            
+            // Form submission callback failed (no event emission needed)
+        }
+    }
+
+    setSubmitState(formId, submissionSuccess, "accepted");
+    setSubmitState(formId, false, "submitting");
+    
+    // Form submission completed (no event emission needed)
     
     return { success: submissionSuccess };
 }

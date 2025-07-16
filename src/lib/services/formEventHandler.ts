@@ -11,8 +11,8 @@ import FormFieldStore from '../store/FormFieldStore';
 import type { Value, Field, Group, FormInstance } from '../types/Form';
 import { FormProps } from '$lib/constants';
 import { isGroup } from '../utils/formHelpers';
-import EventBus, { createFormEvent, EVENT_TYPES } from './EventBus';
 import { updateFieldValue } from './formLifecycle';
+import { validateFieldOnInput, validateFieldOnFocus, validateFieldOnBlur } from './validationService';
 
 export interface FormEventConfig {
     formId: string;
@@ -62,12 +62,8 @@ export async function handleFieldUpdate(
     // Update field value in store
     updateFieldValue(formId, fieldId, groupId);
 
-    // Emit field input event for validation
-    const eventBus = EventBus.getInstance();
-    eventBus.emit(createFormEvent(EVENT_TYPES.FIELD_INPUT, formId, fieldId, groupId, { 
-        value: fieldValue,
-        originalEvent: event 
-    }));
+    // Trigger field validation directly (replacing EventBus)
+    await validateFieldOnInput(formId, fieldId, groupId);
 
     // Execute form-level onInput callback
     if (typeof onInput === 'function') {
@@ -104,9 +100,8 @@ export async function handleFieldFocus(
         updateFieldValue(formId, fieldId, groupId);
     }
 
-    // Emit field focus event
-    const eventBus = EventBus.getInstance();
-    eventBus.emit(createFormEvent(EVENT_TYPES.FIELD_FOCUS, formId, fieldId, groupId));
+    // Trigger field focus validation directly (replacing EventBus)
+    validateFieldOnFocus(formId, fieldId, groupId);
 
     if (updateDebug) {
         updateDebug();
@@ -130,9 +125,8 @@ export function handleFieldBlur(
         setFieldValue(formId, FormProps.DISPLAY_VALUES, "[redacted]", fieldId, groupId);
     }
 
-    // Emit field blur event
-    const eventBus = EventBus.getInstance();
-    eventBus.emit(createFormEvent(EVENT_TYPES.FIELD_BLUR, formId, fieldId, groupId));
+    // Trigger field blur validation directly (replacing EventBus)
+    validateFieldOnBlur(formId, fieldId, groupId);
 
     if (updateDebug) {
         updateDebug();
