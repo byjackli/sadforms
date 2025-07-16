@@ -1,7 +1,6 @@
 <script lang="ts">
 	import CustomStore from "../store/CustomStore";
-	import { manageFieldStorage } from "../store/FormStore";
-	import FormFieldStore from "../store/FormFieldStore";
+	import FormFieldStore, { getField } from "../store/FormFieldStore";
 	import FormValidationStore from "../store/FormValidationStore";
 	import FormMetaStore from "../store/FormMetaStore";
 	import Checkbox from "./Checkbox.svelte";
@@ -16,6 +15,7 @@
 		functions: Record<string, Function>;
 	
 	// Existing reactive statements - now using FormFieldStore
+	// Existing reactive statements - now using FormFieldStore
 	$: value =
 		group === undefined
 			? $FormFieldStore[formid]?.displayValues?.[field.uid]
@@ -27,10 +27,12 @@
 			: "";
 
 	// NEW: Reactive validation feedback handling - now using FormValidationStore
+	// NEW: Reactive validation feedback handling - now using FormValidationStore
 	$: validationResult = group === undefined
 		? $FormValidationStore[formid]?.validationResult?.[field.uid] as ValidationResult
 		: $FormValidationStore[formid]?.validationResult?.[group?.meta.uid]?.[field.uid] as ValidationResult;
 	
+	// Check if field has been touched - now using FormMetaStore
 	// Check if field has been touched - now using FormMetaStore
 	$: isTouched = group === undefined
 		? $FormMetaStore[formid]?.touched?.[field.uid] || false
@@ -44,6 +46,7 @@
 	// NEW: Reactive warning class handling (only when touched)
 	$: warningClass = hasValidationErrors ? $CustomStore.names.warn : "";
 
+	// NEW: Reactive file preview handling - now using FormFieldStore
 	// NEW: Reactive file preview handling - now using FormFieldStore
 	$: fieldFiles = group === undefined
 		? $FormFieldStore[formid]?.fieldValues?.[field.uid]
@@ -116,21 +119,16 @@
 					on:dragover={null}
 					on:dragleave={null}
 				>
-					{manageFieldStorage(
-						formid,
-						{ action: "get" },
-						field.uid,
-						group?.meta.uid,
-					)
-						? manageFieldStorage(
-								formid,
-								{ action: "get" },
-								field.uid,
-								group?.meta.uid,
-							).name
-						: `click to choose ${
-								field.multiple ? `files` : `a file`
-							}`}
+					{(() => {
+						const fieldData = getField(formid, field.uid, group?.meta.uid);
+						if (Array.isArray(fieldData) && fieldData.length > 0) {
+							const fileData = fieldData[0];
+							if (typeof fileData === 'object' && fileData !== null && 'meta' in fileData && fileData.meta?.name) {
+								return fileData.meta.name;
+							}
+						}
+						return `click to choose ${field.multiple ? 'files' : 'a file'}`;
+					})()}
 				</button>
 				<input
 					id={`${$CustomStore.names.inputHeader}${field.uid}`}
@@ -166,12 +164,7 @@
 					options={field.options}
 					edit={field.edit}
 					{value}
-					data={manageFieldStorage(
-						formid,
-						{ action: "get" },
-						field.uid,
-						group?.meta.uid,
-					)}
+					data={getField(formid, field.uid, group?.meta.uid) || {}}
 					focus={() => functions.onFocus(field.uid, group?.meta.uid)}
 					blur={() => functions.onBlur(field.uid, group?.meta.uid)}
 					input={async (event) =>
@@ -192,12 +185,7 @@
 						: undefined}
 					disabled={field.disabled}
 					redact={field.redact}
-					data={manageFieldStorage(
-						formid,
-						{ action: "get" },
-						field.uid,
-						group?.meta.uid,
-					)}
+					data={!!getField(formid, field.uid, group?.meta.uid)}
 					focus={() => functions.onFocus(field.uid, group?.meta.uid)}
 					blur={() => functions.onBlur(field.uid, group?.meta.uid)}
 					input={async (event) =>

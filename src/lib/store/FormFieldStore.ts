@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import { belongs } from '../tools/kit';
 import type { Value } from '../types/Form';
-import { FormProps, ERROR_MESSAGES } from '../constants';
+import { FormProps, ERROR_MESSAGES, STORAGE_KEY_PREFIX } from '../constants';
 
 // Type definition for field data structure
 interface FieldData {
@@ -9,6 +9,9 @@ interface FieldData {
     displayValues: Record<string, unknown | Record<string, unknown>>;
     dontSave: Record<string, Value | Record<string, Value>>;
 }
+
+// Simplified storage types
+type StorageTypes = FormProps.FIELD_VALUES | FormProps.DONT_SAVE;
 
 // Store data: formId -> field data
 const fieldData: Record<string, FieldData> = {};
@@ -132,6 +135,111 @@ export function initFieldStore(formId: string): void {
  */
 export function clearFieldStore(formId: string): void {
     delete fieldData[formId];
+    FormFieldStore.update(() => ({ ...fieldData }));
+}
+
+/**
+ * Simple field storage functions - replaces complex manageFieldStorage
+ */
+
+/**
+ * Set a field value (with automatic sensitive data routing)
+ */
+export function setField(formId: string, fieldId: string, value: Value, groupId?: string, dontSave = false): Value {
+    const prop = dontSave ? FormProps.DONT_SAVE : FormProps.FIELD_VALUES;
+    return setFieldValue(formId, prop, value, fieldId, groupId) as Value;
+}
+
+/**
+ * Get a field value (checks both regular and sensitive storage)
+ */
+export function getField(formId: string, fieldId: string, groupId?: string): Value | undefined {
+    // Try regular storage first, then dontSave storage if not found
+    return getFieldValue(formId, FormProps.FIELD_VALUES, fieldId, groupId) as Value ??
+           getFieldValue(formId, FormProps.DONT_SAVE, fieldId, groupId) as Value;
+}
+
+/**
+ * Check if a field exists (in either regular or sensitive storage)
+ */
+export function hasField(formId: string, fieldId: string, groupId?: string): boolean {
+    return hasFieldValue(formId, FormProps.FIELD_VALUES, fieldId, groupId) ||
+           hasFieldValue(formId, FormProps.DONT_SAVE, fieldId, groupId);
+}
+
+
+/**
+ * Clears a field from specified storage type, handling both grouped and ungrouped fields
+ * MOVED FROM FormStore.ts
+ * @param formid - Form identifier
+ * @param storageType - Storage type ("fieldValues" or "dontSave")
+ * @param fieldid - Field identifier
+ * @param groupid - Optional group identifier
+ */
+export function clearFieldFromStorage(formid: string, storageType: StorageTypes, fieldid: string, groupid?: string): void {
+    try {
+        const slot = getFieldPropValue(formid, storageType);
+
+        if (groupid !== undefined) {
+            if (slot[groupid]) {
+                delete slot[groupid][fieldid];
+            }
+        } else {
+            delete slot[fieldid];
+        }
+
+        FormFieldStore.update(() => ({ ...fieldData }));
+    } catch (error) {
+        // Storage doesn't exist yet, which is fine
+    }
+}
+
+/**
+ * Save field values to localStorage
+ * MOVED FROM FormStore.ts - now only handles field data
+ */
+export function updateSave(formid: string, saveToLocal: boolean, saveToCloud: boolean): void {
+    if (!saveToLocal) return;
+
+    const data = initializeFieldData(formid);
+    localStorage.setItem(`${STORAGE_KEY_PREFIX}${formid}`, JSON.stringify(data.fieldValues));
+}
+
+/**
+ * Clear saved field values from localStorage
+ * MOVED FROM FormStore.ts - now only handles field data
+ */
+export function clearSave(formid: string, saveToLocal: boolean, saveToCloud: boolean): void {
+    if (saveToLocal) localStorage.removeItem(`${STORAGE_KEY_PREFIX}${formid}`);
+}
+
+/**
+ * Load saved field values from localStorage and initialize field store
+ * MOVED FROM FormStore.ts - now only handles field data, other stores handle their own initialization
+ */
+export function loadSave(formid: string, saveToLocal: boolean, saveToCloud: boolean, forceReset: boolean = false): void {
+    // Initialize field data structure
+    if (!fieldData[formid] || forceReset) {
+        fieldData[formid] = {
+            fieldValues: {},
+            displayValues: {},
+            dontSave: {}
+        };
+    }
+    
+    // Load field values from localStorage if available
+    if (saveToLocal && !forceReset) {
+        const saveFieldValue = localStorage.getItem(`${STORAGE_KEY_PREFIX}${formid}`);
+        if (saveFieldValue) {
+            try {
+                fieldData[formid].fieldValues = JSON.parse(saveFieldValue);
+            } catch (error) {
+                console.warn(`Failed to parse saved data for form ${formid}:`, error);
+                fieldData[formid].fieldValues = {};
+            }
+        }
+    }
+    
     FormFieldStore.update(() => ({ ...fieldData }));
 }
 

@@ -2,7 +2,7 @@
 	import { afterUpdate, onDestroy, onMount } from "svelte";
 	import { get } from "svelte/store";
 	import FormRenderer from "./FormRenderer.svelte";
-	import FormStore from "../store/FormStore";
+	import FormFieldStore from "../store/FormFieldStore";
 	import { submitForm } from "../services/formSubmission";
 	import {
 		handleFieldUpdate,
@@ -16,7 +16,7 @@
 		type FormLifecycleState,
 	} from "../services/formLifecycle";
 	import type { FormLifecycleConfig } from "../services/formLifecycle";
-	import { updateSave } from "../store/FormStore";
+	import { updateSave } from "../store/FormFieldStore";
 	import type { Field, Group, FormData } from "../types/Form";
 
 	// Form configuration props
@@ -86,13 +86,13 @@
 	};
 
 	// Public API methods
-	export const getFormState = () => get(FormStore)[uid];
+	export const getFormState = () => get(FormFieldStore)[uid];
 	export const reload = () => initialize(false);
 
 	// Debug functionality
 	function updateDebug(): void {
 		if (debug) {
-			debugData = JSON.stringify({ ...get(FormStore)[uid] }, null, 4);
+			debugData = JSON.stringify({ ...get(FormFieldStore)[uid] }, null, 4);
 		} else {
 			debugData = null;
 		}

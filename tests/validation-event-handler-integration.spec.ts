@@ -65,7 +65,7 @@ test.describe('ValidationEventHandler Integration with Specialized Stores', () =
         await firstNameField.blur();
         
         // Check if field block gets warning styling (required field validation)
-        const fieldBlock = page.locator('[id="sf:block-header/8310f3b8-f4ba-484e-a3fd-ea1eb3fc8fba"]');
+        const fieldBlock = page.locator('[id="sf:block/8310f3b8-f4ba-484e-a3fd-ea1eb3fc8fba"]');
         await expect(fieldBlock).toHaveClass(/warn/);
     });
 
@@ -78,12 +78,12 @@ test.describe('ValidationEventHandler Integration with Specialized Stores', () =
         await page.waitForTimeout(500);
         
         // Check if field block gets warning styling for required validation
-        const fieldBlock = page.locator('[id="sf:block-header/9bc96846-42d7-4f22-849c-745958750d08"]');
+        const fieldBlock = page.locator('[id="sf:block/9bc96846-42d7-4f22-849c-745958750d08"]');
         await expect(fieldBlock).toHaveClass(/warn/);
     });
 
     test('should validate checkbox field with custom validation', async ({ page }) => {
-        const checkboxField = page.locator('input[id="sf:input/751014b9-a6f1-42e0-a3f9-44877b8ebbec"]'); // "Did You Smile Today?" field
+        const checkboxField = page.locator('[id="sf:input/751014b9-a6f1-42e0-a3f9-44877b8ebbec"]'); // "Did You Smile Today?" field
         const feedbackContainer = page.locator('[id="sf:input-feedback/751014b9-a6f1-42e0-a3f9-44877b8ebbec"]');
         
         // Initially checkbox should be unchecked and show validation error when blurred
@@ -95,7 +95,7 @@ test.describe('ValidationEventHandler Integration with Specialized Stores', () =
         await expect(feedbackContainer).toContainText('Must accept to continue');
         
         // Check the checkbox to satisfy validation
-        await checkboxField.check();
+        await checkboxField.click();
         await checkboxField.blur();
         await page.waitForTimeout(500);
         
@@ -157,9 +157,9 @@ test.describe('ValidationEventHandler Integration with Specialized Stores', () =
     });
 
     test('should handle rapid field interactions without errors', async ({ page }) => {
-        const displayNameField = page.locator('input[placeholder=""], input[name="Display Name"]').first();
-        const firstNameField = page.locator('input[name="First Name"]').first();
-        const bioField = page.locator('textarea[name="Bio"]').first();
+        const displayNameField = page.locator('input[id="sf:input/374ac078-376a-4b1e-b367-8dd0a4526c9d"]');
+        const firstNameField = page.locator('input[id="sf:input/8310f3b8-f4ba-484e-a3fd-ea1eb3fc8fba"]');
+        const bioField = page.locator('textarea[id="sf:input/9bc96846-42d7-4f22-849c-745958750d08"]');
         
         // Rapidly interact with multiple fields
         await displayNameField.click();
@@ -186,11 +186,11 @@ test.describe('ValidationEventHandler Integration with Specialized Stores', () =
             }
         });
         
-        const displayNameField = page.locator('input[placeholder=""], input[name="Display Name"]').first();
+        const displayNameField = page.locator('input[id="sf:input/374ac078-376a-4b1e-b367-8dd0a4526c9d"]');
         
         // Trigger validation
         await displayNameField.click();
-        await displayNameField.fill('test');
+        await displayNameField.fill('abc'); // Less than 6 characters to trigger validation
         await displayNameField.blur();
         
         // Note: This test would work better with actual event logging in the app

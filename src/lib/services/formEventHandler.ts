@@ -3,16 +3,16 @@
  * Handles field updates, focus/blur events, and form interactions
  */
 
-import { manageFieldStorage } from '../store/FormStore';
-import { setFieldValue } from '../store/FormFieldStore';
+import { setField, setFieldValue } from '../store/FormFieldStore';
 import { setTouched, setActive } from '../store/FormMetaStore';
 import { getConfigValue } from '../store/FormConfigStore';
 import { get } from 'svelte/store';
-import FormStore from '../store/FormStore';
+import FormFieldStore from '../store/FormFieldStore';
 import type { Value, Field, Group, FormInstance } from '../types/Form';
 import { FormProps } from '$lib/constants';
 import { isGroup } from '../utils/formHelpers';
 import EventBus, { createFormEvent, EVENT_TYPES } from './EventBus';
+import { updateFieldValue } from './formLifecycle';
 
 export interface FormEventConfig {
     formId: string;
@@ -57,12 +57,7 @@ export async function handleFieldUpdate(
     }
 
     // Store the field fieldValue
-    manageFieldStorage(
-        formId,
-        { action: "set", fieldValue, dontSave },
-        fieldId,
-        groupId
-    );
+    setField(formId, fieldId, fieldValue, groupId, dontSave);
 
     // Update field value in store
     updateFieldValue(formId, fieldId, groupId);
@@ -144,39 +139,6 @@ export function handleFieldBlur(
     }
 }
 
-/**
- * Updates field value from storage
- */
-function updateFieldValue(formId: string, fieldId: string, groupId?: string, dontSave?: boolean): void {
-    const exists = manageFieldStorage(
-        formId,
-        { dontSave, action: "exists" },
-        fieldId,
-        groupId
-    );
-
-    let fieldValue: Value;
-
-    if (exists) {
-        fieldValue = manageFieldStorage(
-            formId,
-            { dontSave, action: "get" },
-            fieldId,
-            groupId
-        ) as Value;
-
-        // Handle object fieldValue (convert to array if needed)
-        if (typeof fieldValue === "object" && fieldValue !== null && !Array.isArray(fieldValue)) {
-            fieldValue = Object.values(fieldValue);
-        }
-    } else {
-        fieldValue = "";
-    }
-
-    setFieldValue(formId, FormProps.FIELD_VALUES, fieldValue, fieldId, groupId);
-    setFieldValue(formId, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
-}
-
 
 /**
  * Handles file upload processing
@@ -212,9 +174,10 @@ function getDontSaveFlag(fieldId: string, groupId: string | undefined, formField
 }
 
 /**
- * Gets the current form store fieldValue
+ * Gets the current form field data for callbacks
+ * NOTE: This now returns only field data, not the full FormInstance
  */
-function getFormStore(formId: string): FormInstance {
-    const store = get(FormStore);
-    return store[formId] || {} as FormInstance;
+function getFormStore(formId: string): any {
+    const store = get(FormFieldStore);
+    return store[formId] || { fieldValues: {}, displayValues: {}, dontSave: {} };
 }

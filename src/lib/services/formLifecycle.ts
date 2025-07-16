@@ -3,7 +3,7 @@
  * Handles form loading, initialization, field management, and cleanup
  */
 
-import { manageFieldStorage, updateSave, clearSave, loadSave } from '../store/FormStore';
+import { hasField, setField, getField, updateSave, loadSave } from '../store/FormFieldStore';
 import { setFieldValue, initFieldStore } from '../store/FormFieldStore';
 import { setValidity, initValidationStore } from '../store/FormValidationStore';
 import { setTouched, setActive, initMetaStore } from '../store/FormMetaStore';
@@ -69,6 +69,12 @@ export async function initializeForm(
     initMetaStore(uid);
     initConfigStore(uid);
 
+    // Initialize specialized stores
+    initFieldStore(uid);
+    initValidationStore(uid);
+    initMetaStore(uid);
+    initConfigStore(uid);
+
     // Initialize all fields
     await loadAllFields(uid, newState.formFields, saveToLocal, saveToCloud);
 
@@ -123,6 +129,7 @@ export async function loadAllFields(
  */
 export async function loadGroup(uid: string, group: Group): Promise<void> {
     setGroup(uid, group, group.meta.uid);
+    setGroup(uid, group, group.meta.uid);
 }
 
 /**
@@ -139,17 +146,12 @@ export async function loadField(
     const dontSave = field.dontSave || groupMeta?.dontSave;
 
     // Initialize field data if it doesn't exist
-    if (!manageFieldStorage(uid, { action: "exists" }, field.uid, groupMeta?.uid)) {
+    if (!hasField(uid, field.uid, groupMeta?.uid)) {
         const defaultFieldValue = field.defaultValue !== undefined && field.defaultValue !== null
             ? field.defaultValue
             : loadBlank(field.type);
             
-        manageFieldStorage(
-            uid,
-            { dontSave, action: "init", fieldValue: defaultFieldValue },
-            field.uid,
-            groupMeta?.uid
-        );
+        setField(uid, field.uid, defaultFieldValue, groupMeta?.uid, dontSave);
         setFieldValue(uid, FormProps.FIELD_VALUES, defaultFieldValue, field.uid, groupMeta?.uid);
         setFieldValue(uid, FormProps.DISPLAY_VALUES, defaultFieldValue, field.uid, groupMeta?.uid);
     } else {
@@ -160,30 +162,37 @@ export async function loadField(
     // Setup field callbacks
     if (field.onInput) {
         setOnInput(uid, field.onInput, field.uid, groupMeta?.uid);
+        setOnInput(uid, field.onInput, field.uid, groupMeta?.uid);
     }
 
     // Handle redacted fields
     if (field.redact || groupMeta?.redact) {
         setRedact(uid, groupMeta?.redact || field.redact, field.uid, groupMeta?.uid);
         setFieldValue(uid, FormProps.DISPLAY_VALUES, "[redacted]", field.uid, groupMeta?.uid);
+        setRedact(uid, groupMeta?.redact || field.redact, field.uid, groupMeta?.uid);
+        setFieldValue(uid, FormProps.DISPLAY_VALUES, "[redacted]", field.uid, groupMeta?.uid);
     }
 
     // Initialize field state
+    setActive(uid, false, field.uid, groupMeta?.uid);
     setActive(uid, false, field.uid, groupMeta?.uid);
 
     // Setup required field validation (don't validate on init - wait for user interaction)
     if (field.required || groupMeta?.required) {
         const isRequired = groupMeta?.required || field.required;
         setRequired(uid, isRequired, field.uid, groupMeta?.uid);
+        setRequired(uid, isRequired, field.uid, groupMeta?.uid);
     }
 
     // Setup custom validation (don't validate on init - wait for user interaction)
     if (field.validity) {
         setValidity(uid, field.validity, field.uid, groupMeta?.uid);
+        setValidity(uid, field.validity, field.uid, groupMeta?.uid);
     }
 
     // Setup file preview for file fields
     if (field.type === FIELD_TYPES.FILE && !field.hide?.preview) {
+        setPreview(uid, true, field.uid, groupMeta?.uid);
         setPreview(uid, true, field.uid, groupMeta?.uid);
     }
 }
@@ -191,23 +200,13 @@ export async function loadField(
 /**
  * Updates field value from storage
  */
-function updateFieldValue(uid: string, fieldId: string, groupId?: string, dontSave?: boolean): void {
-    const exists = manageFieldStorage(
-        uid,
-        { dontSave, action: "exists" },
-        fieldId,
-        groupId
-    );
+export function updateFieldValue(uid: string, fieldId: string, groupId?: string, dontSave?: boolean): void {
+    const exists = hasField(uid, fieldId, groupId);
 
     let fieldValue: Value;
 
     if (exists) {
-        fieldValue = manageFieldStorage(
-            uid,
-            { dontSave, action: "get" },
-            fieldId,
-            groupId
-        ) as Value;
+        fieldValue = getField(uid, fieldId, groupId) as Value;
 
         // Convert object to array if needed
         if (typeof fieldValue === "object" && fieldValue !== null && !Array.isArray(fieldValue)) {
@@ -217,6 +216,8 @@ function updateFieldValue(uid: string, fieldId: string, groupId?: string, dontSa
         fieldValue = "";
     }
 
+    setFieldValue(uid, FormProps.FIELD_VALUES, fieldValue, fieldId, groupId);
+    setFieldValue(uid, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
     setFieldValue(uid, FormProps.FIELD_VALUES, fieldValue, fieldId, groupId);
     setFieldValue(uid, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
 }

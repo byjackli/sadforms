@@ -13,12 +13,12 @@
     import {
         clearFieldFromStorage,
         updateSave as updateFormSave,
-        manageFieldStorage,
-        getFieldProp,
-        setFieldProp,
+        hasFieldValue,
+        getFieldValue,
+        setFieldValue,
         clearSave,
-        loadSave,
-    } from "$lib/store/FormStore";
+    } from "$lib/store/FormFieldStore";
+    import { setRedact } from "$lib/store/FormConfigStore";
     import { FormProps } from "$lib/constants";
     import {
         makeToData,
@@ -670,26 +670,11 @@
         const newDontSave = formData.dontSave;
 
         const formId = data.uid;
-        const hasDataInRegular = manageFieldStorage(
-            formId,
-            { action: "exists", dontSave: false },
-            fieldid,
-            groupid,
-        );
-        const hasDataInSensitive = manageFieldStorage(
-            formId,
-            { action: "exists", dontSave: true },
-            fieldid,
-            groupid,
-        );
+        const hasDataInRegular = hasFieldValue(formId, FormProps.FIELD_VALUES, fieldid, groupid);
+        const hasDataInSensitive = hasFieldValue(formId, FormProps.DONT_SAVE, fieldid, groupid);
 
         if (newDontSave && hasDataInRegular) {
-            const currentValue = manageFieldStorage(
-                formId,
-                { action: "get", dontSave: false },
-                fieldid,
-                groupid,
-            );
+            const currentValue = getFieldValue(formId, FormProps.FIELD_VALUES, fieldid, groupid);
             clearFieldFromStorage(
                 formId,
                 FormProps.FIELD_VALUES,
@@ -698,21 +683,11 @@
             );
 
             if (currentValue !== undefined && currentValue !== "") {
-                manageFieldStorage(
-                    formId,
-                    { action: "set", fieldValue: currentValue, dontSave: true },
-                    fieldid,
-                    groupid,
-                );
+                setFieldValue(formId, FormProps.DONT_SAVE, fieldid, String(currentValue), groupid);
             }
             updateFormSave(formId, true, false);
         } else if (!newDontSave && hasDataInSensitive) {
-            const currentValue = manageFieldStorage(
-                formId,
-                { action: "get", dontSave: true },
-                fieldid,
-                groupid,
-            );
+            const currentValue = getFieldValue(formId, FormProps.DONT_SAVE, fieldid, groupid);
             clearFieldFromStorage(
                 formId,
                 FormProps.DONT_SAVE,
@@ -721,16 +696,7 @@
             );
 
             if (currentValue !== undefined && currentValue !== "") {
-                manageFieldStorage(
-                    formId,
-                    {
-                        action: "set",
-                        fieldValue: currentValue,
-                        dontSave: false,
-                    },
-                    fieldid,
-                    groupid,
-                );
+                setFieldValue(formId, FormProps.FIELD_VALUES, fieldid, String(currentValue), groupid);
             }
             updateFormSave(formId, true, false);
         }
@@ -779,14 +745,14 @@
 
         // If redaction was disabled, clear redaction state and restore actual value
         if (!formData.redact) {
-            setFieldProp(formId, FormProps.REDACT, false, fieldid, groupid);
-            const actualValue = getFieldProp(
+            setRedact(formId, false, fieldid, groupid);
+            const actualValue = getFieldValue(
                 formId,
                 FormProps.FIELD_VALUES,
                 fieldid,
                 groupid,
             );
-            setFieldProp(
+            setFieldValue(
                 formId,
                 FormProps.DISPLAY_VALUES,
                 actualValue,
@@ -833,14 +799,14 @@
         Object.entries(fields).forEach(([, field]) => {
             if (field.defaultValue !== undefined) {
                 const { defaultValue } = field;
-                setFieldProp(
-                    "edit",
+                setFieldValue(
+                    data.uid,
                     FormProps.FIELD_VALUES,
                     defaultValue,
                     field.uid,
                 );
-                setFieldProp(
-                    "edit",
+                setFieldValue(
+                    data.uid,
                     FormProps.DISPLAY_VALUES,
                     defaultValue,
                     field.uid,

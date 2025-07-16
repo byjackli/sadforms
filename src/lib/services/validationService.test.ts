@@ -1,19 +1,19 @@
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { checkValidity } from './validationService';
-import * as FormStore from '../store/FormStore';
+import * as FormFieldStore from '../store/FormFieldStore';
 import * as FormValidationStore from '../store/FormValidationStore';
 import * as FormConfigStore from '../store/FormConfigStore';
 import * as CustomStore from '../store/CustomStore';
 import { get } from 'svelte/store';
 
 // Mock dependencies
-vi.mock('../store/FormStore');
+vi.mock('../store/FormFieldStore');
 vi.mock('../store/FormValidationStore');
 vi.mock('../store/FormConfigStore');
 vi.mock('../store/CustomStore');
 vi.mock('svelte/store');
 
-const mockFormStore = FormStore as any;
+const mockFormFieldStore = FormFieldStore as any;
 const mockFormValidationStore = FormValidationStore as any;
 const mockFormConfigStore = FormConfigStore as any;
 const mockGet = get as Mock;
@@ -73,7 +73,7 @@ describe('validationService', () => {
     });
 
     it('should validate field-level for required fields', async () => {
-      mockFormStore.manageFieldStorage.mockReturnValue('');
+      mockFormFieldStore.getFieldValue.mockReturnValue('');
       mockFormConfigStore.getConfigValue
         .mockReturnValueOnce(true) // required = true
         .mockReturnValueOnce(null); // validity function = null
@@ -90,7 +90,7 @@ describe('validationService', () => {
     });
 
     it('should validate field-level for non-required fields', async () => {
-      mockFormStore.manageFieldStorage.mockReturnValue('');
+      mockFormFieldStore.getFieldValue.mockReturnValue('');
       mockFormConfigStore.getConfigValue.mockReturnValue(false); // required = false
       
       const result = await checkValidity(formId, 'field', fieldId);
@@ -107,7 +107,7 @@ describe('validationService', () => {
         }
       });
       
-      mockFormStore.manageFieldStorage.mockReturnValue('test-value');
+      mockFormFieldStore.getField.mockReturnValue('test-value');
       mockFormConfigStore.getConfigValue.mockReturnValueOnce(false); // required = false
       mockFormValidationStore.getValidationResult.mockReturnValueOnce(mockValidationFn); // validity function
       

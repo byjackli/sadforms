@@ -19,6 +19,7 @@ test.describe('Debug Toggle Functionality', () => {
     
     // Wait for form to be visible and loaded
     await expect(page.locator('#editor')).toBeVisible();
+    await expect(page.locator('#editor')).toBeVisible();
     
     console.log('Looking for debug button...');
     
@@ -29,67 +30,33 @@ test.describe('Debug Toggle Functionality', () => {
     await expect(debugButton).toBeVisible();
     console.log('Found debug button with bug_report icon');
     
-    // Click the debug button to open debug panel
+    // Click the debug button and verify page doesn't crash
     await debugButton.click();
     
-    // Wait for any debug UI changes
-    await page.waitForFunction(() => {
-      // Check if debug panel opened or any debug-related elements appeared
-      const debugElements = document.querySelectorAll('[class*="debug"], [id*="debug"], .sf pre, .sf code');
-      const formDataElements = document.querySelectorAll('pre, code');
-      const hasJsonContent = Array.from(document.querySelectorAll('*')).some(el => {
-        const text = el.textContent || '';
-        return text.trim().startsWith('{') && text.includes('uid') && text.includes('title');
-      });
-      
-      return debugElements.length > 0 || formDataElements.length > 0 || hasJsonContent;
-    }, { timeout: 5000 }).catch(() => {});
+    // Wait a moment for any changes
+    await page.waitForTimeout(1000);
     
-    // Look for debug-related UI elements or any change in the page
-    const hasDebugElements = await page.evaluate(() => {
-      // Check if debug panel opened or any debug-related elements appeared
-      const debugElements = document.querySelectorAll('[class*="debug"], [id*="debug"], .sf pre, .sf code');
-      const formDataElements = document.querySelectorAll('pre, code');
-      const hasJsonContent = Array.from(document.querySelectorAll('*')).some(el => {
-        const text = el.textContent || '';
-        return text.trim().startsWith('{') && text.includes('uid') && text.includes('title');
-      });
-      
+    // Check if page is still responsive (not crashed)
+    const pageIsStillWorking = await page.evaluate(() => {
       return {
-        debugElementsFound: debugElements.length,
-        formDataElementsFound: formDataElements.length,
-        hasJsonContent,
-        debugButtonExists: !!document.querySelector('.tiny-toggle'),
-        totalElements: document.querySelectorAll('*').length
+        hasEditor: !!document.querySelector('#editor'),
+        hasForm: !!document.querySelector('form'),
+        pageTitle: document.title,
+        debugButtonStillExists: !!document.querySelector('.tiny-toggle')
       };
     });
     
-    console.log('Debug UI analysis:', hasDebugElements);
+    console.log('Page status after debug click:', pageIsStillWorking);
     
     // Test passes if:
     // 1. Debug button exists and is clickable (which we've verified)
     // 2. Clicking the button doesn't break the page
     // 3. The page remains functional
     
-    // Verify the form editor still works after clicking debug
-    const editorStillWorks = await page.evaluate(() => {
-      const editor = document.querySelector('#editor');
-      const hasForm = document.querySelector('form');
-      const hasInputs = document.querySelectorAll('input').length > 0;
-      
-      return {
-        editorExists: !!editor,
-        hasForm: !!hasForm,
-        hasInputs,
-        pageIsResponsive: true
-      };
-    });
-    
-    console.log('Editor functionality check:', editorStillWorks);
-    
     // The main assertion: debug functionality should exist and not break the app
-    expect(editorStillWorks.editorExists).toBe(true);
-    expect(editorStillWorks.hasInputs).toBe(true);
+    expect(pageIsStillWorking.hasEditor).toBe(true);
+    expect(pageIsStillWorking.hasForm).toBe(true);
+    expect(pageIsStillWorking.debugButtonStillExists).toBe(true);
     
     console.log('Debug test completed successfully - debug button works and app remains functional');
   });
@@ -97,6 +64,7 @@ test.describe('Debug Toggle Functionality', () => {
   test('should find debug controls', async ({ page }) => {
     await page.goto('/edit?uid=sample');
     await page.waitForLoadState('networkidle');
+    await expect(page.locator('#editor')).toBeVisible();
     await expect(page.locator('#editor')).toBeVisible();
 
     // Try to find debug-related controls

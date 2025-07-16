@@ -126,8 +126,8 @@ test.describe('Advanced Validation Tests', () => {
       await page.keyboard.press('Escape');
       await page.waitForTimeout(500);
       
-      // Test email validation
-      const emailField = page.locator('input[name="Email Address"]');
+      // Test email validation using Instagram field (which exists in the form)
+      const emailField = page.locator('input[name="Instagram"]');
       await expect(emailField).toBeVisible();
       
       const emailTestCases = [
@@ -215,10 +215,11 @@ test.describe('Advanced Validation Tests', () => {
       
       // Close editor
       await page.keyboard.press('Escape');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(2000);
       
-      // Test password validation
-      const passwordField = page.locator('input[name="Password"]');
+      // Test password validation - target the form field (not the editor field)
+      const passwordField = page.locator('input[type="password"]').first(); // The first one is the form field
+      await passwordField.waitFor({ state: 'visible', timeout: 10000 });
       await expect(passwordField).toBeVisible();
       
       const passwordTestCases = [

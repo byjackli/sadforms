@@ -4,7 +4,8 @@
  */
 
 import { get } from 'svelte/store';
-import FormStore from '../store/FormStore';
+import FormFieldStore from '../store/FormFieldStore';
+import { getValidationResult } from '../store/FormValidationStore';
 import { setSubmitState, setTouched, getMetaValue } from '../store/FormMetaStore';
 import { checkValidity } from './validationService';
 import { belongs } from '../tools/kit';
@@ -91,8 +92,7 @@ export async function submitForm(config: SubmissionConfig): Promise<SubmissionRe
  * Updates feedback for all invalid fields in the form
  */
 async function updateInvalidFieldFeedback(formId: string): Promise<void> {
-    const formStore = get(FormStore);
-    const verdicts = formStore[formId]?.validationResult;
+    const verdicts = getValidationResult(formId, FormProps.VALIDATION_RESULT);
     
     if (!verdicts) return;
 
@@ -119,7 +119,7 @@ async function updateInvalidFieldFeedback(formId: string): Promise<void> {
  * Extracts form data from the store
  */
 function getFormData(formId: string): Record<string, Value> {
-    const formStore = get(FormStore);
+    const formStore = get(FormFieldStore);
     const formData = formStore[formId]?.fieldValues;
     
     if (!formData) return {};

@@ -34,9 +34,18 @@ test.describe('Simple Validation Check', () => {
     });
 
     test('should find validation feedback container', async ({ page }) => {
-        // Look for the feedback container
+        // First, interact with the Display Name field to trigger validation
+        const displayNameField = page.locator('input[id*="374ac078-376a-4b1e-b367-8dd0a4526c9d"]');
+        await displayNameField.click();
+        await displayNameField.fill('abc'); // Less than 6 characters to trigger validation error
+        await displayNameField.blur(); // Blur to trigger validation
+        
+        // Wait a moment for validation to process
+        await page.waitForTimeout(1000);
+        
+        // Now look for the feedback container
         const feedbackContainer = page.locator('[id*="374ac078-376a-4b1e-b367-8dd0a4526c9d"]').locator('.container-validity');
-        await expect(feedbackContainer).toBeVisible();
+        await expect(feedbackContainer).toHaveClass(/active/);
         
         const containerClass = await feedbackContainer.getAttribute('class');
         console.log(`Feedback container class: "${containerClass}"`);

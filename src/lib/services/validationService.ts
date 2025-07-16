@@ -3,7 +3,7 @@
  * Handles field validation, feedback, and preview functionality
  */
 
-import { manageFieldStorage } from '../store/FormStore';
+import { getField } from '../store/FormFieldStore';
 import { setValidationResult, getValidationResult } from '../store/FormValidationStore';
 import { getConfigValue } from '../store/FormConfigStore';
 import { FormProps } from '$lib/constants';
@@ -13,7 +13,7 @@ import type { ValidationResult, Rule, Validity } from '$lib/types/Form';
  * Checks if a field is empty based on its current value
  */
 function checkEmpty(formId: string, fieldid: string, groupid?: string): boolean {
-    const field = manageFieldStorage(formId, { action: "get" }, fieldid, groupid);
+    const field = getField(formId, fieldid, groupid);
     return (
         field === "" ||
         field === undefined ||
@@ -55,7 +55,7 @@ export async function checkValidity(
         const func = getValidationResult(formId, FormProps.VALIDITY, fieldid, groupid) as Validity;
         if (func && typeof func === 'function') {
             const conditions = func(
-                manageFieldStorage(formId, { action: "get" }, fieldid, groupid) as string
+                getField(formId, fieldid, groupid) as string
             );
             for (const condition of Object.values(conditions)) {
                 const rule = condition as Rule;
