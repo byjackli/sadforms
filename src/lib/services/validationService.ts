@@ -87,64 +87,21 @@ export async function checkValidity(
 }
 
 /**
- * Direct validation functions to replace EventBus pattern
+ * Validates a field for any event type (input, focus, blur)
+ * Consolidates the three previous validation functions that had identical logic
  */
-
-/**
- * Validates a field when input occurs
- * Replaces FIELD_INPUT event handling
- */
-export async function validateFieldOnInput(
+export async function validateField(
     formId: string,
     fieldId: string,
     groupId?: string
 ): Promise<ValidationResult> {
     // Trigger field validation
     const result = await checkValidity(formId, "field", fieldId, groupId);
-    
+
     // Also trigger group validation if field is in a group
     if (groupId) {
         await checkValidity(formId, "group", fieldId, groupId);
     }
-    
-    return result;
-}
 
-/**
- * Validates a field when it receives focus
- * Replaces FIELD_FOCUS event handling
- */
-export async function validateFieldOnFocus(
-    formId: string,
-    fieldId: string,
-    groupId?: string
-): Promise<ValidationResult> {
-    // For focus events, we typically want to clear previous validation errors
-    // and potentially run validation if the field has a value
-    const result = await checkValidity(formId, "field", fieldId, groupId);
-    
-    if (groupId) {
-        await checkValidity(formId, "group", fieldId, groupId);
-    }
-    
-    return result;
-}
-
-/**
- * Validates a field when it loses focus (blur)
- * Replaces FIELD_BLUR event handling
- */
-export async function validateFieldOnBlur(
-    formId: string,
-    fieldId: string,
-    groupId?: string
-): Promise<ValidationResult> {
-    // On blur, we always want to validate the field
-    const result = await checkValidity(formId, "field", fieldId, groupId);
-    
-    if (groupId) {
-        await checkValidity(formId, "group", fieldId, groupId);
-    }
-    
     return result;
 }

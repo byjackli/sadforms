@@ -128,7 +128,6 @@ export async function loadAllFields(
  */
 export async function loadGroup(uid: string, group: Group): Promise<void> {
     setGroup(uid, group, group.meta.uid);
-    setGroup(uid, group, group.meta.uid);
 }
 
 /**
@@ -149,16 +148,15 @@ export async function loadField(
             : loadBlank(field.type);
             
         setField(uid, field.uid, defaultFieldValue as Value, groupMeta?.uid, dontSave);
-        setFieldValue(uid, FormProps.FIELD_VALUES, defaultFieldValue, field.uid, groupMeta?.uid);
         setFieldValue(uid, FormProps.DISPLAY_VALUES, defaultFieldValue, field.uid, groupMeta?.uid);
     } else {
         // Field exists in storage, but we still need to ensure displayValues are set
-        updateFieldValue(uid, field.uid, groupMeta?.uid, dontSave);
+        const fieldValue = getField(uid, field.uid, groupMeta?.uid) as Value;
+        setFieldValue(uid, FormProps.DISPLAY_VALUES, fieldValue, field.uid, groupMeta?.uid);
     }
 
     // Setup field callbacks
     if (field.onInput) {
-        setOnInput(uid, field.onInput, field.uid, groupMeta?.uid);
         setOnInput(uid, field.onInput, field.uid, groupMeta?.uid);
     }
 
@@ -166,58 +164,30 @@ export async function loadField(
     if (field.redact || groupMeta?.redact) {
         setRedact(uid, groupMeta?.redact || field.redact, field.uid, groupMeta?.uid);
         setFieldValue(uid, FormProps.DISPLAY_VALUES, "[redacted]", field.uid, groupMeta?.uid);
-        setRedact(uid, groupMeta?.redact || field.redact, field.uid, groupMeta?.uid);
-        setFieldValue(uid, FormProps.DISPLAY_VALUES, "[redacted]", field.uid, groupMeta?.uid);
     }
 
     // Initialize field state
-    setActive(uid, false, field.uid, groupMeta?.uid);
     setActive(uid, false, field.uid, groupMeta?.uid);
 
     // Setup required field validation (don't validate on init - wait for user interaction)
     if (field.required || groupMeta?.required) {
         const isRequired = groupMeta?.required || field.required;
         setRequired(uid, isRequired, field.uid, groupMeta?.uid);
-        setRequired(uid, isRequired, field.uid, groupMeta?.uid);
     }
 
     // Setup custom validation (don't validate on init - wait for user interaction)
     if (field.validity) {
-        setValidity(uid, field.validity, field.uid, groupMeta?.uid);
         setValidity(uid, field.validity, field.uid, groupMeta?.uid);
     }
 
     // Setup file preview for file fields
     if (field.type === FIELD_TYPES.FILE && !field.hide?.preview) {
         setPreview(uid, true, field.uid, groupMeta?.uid);
-        setPreview(uid, true, field.uid, groupMeta?.uid);
     }
 }
 
-/**
- * Updates field value from storage
- */
-export function updateFieldValue(uid: string, fieldId: string, groupId?: string, dontSave?: boolean): void {
-    const exists = hasField(uid, fieldId, groupId);
-
-    let fieldValue: Value;
-
-    if (exists) {
-        fieldValue = getField(uid, fieldId, groupId) as Value;
-
-        // Convert object to array if needed
-        if (typeof fieldValue === "object" && fieldValue !== null && !Array.isArray(fieldValue)) {
-            fieldValue = Object.values(fieldValue);
-        }
-    } else {
-        fieldValue = "";
-    }
-
-    setFieldValue(uid, FormProps.FIELD_VALUES, fieldValue, fieldId, groupId);
-    setFieldValue(uid, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
-    setFieldValue(uid, FormProps.FIELD_VALUES, fieldValue, fieldId, groupId);
-    setFieldValue(uid, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
-}
+// updateFieldValue function moved to formEventHandler.ts where it belongs
+// Runtime field updates should be handled by the event handler, not lifecycle service
 
 /**
  * Cleans up form lifecycle resources

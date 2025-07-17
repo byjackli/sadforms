@@ -3,7 +3,7 @@
  * Handles field updates, focus/blur events, and form interactions
  */
 
-import { setField, setFieldValue } from '../store/FormFieldStore';
+import { setField, setFieldValue, getField, hasField } from '../store/FormFieldStore';
 import { setTouched, setActive } from '../store/FormMetaStore';
 import { getConfigValue } from '../store/FormConfigStore';
 import { get } from 'svelte/store';
@@ -11,8 +11,7 @@ import FormFieldStore from '../store/FormFieldStore';
 import type { Value, Field, Group, FormInstance } from '../types/Form';
 import { FormProps } from '$lib/constants';
 import { isGroup } from '../utils/formHelpers';
-import { updateFieldValue } from './formLifecycle';
-import { validateFieldOnInput, validateFieldOnFocus, validateFieldOnBlur } from './validationService';
+import { validateField } from './validationService';
 
 export interface FormEventConfig {
     formId: string;
@@ -54,14 +53,11 @@ export async function handleFieldUpdate(
         fieldValue = await handleFileUpload(event);
     }
 
-    // Store the field fieldValue
+    // Store the field value in both FIELD_VALUES and DISPLAY_VALUES
     setField(formId, fieldId, fieldValue, groupId, dontSave);
+    setFieldValue(formId, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
 
-    // Update field value in store
-    updateFieldValue(formId, fieldId, groupId);
-
-    // Trigger field validation directly (replacing EventBus)
-    await validateFieldOnInput(formId, fieldId, groupId);
+    await validateField(formId, fieldId, groupId);
 
     // Execute form-level onInput callback
     if (typeof onInput === 'function') {
@@ -71,15 +67,12 @@ export async function handleFieldUpdate(
 
     // Auto-save if configured
     if (save?.saveOnInput && config.updateSave) {
-        config.updateSave(formId).catch((error: any) => 
+        config.updateSave(formId).catch((error: any) =>
             console.warn(`Save on input failed for form ${formId}:`, error)
         );
     }
 
-    // Update debug info
-    if (updateDebug) {
-        updateDebug();
-    }
+    updateDebug && updateDebug();
 }
 
 /**
@@ -95,17 +88,17 @@ export async function handleFieldFocus(
     setTouched(formId, true, fieldId, groupId);
     setActive(formId, true, fieldId, groupId);
 
-    // Handle redacted fields
+    // Handle redacted fields - restore original value for editing
     if (getConfigValue(formId, FormProps.REDACT, fieldId, groupId)) {
-        updateFieldValue(formId, fieldId, groupId);
+        const fieldValue = hasField(formId, fieldId, groupId) 
+            ? getField(formId, fieldId, groupId) 
+            : "";
+        setFieldValue(formId, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
     }
 
-    // Trigger field focus validation directly (replacing EventBus)
-    validateFieldOnFocus(formId, fieldId, groupId);
 
-    if (updateDebug) {
-        updateDebug();
-    }
+    validateField(formId, fieldId, groupId);
+    updateDebug && updateDebug();
 }
 
 /**
@@ -125,12 +118,10 @@ export function handleFieldBlur(
         setFieldValue(formId, FormProps.DISPLAY_VALUES, "[redacted]", fieldId, groupId);
     }
 
-    // Trigger field blur validation directly (replacing EventBus)
-    validateFieldOnBlur(formId, fieldId, groupId);
+    // Trigger field blur validation directly
+    validateField(formId, fieldId, groupId);
 
-    if (updateDebug) {
-        updateDebug();
-    }
+    updateDebug && updateDebug();
 }
 
 

@@ -38,29 +38,36 @@
 		field: undefined,
 		value: "",
 	};
-	$: localData = $$props && data;
+	// Removed redundant localData - use data directly
 
-	function localBelongs(object: object, key: string): boolean {
-		return multiple ? belongs(object, key) : options[cur].uid === key;
-	}
+	// Remove redundant function - use belongs() directly
 	function makeToData(options: Options): Record<string, string> {
 		const data = {};
-		for (const option of options) data[option.uid] = option.name;
+		if (!options?.length) return data;
+		
+		for (const option of options) {
+			if (option?.uid && option?.name) {
+				data[option.uid] = option.name;
+			}
+		}
 		return data;
 	}
 
 	function updateCursor(uid: string): string {
-		for (const [i, option] of options.entries())
-			if (uid === option.uid) {
+		if (!options?.length) return '';
+		
+		for (const [i, option] of options.entries()) {
+			if (option?.uid === uid) {
 				if (edit?.add && i === curMax) {
 					add.field.focus();
 				}
 				cur = i;
 				return option.uid;
 			}
+		}
 
 		cur = 0;
-		return options[0].uid;
+		return options[0]?.uid || '';
 	}
 	function updateFocus(uid: string): void {
 		const current = document.getElementById(
@@ -78,9 +85,17 @@
 	function updateChecked(uid: string, submit = true): void {
 		if (uid === "add") return;
 		if (!multiple) data = {};
-		if (belongs(data, uid)) delete data[uid];
-		else data[uid] = options[cur].name;
+		
+		if (belongs(data, uid)) {
+			delete data[uid];
+		} else {
+			const option = options?.find(opt => opt?.uid === uid);
+			if (option) {
+				data[uid] = option.name;
+			}
+		}
 
+		data = { ...data };
 		const persist = edit?.persist ? options : null;
 		input({ target: { value: data, submit, options: persist } });
 	}
@@ -111,9 +126,11 @@
 
 			if (event.code === "Escape") updateDropdown(false, undefined);
 			else if (["Enter", "NumpadEnter", "Space"].includes(event.code)) {
-				if (!multiple && options[cur].uid !== "add")
-					updateDropdown(false, undefined);
-				updateChecked(options[cur].uid);
+				if (options[cur]) {
+					if (!multiple && options[cur].uid !== "add")
+						updateDropdown(false, undefined);
+					updateChecked(options[cur].uid);
+				}
 			} else if (event.code === "ArrowUp" && 0 <= cur - 1) cur -= 1;
 			else if (event.code === "ArrowDown" && cur + 1 <= curMax) cur += 1;
 			else if (event.code === "PageUp") cur = 0 < cur - 10 ? cur - 10 : 0;
@@ -131,12 +148,16 @@
 						.getAttribute("aria-activedescendant")
 						?.split(`${$CustomStore.names.optionHeader}${id}`)[1]
 				);
-				updateFocus(options[cur].uid);
+				if (options[cur]) {
+					updateFocus(options[cur].uid);
+				}
 				return;
 			}
 
-			if (!multiple) updateChecked(options[cur].uid, false);
-			updateFocus(options[cur].uid);
+			if (options[cur]) {
+				if (!multiple) updateChecked(options[cur].uid, false);
+				updateFocus(options[cur].uid);
+			}
 		}
 	}
 
@@ -158,7 +179,6 @@
 
 		if (uid === "add") return;
 		updateChecked(uid);
-		// dropdown.focus();
 	}
 
 	function addItem(): void {
@@ -257,11 +277,16 @@
 	}
 
 	beforeUpdate(() => {
-		if (Array.isArray(data)) data = makeToData(data);
+		if (Array.isArray(data)) {
+			data = makeToData(data);
+		}
 	});
 	onMount(() => {
 		label = document.getElementById(`${$CustomStore.names.label}${id}`);
 		label?.addEventListener("click", labelLink);
+		
+		if (!options?.length) return;
+		
 		size = options.length;
 
 		if (edit?.add) {
@@ -272,8 +297,8 @@
 		updateCallback(handleClose);
 		if (!size) return;
 
-		const unpacked = Object.keys(data),
-			last = unpacked.length ? unpacked[unpacked.length - 1] : undefined;
+		const unpacked = data ? Object.keys(data) : [];
+		const last = unpacked.length ? unpacked[unpacked.length - 1] : undefined;
 
 		curMax = options.length - 1;
 		prevId = updateCursor(last);
@@ -299,7 +324,7 @@
 		aria-controls={`${fullId}lb`}
 		aria-expanded={expanded}
 		aria-labelledby={`${$CustomStore.names.label}${id}`}
-		aria-activedescendant={expanded && size
+		aria-activedescendant={expanded && size && options[cur]
 			? `${$CustomStore.names.optionHeader}${id}${options[cur].uid}`
 			: "false"}
 		tabindex="0"
@@ -315,8 +340,8 @@
 		on:keydown={(event) => onInput(event)}
 	>
 		<span class={value && value.length ? "" : "option-size"}>
-			{compact && value && typeof value !== "string" && 1 < value.length
-				? `Multiple Selections (${value.length})`
+			{compact && data && typeof data === "object" && Object.keys(data).length > 1
+				? `Multiple Selections (${Object.keys(data).length})`
 				: value && value.length
 				? value
 				: placeholder
@@ -335,15 +360,15 @@
 			on:click={(event) => onClick(event)}
 		>
 			{#if !size}<div>no options available</div>{/if}
-			{#each options as option (option.uid)}
-				{#if option.uid !== "add"}
+			{#each options as option (option?.uid)}
+				{#if option && option.uid !== "add"}
 					<div
 						class={`option ${
 							prevId === option.uid ? "active" : ""
 						}`}
 						id={`${$CustomStore.names.optionHeader}${id}${option.uid}`}
 						role="option"
-						aria-selected={`${localBelongs(localData, option.uid)}`}
+						aria-selected={`${belongs(data, option.uid)}`}
 					>
 						<span>{option.name}</span>
 						<div class="option-actions">
@@ -355,9 +380,7 @@
 								>
 							{/if}
 							<span aria-hidden="true" class="material-icons"
-								>{renderChecked(
-									localBelongs(localData, option.uid)
-								)}</span
+								>{renderChecked(belongs(data, option.uid))}</span
 							>
 						</div>
 					</div>
@@ -395,7 +418,7 @@
 								{typeof edit.remove === "number"
 									? edit.remove - add.removed
 									: typeof edit.remove === "boolean" &&
-									  edit.remove
+										  edit.remove
 									? "∞"
 									: "-"}
 								/
