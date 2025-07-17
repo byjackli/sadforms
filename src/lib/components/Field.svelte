@@ -71,7 +71,7 @@
 >
 	{#if !field.hidden}
 		{#if field.type && field.type === "custom"}
-			<div>{field.body}</div>
+			<div>{@html field.body ? decodeURIComponent(field.body) : ''}</div>
 		{:else}
 			{#if field.type === "textarea"}
 				<textarea
@@ -124,7 +124,7 @@
 						if (Array.isArray(fieldData) && fieldData.length > 0) {
 							const fileData = fieldData[0];
 							if (typeof fileData === 'object' && fileData !== null && 'meta' in fileData && fileData.meta?.name) {
-								return fileData.meta.name;
+								return decodeURIComponent(fileData.meta.name);
 							}
 						}
 						return `click to choose ${field.multiple ? 'files' : 'a file'}`;
@@ -281,9 +281,9 @@
 			aria-live="polite"
 		>
 			{#each files as file}
-				<div class="preview" title={file.meta.name}>
-					<span class="material-icons">{getFileIcon(file.meta.name)}</span>
-					<p>{file.meta.name}</p>
+				<div class="preview" title={decodeURIComponent(file.meta.name)}>
+					<span class="material-icons">{getFileIcon(decodeURIComponent(file.meta.name))}</span>
+					<p>{decodeURIComponent(file.meta.name)}</p>
 				</div>
 			{/each}
 		</div>

@@ -30,17 +30,51 @@ export async function getBase64(file: File): Promise<string> {
 }
 
 /**
+ * Validates file against security constraints
+ */
+export function validateFile(file: File, maxSize: number = 50 * 1024 * 1024): { valid: boolean, error?: string } {
+    // Validate file size (default 50MB)
+    if (file.size > maxSize) {
+        return { valid: false, error: `File too large. Maximum size is ${Math.floor(maxSize / 1024 / 1024)}MB` };
+    }
+
+    // Validate file name for path traversal
+    if (file.name.includes('..') || file.name.includes('/') || file.name.includes('\\')) {
+        return { valid: false, error: 'Invalid file name' };
+    }
+
+    // Validate file name length
+    if (file.name.length > 255) {
+        return { valid: false, error: 'File name too long' };
+    }
+
+    // Check for null bytes and control characters
+    if (/[\x00-\x1f\x7f-\x9f]/.test(file.name)) {
+        return { valid: false, error: 'Invalid characters in file name' };
+    }
+
+    return { valid: true };
+}
+
+/**
  * Processes FileList into array of base64 data with metadata
  */
-export async function getData(input: FileList): Promise<Array<{ base64: string, meta: FileMetadata }>> {
+export async function getData(input: FileList, maxSize?: number): Promise<Array<{ base64: string, meta: FileMetadata }>> {
     const arr: Array<{ base64: string, meta: FileMetadata }> = [];
 
     // Convert FileList to array to ensure compatibility
     const files = Array.from(input);
 
     for (const file of files) {
+        // Validate file before processing
+        const validation = validateFile(file, maxSize);
+        if (!validation.valid) {
+            console.warn(`File validation failed for ${file.name}: ${validation.error}`);
+            continue; // Skip invalid files
+        }
+
         const meta = {
-            name: file.name,
+            name: encodeURIComponent(file.name), // Encode filename for safety
             size: file.size,
             type: file.type,
             lastModified: file.lastModified,
