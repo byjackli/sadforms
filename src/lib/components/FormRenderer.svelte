@@ -1,5 +1,6 @@
 <script lang="ts">
-	import Field from "./Field.svelte";
+	import GroupWrapper from "./GroupWrapper.svelte";
+	import FormFieldWrapper from "./FormFieldWrapper.svelte";
 	import CustomStore from "../store/CustomStore";
 	import type { Field as FieldType, Group } from "../types/Form";
 
@@ -24,6 +25,7 @@
 		reset: () => void;
 	};
 
+	// Type checking utility
 	function isField(field: unknown): field is FieldType {
 		return (
 			typeof field === 'object' &&
@@ -36,6 +38,49 @@
 			typeof (field as any).type === 'string'
 		);
 	}
+
+	// Data preprocessing interfaces
+	interface ProcessedFormItem {
+		isGroup: boolean;
+		uid: string;
+		data: FieldType | Group;
+		children?: ProcessedFormItem[];
+	}
+
+	// Preprocess form fields to move logic out of template
+	function preprocessFormFields(fields: (FieldType | Group)[]): ProcessedFormItem[] {
+		return fields.map(item => {
+			if ('meta' in item) {
+				// Process group
+				const children = Object.entries(item)
+					.filter(([key, field]) => key !== 'meta' && isField(field))
+					.map(([_, field]) => ({
+						isGroup: false,
+						uid: field.uid,
+						data: field as FieldType,
+						children: undefined
+					}));
+
+				return {
+					isGroup: true,
+					uid: item.meta.uid,
+					data: item,
+					children
+				};
+			} else {
+				// Process individual field
+				return {
+					isGroup: false,
+					uid: item.uid,
+					data: item,
+					children: undefined
+				};
+			}
+		});
+	}
+
+	// Reactive preprocessing of form fields
+	$: processedFields = preprocessFormFields(formFields);
 </script>
 
 <div id={uid} class="sf sf-container">
@@ -47,57 +92,18 @@
 			tabindex="-1"
 			on:submit|preventDefault={functions.submit}
 		>
-			{#each formFields as group (group)}
-				{#if 'meta' in group}
-					<!-- Group rendering -->
-					<div
-						class="form-group"
-						role="group"
-						id={`${$CustomStore.names.groupHeader}${group.meta.uid}`}
-					>
-						<div class="items">
-							{#if group.meta?.override?.label}
-								<legend>
-									{group.meta.name}
-									{#if group.meta.required}<em>*required</em>{/if}
-								</legend>
-							{/if}
-							{#each Object.entries(group) as [key, field]}
-								{#if key !== 'meta' && isField(field)}
-									<Field
-										formid={uid}
-										field={field}
-										group={group}
-										{functions}
-									/>
-								{/if}
-							{/each}
-						</div>
-						{#if group.meta?.tooltip}
-							<div class="container-tooltip" aria-hidden="true">
-								{#if $CustomStore.icons.tooltip}
-									<span
-										aria-hidden="true"
-										class="material-icons"
-									>
-										{$CustomStore.icons.tooltip}
-									</span>
-								{/if}
-								<p>{group.meta?.tooltip}</p>
-							</div>
-						{/if}
-						{#if group.meta?.override?.feedback}
-							<div
-								class="form-group-feedback"
-								id={`${$CustomStore.names.groupFeedback}${group.meta.uid}`}
-							></div>
-						{/if}
-					</div>
+			{#each processedFields as item (item.uid)}
+				{#if item.isGroup}
+					<GroupWrapper
+						group={item.data}
+						formId={uid}
+						children={item.children}
+						{functions}
+					/>
 				{:else}
-					<!-- Individual field rendering -->
-					<Field
-						formid={uid}
-						field={group}
+					<FormFieldWrapper
+						field={item.data}
+						formId={uid}
 						{functions}
 					/>
 				{/if}
