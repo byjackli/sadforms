@@ -633,11 +633,16 @@
     }
 
     function groupOI(details): void {
+        if (!details || !details.fieldValues) return;
+        
+        // Extract the actual form data from fieldValues
+        const formData = details.fieldValues;
+        
         let base = data.fields[groupid] as Group;
-        if (belongs(details.data, "header")) delete details.data.header;
-        if (belongs(details.data, "dropdown")) delete details.data.dropdown;
+        if (belongs(formData, "header")) delete formData.header;
+        if (belongs(formData, "dropdown")) delete formData.dropdown;
 
-        base.meta = { ...base.meta, ...details.data };
+        base.meta = { ...base.meta, ...formData };
         base.meta.override = parseHide(base.meta.override, true);
 
         updateForm(data);

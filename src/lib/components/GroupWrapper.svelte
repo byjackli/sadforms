@@ -34,7 +34,7 @@
 			</legend>
 		{/if}
 		
-		{#each children as childItem}
+		{#each children || [] as childItem}
 			<Field
 				formid={formId}
 				field={childItem.data}

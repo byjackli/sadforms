@@ -49,17 +49,17 @@
 
 	// Preprocess form fields to move logic out of template
 	function preprocessFormFields(fields: (FieldType | Group)[]): ProcessedFormItem[] {
-		return fields.map(item => {
+		return fields.filter(item => item != null).map(item => {
 			if ('meta' in item) {
-				// Process group
-				const children = Object.entries(item)
+				// Process group - add null check for item
+				const children = item ? Object.entries(item)
 					.filter(([key, field]) => key !== 'meta' && isField(field))
 					.map(([_, field]) => ({
 						isGroup: false,
 						uid: field.uid,
 						data: field as FieldType,
 						children: undefined
-					}));
+					})) : [];
 
 				return {
 					isGroup: true,
