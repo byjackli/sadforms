@@ -21,12 +21,15 @@
     import { setRedact } from "$lib/store/FormConfigStore";
     import { FormProps } from "$lib/constants";
     import {
-        makeToData,
         makeToOptions,
         newType,
         parseHide,
     } from "../../presets";
     import { belongs, uuidV4 } from "$lib/tools/kit";
+    
+    // Import the form builder services
+    import { fieldConfigService } from "./services/fieldConfigService";
+    import { formBuilderService } from "./services/formBuilderService";
 
     export let main: SvelteComponent;
 
@@ -35,613 +38,72 @@
     $: data = $SadForms.data;
     $: fieldid = $SadForms.editing.fieldid;
     $: groupid = $SadForms.editing.groupid;
-    $: fields = $SadForms && editFields();
+    $: fields = $SadForms && fieldid && data && generateFieldConfig();
 
-    function groupFields(): Record<string, Field> {
-        const value = data.fields[groupid] as Group;
-
-        return {
-            header: {
-                uid: "header",
-                name: "Group Settings",
-                type: "divider",
-                icon: "table_rows",
-                hide: { label: true },
-            },
-            name: {
-                uid: "name",
-                name: "Group Name",
-                type: "text",
-                required: true,
-                defaultValue: value.meta.name,
-            },
-            uid: {
-                uid: "uid",
-                name: "Group UID",
-                type: "text",
-                required: true,
-                disabled: true,
-                defaultValue: value.meta.uid,
-            },
-            tooltip: {
-                uid: "tooltip",
-                name: "group tooltip",
-                type: "text",
-                defaultValue: value.meta.tooltip,
-            },
-            required: {
-                uid: "required",
-                name: "Require All Fields",
-                type: "checkbox",
-                hide: { label: true },
-                defaultValue: value.meta.required,
-            },
-            redact: {
-                uid: "redact",
-                name: "Mask All Data",
-                type: "checkbox",
-                hide: { label: true },
-                defaultValue: value.meta.redact,
-            },
-            group: {
-                uid: "group",
-                name: "Group Options",
-                type: "dropdown",
-                multiple: true,
-                options: [
-                    { uid: "label", name: "Label" },
-                    { uid: "feedback", name: "Feedback" },
-                ],
-                defaultValue: parseHide(value.meta.override),
-            },
-            dropdown: {
-                uid: "dropdown",
-                name: "add new field to group",
-                placeholder: "add new field to group",
-                type: "dropdown",
-                data: maData,
-                options: [
-                    { uid: "option0", name: "textarea" },
-                    { uid: "option1", name: "text" },
-                    { uid: "option2", name: "email" },
-                    { uid: "option3", name: "tel" },
-                    { uid: "option4", name: "password" },
-                    { uid: "option5", name: "number" },
-                    { uid: "option6", name: "dropdown" },
-                    { uid: "option7", name: "checkbox" },
-                    { uid: "option8", name: "switch" },
-                    { uid: "option9", name: "file" },
-                    { uid: "option10", name: "time" },
-                ],
-                onInput: function input(target) {
-                    if (!target.submit) return;
-
-                    maData = target.value;
-                    maValue = Object.values(maData)[0];
-                    const uid = uuidV4(),
-                        group = data.fields[groupid];
-
-                    data.fields[groupid] = {
-                        ...group,
-                        [uid]: newType(maValue, uid),
-                    };
-                    updateForm(data);
-                    updateSave();
-                    main.reload();
-                },
-                hide: { label: true },
-            },
-        };
-    }
-    function editFields(): Record<string, Field> {
-        const value = groupid
-            ? data.fields[groupid][fieldid]
+    /**
+     * Generates field configuration using the new service
+     */
+    function generateFieldConfig(): Record<string, Field> {
+        if (!fieldid || !data || !data.fields) return {};
+        
+        const field = groupid 
+            ? data.fields[groupid]?.[fieldid] 
             : data.fields[fieldid];
-        // value.type === "divider"
-        // value.type === "switch"
-
-        let basics = {
-                header: {
-                    uid: "header",
-                    name: "Field Settings",
-                    type: "divider",
-                    icon: "crop_7_5",
-                    hide: { label: true },
-                },
-                name: {
-                    uid: "name",
-                    name: "Label",
-                    type: "text",
-                    defaultValue: value.name,
-                    placeholder: "🤔 something creative",
-                    required: true,
-                },
-                uid: {
-                    uid: "uid",
-                    name: "Custom ID",
-                    type: "text",
-                    defaultValue: value.uid,
-                    disabled: true,
-                },
-                type: {
-                    uid: "type",
-                    name: "field type",
-                    type: "text",
-                    defaultValue: value.type,
-                    disabled: true,
-                },
-                tooltip: {
-                    uid: "tooltip",
-                    name: "Tooltip",
-                    type: "text",
-                    defaultValue: value.tooltip,
-                    placeholder: "If the placeholder doesn't fit your needs.",
-                },
-                onInput: {
-                    uid: "onInput",
-                    name: "onInput",
-                    type: "textarea",
-                    defaultValue: value.onInput,
-                    placeholder:
-                        "Function is fired every time the field is changed.\n\nThe function has access to the field value, HTMLElement, and more.",
-                    validity: checkFunc,
-                },
-                hide: {
-                    uid: "hide",
-                    name: "Hide Features",
-                    type: "dropdown",
-                    defaultValue: value.hide
-                        ? parseHide(value.hide)
-                        : undefined,
-                    multiple: true,
-                    options: [{ uid: "label", name: "Label" }],
-                },
-            },
-            midware = {},
-            plus = {};
-
-        if (["divider"].includes(value.type)) {
-            midware = {};
-        } else {
-            midware = {
-                placeholder: {
-                    uid: "placeholder",
-                    name: "Placeholder",
-                    type: "text",
-                    defaultValue: value.placeholder,
-                    placeholder: "Teach the user how to use the field.",
-                },
-                defaultValue: {
-                    uid: "defaultValue",
-                    name: "Default Value",
-                    type: value.type,
-                    defaultValue: value.defaultValue,
-                    placeholder: "Motivate a response from the user.",
-                    options: ["dropdown", "radio"].includes(value.type)
-                        ? value.options
-                        : undefined,
-                    multiple: ["dropdown", "radio"].includes(value.type)
-                        ? value.multiple
-                        : undefined,
-                    tooltip: ["dropdown", "radio"].includes(value.type)
-                        ? "Help"
-                        : undefined,
-                },
-                disabled: {
-                    uid: "disabled",
-                    name: "Disable Field",
-                    type: "checkbox",
-                    hide: { label: true },
-                    defaultValue: value.disabled,
-                },
-                required: {
-                    uid: "required",
-                    name: "Require Field",
-                    type: "checkbox",
-                    hide: { label: true },
-                    defaultValue: value.required,
-                },
-                redact: {
-                    uid: "redact",
-                    name: "Mask data",
-                    type: "checkbox",
-                    hide: { label: true },
-                    defaultValue: value.redact,
-                },
-                dontSave: {
-                    uid: "dontSave",
-                    name: "Don't Save",
-                    type: "checkbox",
-                    hide: { label: true },
-                    defaultValue: value.dontSave,
-                    tooltip:
-                        "If localSave is turned on, toggling this will reset your demo's local save.",
-                },
-                validity: {
-                    uid: "validity",
-                    name: "Validation",
-                    type: "textarea",
-                    defaultValue: value.validity,
-                    placeholder:
-                        "Function is fired every time the field is focused, blurred, and changed.\n\nThe function has access to the field value.",
-                    validity: (value: string) => checkFunc(value, "Rule"),
-                },
-            };
-        }
-
-        if (value.type === "file")
-            plus = {
-                accept: {
-                    uid: "accept",
-                    name: "Accept Certain File Types",
-                    type: "text",
-                    defaultValue: value.accept,
-                    tooltip: "[Common MIME Types]",
-                },
-                multiple: {
-                    uid: "multiple",
-                    name: "Accept Multiple Files",
-                    type: "checkbox",
-                    hide: { label: true },
-                    defaultValue: value.multiple,
-                    tooltip:
-                        "If localSave is turned on, toggling this will reset your demo's local save.",
-                },
-                hide: {
-                    uid: "hide",
-                    name: "Hide Features",
-                    type: "dropdown",
-                    defaultValue: value.hide
-                        ? parseHide(value.hide)
-                        : undefined,
-                    multiple: true,
-                    options: [
-                        { uid: "label", name: "Label" },
-                        { uid: "preview", name: "Preview" },
-                    ],
-                },
-            };
-        else if (
-            ["text", "textarea", "email", "tel", "password"].includes(
-                value.type,
-            )
-        ) {
-            plus = {
-                spellcheck: {
-                    uid: "spellcheck",
-                    name: "Spellcheck",
-                    type: "checkbox",
-                    hide: { label: true },
-                    defaultValue: value.spellcheck,
-                },
-                autocomplete: {
-                    uid: "autocomplete",
-                    name: "Autocomplete",
-                    type: "dropdown",
-                    defaultValue: value.autocomplete
-                        ? {
-                              [value.autocomplete]: `${value.autocomplete}`,
-                          }
-                        : undefined,
-                    options: [
-                        { uid: "name", name: "name" },
-                        {
-                            uid: "honorific-prefix",
-                            name: "honorific-prefix",
-                        },
-                        { uid: "given-name", name: "given-name" },
-                        {
-                            uid: "additional-name",
-                            name: "additional-name",
-                        },
-                        { uid: "family-name", name: "family-name" },
-                        {
-                            uid: "honorific-suffix",
-                            name: "honorific-suffix",
-                        },
-                        { uid: "nickname", name: "nickname" },
-                        { uid: "email", name: "email" },
-                        { uid: "username", name: "username" },
-                        { uid: "new-password", name: "new-password" },
-                        {
-                            uid: "current-password",
-                            name: "current-password",
-                        },
-                        {
-                            uid: "one-time-code",
-                            name: "one-time-code",
-                        },
-                        {
-                            uid: "organization-title",
-                            name: "organization-title",
-                        },
-                        { uid: "organization", name: "organization" },
-                        {
-                            uid: "street-address",
-                            name: "street-address",
-                        },
-                        {
-                            uid: "address-line1",
-                            name: "address-line1",
-                        },
-                        {
-                            uid: "address-line2",
-                            name: "address-line2",
-                        },
-                        {
-                            uid: "address-line3",
-                            name: "address-line3",
-                        },
-                        {
-                            uid: "address-level4",
-                            name: "address-level4",
-                        },
-                        {
-                            uid: "address-level3",
-                            name: "address-level3",
-                        },
-                        {
-                            uid: "address-level2",
-                            name: "address-level2",
-                        },
-                        {
-                            uid: "address-level1",
-                            name: "address-level1",
-                        },
-                        { uid: "country", name: "country" },
-                        { uid: "country-name", name: "country-name" },
-                        { uid: "cc-name", name: "cc-name" },
-                        {
-                            uid: "cc-given-name",
-                            name: "cc-given-name",
-                        },
-                        {
-                            uid: "cc-additional-name",
-                            name: "cc-additional-name",
-                        },
-                        {
-                            uid: "cc-family-name",
-                            name: "cc-family-name",
-                        },
-                        { uid: "cc-number", name: "cc-number" },
-                        { uid: "cc-exp", name: "cc-exp" },
-                        { uid: "cc-exp-month", name: "cc-exp-month" },
-                        { uid: "cc-exp-year", name: "cc-exp-year" },
-                        { uid: "cc-csc", name: "cc-csc" },
-                        { uid: "cc-type", name: "cc-type" },
-                        {
-                            uid: "transaction-currency",
-                            name: "transaction-currency",
-                        },
-                        { uid: "language", name: "language" },
-                        { uid: "bday", name: "bday" },
-                        { uid: "bday-day", name: "bday-day" },
-                        { uid: "bday-month", name: "bday-month" },
-                        { uid: "bday-year", name: "bday-year" },
-                        { uid: "sex", name: "sex" },
-                        { uid: "tel", name: "tel" },
-                        {
-                            uid: "tel-country-code",
-                            name: "tel-country-code",
-                        },
-                        { uid: "tel-national", name: "tel-national" },
-                        {
-                            uid: "tel-area-code",
-                            name: "tel-area-code",
-                        },
-                        { uid: "tel-local", name: "tel-local" },
-                        {
-                            uid: "tel-extension",
-                            name: "tel-extension",
-                        },
-                        { uid: "impp", name: "impp" },
-                        { uid: "url", name: "url" },
-                        { uid: "photo", name: "photo" },
-                        { uid: "on", name: "on" },
-                        { uid: "off", name: "off" },
-                    ],
-                    tooltip: `Understand what each autocomplete means at [hyperlink].`,
-                },
-            };
-        } else if (["dropdown", "radio"].includes(value.type)) {
-            let options = value.options
-                    ? Array.isArray(value.options)
-                        ? value.options
-                        : makeToOptions(value.options)
-                    : [],
-                i = 0;
-            for (i = 0; i < options.length; i++)
-                if (options[i].uid === "add") options.splice(i, 1);
-
-            let dv = makeToData(options);
-
-            plus = {
-                options: {
-                    uid: "options",
-                    name: "options",
-                    type: "dropdown",
-                    multiple: true,
-                    options,
-                    defaultValue: dv,
-                    compact: true,
-                    edit: {
-                        add: true,
-                        remove: true,
-                        limit: "undefined",
-                        persist: true,
-                    },
-                },
-                edit: {
-                    meta: {
-                        uid: "edit",
-                        name: "Edit",
-                        override: { label: true, feedback: true },
-                    },
-                    add: {
-                        uid: "add",
-                        name: "Add",
-                        hide: { label: true },
-                        required: true,
-                        type: "text",
-                        placeholder: `Max number of Add's allowed.`,
-                        defaultValue: `${value.edit.add}`,
-                        validity: function (value) {
-                            return {
-                                standard: {
-                                    check:
-                                        ["true", "false"].includes(
-                                            value.toString(),
-                                        ) ||
-                                        !isNaN(
-                                            Number.parseInt(value.toString()),
-                                        ),
-                                    true: "😉 add looks good!",
-                                    false: `🤭 add must be "true", "false", or a Number!`,
-                                },
-                            };
-                        },
-                    },
-                    remove: {
-                        uid: "remove",
-                        name: "Remove",
-                        hide: { label: true },
-                        required: true,
-                        type: "text",
-                        placeholder: `Max number of Remove's allowed.`,
-                        defaultValue: `${value.edit.remove}`,
-                        validity: function (value) {
-                            return {
-                                standard: {
-                                    check:
-                                        ["true", "false"].includes(
-                                            value.toString(),
-                                        ) ||
-                                        !isNaN(
-                                            Number.parseInt(value.toString()),
-                                        ),
-                                    true: "😉 remove looks good!",
-                                    false: `🤭 remove must be "true", "false", or a Number!`,
-                                },
-                            };
-                        },
-                    },
-                    limit: {
-                        uid: "limit",
-                        name: "Limit",
-                        hide: { label: true },
-                        required: true,
-                        type: "text",
-                        placeholder: `Max number of options allowed.`,
-                        defaultValue: `${value.edit.limit}`,
-                        validity: function (value) {
-                            return {
-                                standard: {
-                                    check:
-                                        ["undefined"].includes(
-                                            value.toString(),
-                                        ) ||
-                                        !isNaN(
-                                            Number.parseInt(value.toString()),
-                                        ),
-                                    true: "😉 limit looks good!",
-                                    false: `🤭 limit must be "undefined" or a Number!`,
-                                },
-                            };
-                        },
-                    },
-                    persist: {
-                        uid: "persist",
-                        name: "Persist",
-                        hide: { label: true },
-                        type: "checkbox",
-                        placeholder: "Expose options",
-                        tooltip: `See documentation on how you can use "Expose Options" to make your dropdown persistent`,
-                        defaultValue: value.edit.persist
-                            ? { persist: true }
-                            : undefined,
-                    },
-                },
-                multiple: {
-                    uid: "multiple",
-                    name: "Accept Multiple Answers",
-                    type: "checkbox",
-                    hide: { label: true },
-                    defaultValue: value.multiple,
-                },
-                compact: {
-                    uid: "compact",
-                    name: "Compact Selected Answers",
-                    type: "checkbox",
-                    hide: { label: true },
-                    defaultValue: value.compact,
-                    tooltip: "Only works when accepting multiple answers.",
-                },
-            };
-        } else if (value.type === "divider") {
-            plus = {
-                icon: {
-                    uid: "icon",
-                    name: "Icon (material icon)",
-                    type: "text",
-                    defaultValue: value.icon,
-                },
-            };
-        } else if (value.type === "switch") {
-            plus = {
-                icon: {
-                    meta: {
-                        uid: "icon",
-                        name: "icon",
-                        override: { label: true, feedback: true },
-                    },
-                    off: {
-                        uid: "off",
-                        name: "Icon (material icon)",
-                        type: "text",
-                        placeholder: "off icon",
-                        defaultValue: value?.icon?.off,
-                        hide: { label: true },
-                    },
-                    on: {
-                        uid: "on",
-                        name: "Icon (material icon)",
-                        type: "text",
-                        placeholder: "on icon",
-                        defaultValue: value?.icon?.on,
-                        hide: { label: true },
-                    },
-                },
-            };
-        }
-
-        return { ...basics, ...midware, ...plus };
+        
+        if (!field) return {};
+        
+        return fieldConfigService.generateFieldConfig(field);
     }
 
-    function convertEdit(
-        value: string,
-        original: string | number | boolean,
-    ): string | number | boolean {
-        let res: string | number | boolean = original;
-        if (value === "true") res = true;
-        else if (value === "false") res = false;
-        else if (value === "undefined") res = "undefined";
-        else if (!isNaN(Number.parseInt(value))) res = Number.parseInt(value);
+    /**
+     * Generates group configuration using the new service
+     */
+    function generateGroupConfig(): Record<string, Field> {
+        if (!groupid || !data || !data.fields) return {};
+        
+        const group = data.fields[groupid] as Group;
+        if (!group) return {};
+        
+        return fieldConfigService.generateGroupConfig(group, maData, handleDropdownSubmit);
+    }
+    
+    /**
+     * Handles dropdown field submission for adding new fields to group
+     */
+    function handleDropdownSubmit(target: any) {
+        if (!target.submit) return;
 
-        if (res !== original) main.reload();
+        maData = target.value;
+        maValue = Object.values(maData)[0];
+        const uid = uuidV4();
+        const group = data.fields[groupid];
 
-        return res;
+        data.fields[groupid] = {
+            ...group,
+            [uid]: newType(maValue, uid),
+        };
+        updateForm(data);
+        updateSave();
+        main.reload();
     }
 
-    function groupOI(details): void {
+    /**
+     * Handles group input changes
+     */
+    function handleGroupInput(details: any): void {
         if (!details || !details.fieldValues) return;
         
-        // Extract the actual form data from fieldValues
         const formData = details.fieldValues;
-        
         let base = data.fields[groupid] as Group;
+        
+        // Clean up form data
         if (belongs(formData, "header")) delete formData.header;
         if (belongs(formData, "dropdown")) delete formData.dropdown;
 
+        // The dropdown field addition is handled by the field's own onInput function
+        // in the form configuration, not here
+
+        // Update group metadata
         base.meta = { ...base.meta, ...formData };
         base.meta.override = parseHide(base.meta.override, true);
 
@@ -649,8 +111,11 @@
         updateSave(data);
         main.reload();
     }
-    function onInput(details): void {
-        // Extract form data from the fieldValues (which contains actual field values)
+
+    /**
+     * Handles field input changes
+     */
+    function handleFieldInput(details: any): void {
         const formData = details.fieldValues || {};
 
         if (!formData || Object.keys(formData).length === 0) {
@@ -661,115 +126,107 @@
         let base: Field | Group | Record<string, Field | Group> = groupid
                 ? data.fields[groupid]
                 : data.fields,
-            oEdit: Edit;
+            originalEdit: Edit;
 
-        if (base[fieldid]?.edit)
-            oEdit = {
+        // Preserve existing edit configuration
+        if (base[fieldid]?.edit) {
+            originalEdit = {
                 add: false,
                 remove: false,
                 limit: "undefined",
                 persist: false,
                 ...base[fieldid].edit,
             };
+        }
+
+        // Update field data
         base[fieldid] = formData;
         const newDontSave = formData.dontSave;
 
+        // Handle dontSave field changes
         const formId = data.uid;
         const hasDataInRegular = hasFieldValue(formId, FormProps.FIELD_VALUES, fieldid, groupid);
         const hasDataInSensitive = hasFieldValue(formId, FormProps.DONT_SAVE, fieldid, groupid);
 
         if (newDontSave && hasDataInRegular) {
             const currentValue = getFieldValue(formId, FormProps.FIELD_VALUES, fieldid, groupid);
-            clearFieldFromStorage(
-                formId,
-                FormProps.FIELD_VALUES,
-                fieldid,
-                groupid,
-            );
+            clearFieldFromStorage(formId, FormProps.FIELD_VALUES, fieldid, groupid);
 
             if (currentValue !== undefined && currentValue !== "") {
-                setFieldValue(formId, FormProps.DONT_SAVE, fieldid, String(currentValue), groupid);
+                setFieldValue(formId, FormProps.DONT_SAVE, String(currentValue), fieldid, groupid);
             }
             updateFormSave(formId, true, false);
         } else if (!newDontSave && hasDataInSensitive) {
             const currentValue = getFieldValue(formId, FormProps.DONT_SAVE, fieldid, groupid);
-            clearFieldFromStorage(
-                formId,
-                FormProps.DONT_SAVE,
-                fieldid,
-                groupid,
-            );
+            clearFieldFromStorage(formId, FormProps.DONT_SAVE, fieldid, groupid);
 
             if (currentValue !== undefined && currentValue !== "") {
-                setFieldValue(formId, FormProps.FIELD_VALUES, fieldid, String(currentValue), groupid);
+                setFieldValue(formId, FormProps.FIELD_VALUES, String(currentValue), fieldid, groupid);
             }
             updateFormSave(formId, true, false);
         }
 
+        // Clean up form data
         if (belongs(base[fieldid], "header")) delete base[fieldid].header;
 
-        if (formData.autocomplete && typeof formData.autocomplete !== "string")
-            base[fieldid].autocomplete = Object.values(
-                formData.autocomplete,
-            )[0];
+        // Handle autocomplete
+        if (formData.autocomplete && typeof formData.autocomplete !== "string") {
+            base[fieldid].autocomplete = Object.values(formData.autocomplete)[0];
+        }
 
-        if (formData.onInput && checkFunc(formData.onInput).validFunc.check)
+        // Handle function fields
+        if (formData.onInput && checkFunc(formData.onInput).validFunc.check) {
             base[fieldid].onInput = reviver("onInput", formData.onInput);
-        else delete base[fieldid].onInput;
+        } else {
+            delete base[fieldid].onInput;
+        }
 
-        if (
-            formData.validity &&
-            checkFunc(formData.validity, "Rule").validFunc.check
-        )
+        if (formData.validity && checkFunc(formData.validity, "Rule").validFunc.check) {
             base[fieldid].validity = reviver("validity", formData.validity);
-        else delete base[fieldid].validity;
+        } else {
+            delete base[fieldid].validity;
+        }
 
+        // Handle options for dropdown fields
         if (formData.options) {
             const opts = Array.isArray(formData.options)
                 ? formData.options
                 : makeToOptions(formData.options);
 
-            let i = 0;
-            for (i = opts.length - 1; 0 <= i; i--)
-                if (opts[i].uid === "add") opts.splice(i, 1);
+            // Remove 'add' options
+            const cleanOpts = opts.filter((opt: any) => opt.uid !== "add");
+            base[fieldid].options = cleanOpts;
 
-            base[fieldid].options = opts;
-
-            base[fieldid].edit = {
-                add: convertEdit(formData.edit.add, oEdit.add),
-                remove: convertEdit(formData.edit.remove, oEdit.remove),
-                limit: convertEdit(formData.edit.limit, oEdit.limit),
-                persist: !!formData.edit.persist,
-            };
+            // Handle edit configuration
+            if (formData.edit && originalEdit) {
+                base[fieldid].edit = {
+                    add: formBuilderService.convertEditValue(formData.edit.add, originalEdit.add),
+                    remove: formBuilderService.convertEditValue(formData.edit.remove, originalEdit.remove),
+                    limit: formBuilderService.convertEditValue(formData.edit.limit, originalEdit.limit),
+                    persist: !!formData.edit.persist,
+                };
+            }
         }
+
+        // Handle field properties
         base[fieldid].hide = parseHide(base[fieldid].hide, true);
         base[fieldid].spellcheck = !!base[fieldid].spellcheck;
 
         updateForm(data);
         updateSave(data);
 
-        // If redaction was disabled, clear redaction state and restore actual value
+        // Handle redaction
         if (!formData.redact) {
             setRedact(formId, false, fieldid, groupid);
-            const actualValue = getFieldValue(
-                formId,
-                FormProps.FIELD_VALUES,
-                fieldid,
-                groupid,
-            );
-            setFieldValue(
-                formId,
-                FormProps.DISPLAY_VALUES,
-                actualValue,
-                fieldid,
-                groupid,
-            );
+            const actualValue = getFieldValue(formId, FormProps.FIELD_VALUES, fieldid, groupid);
+            setFieldValue(formId, FormProps.DISPLAY_VALUES, actualValue, fieldid, groupid);
         }
 
         main.reload();
     }
 </script>
 
+<!-- Group Configuration Form -->
 {#if groupid}
     <Form
         uid="group"
@@ -777,8 +234,8 @@
         caption="Some fields are temporarily disabled."
         hide={{ title: true, caption: true, submit: true, reset: true }}
         autocomplete={false}
-        onInput={groupOI}
-        fields={$SadForms && groupFields()}
+        onInput={handleGroupInput}
+        fields={$SadForms && generateGroupConfig()}
         afterFormLoad={(refresh) => {
             if ($SadForms.refresh) {
                 refresh(true);
@@ -788,30 +245,32 @@
     />
 {/if}
 
+<!-- Field Configuration Form -->
+{#key `${fieldid}-${groupid}`}
 <Form
-    uid="edit"
+    uid={`edit-${fieldid}-${groupid || 'root'}`}
     title="edit"
     caption="Some fields are temporarily disabled."
     hide={{ title: true, caption: true, submit: true, reset: true }}
     autocomplete={false}
-    {onInput}
+    onInput={handleFieldInput}
     {fields}
     afterFormLoad={(refresh) => {
         // Only clear localStorage, but preserve in-memory form state
-        clearSave("edit", true, false);
+        clearSave(`edit-${fieldid}-${groupid || 'root'}`, true, false);
 
         // Load all field values from defaultValue in configuration
         Object.entries(fields).forEach(([, field]) => {
             if (field.defaultValue !== undefined) {
                 const { defaultValue } = field;
                 setFieldValue(
-                    data.uid,
+                    `edit-${fieldid}-${groupid || 'root'}`,
                     FormProps.FIELD_VALUES,
                     defaultValue,
                     field.uid,
                 );
                 setFieldValue(
-                    data.uid,
+                    `edit-${fieldid}-${groupid || 'root'}`,
                     FormProps.DISPLAY_VALUES,
                     defaultValue,
                     field.uid,
@@ -826,3 +285,4 @@
         }
     }}
 />
+{/key}
