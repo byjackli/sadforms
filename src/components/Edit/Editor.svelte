@@ -72,7 +72,7 @@
             copyToClipboard();
     }
 
-    function handleJsonInput(event: any): void {
+    function handleJsonInput(_event: any): void {
         // Handle JSON editor input - could add validation here
         // console.log('JSON updated:', event.target.value);
     }

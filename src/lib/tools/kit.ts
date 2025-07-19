@@ -8,7 +8,7 @@ export function janitor(object: Record<string, any>, asap = false): void {
 }
 
 export function belongs(object: Record<string, any>, key: string): boolean {
-    return Object.prototype.hasOwnProperty.call(object, key);
+    return Object.hasOwn(object, key);
 }
 
 export function genSubmit(event: any, callback: Function): unknown {

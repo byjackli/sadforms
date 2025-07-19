@@ -165,7 +165,7 @@ var Prism = (function (_self: any) {
 						visited[id] = clone;
 
 						for (var key in o) {
-							if (o.hasOwnProperty(key)) {
+							if (Object.hasOwn(o, key)) {
 								clone[key] = deepClone(o[key], visited);
 							}
 						}
@@ -441,18 +441,18 @@ var Prism = (function (_self: any) {
 				var ret = {};
 
 				for (var token in grammar) {
-					if (grammar.hasOwnProperty(token)) {
+					if (Object.hasOwn(grammar, token)) {
 
 						if (token == before) {
 							for (var newToken in insert) {
-								if (insert.hasOwnProperty(newToken)) {
+								if (Object.hasOwn(insert, newToken)) {
 									ret[newToken] = insert[newToken];
 								}
 							}
 						}
 
 						// Do not insert token which also occur in insert. See #1525
-						if (!insert.hasOwnProperty(token)) {
+						if (!Object.hasOwn(insert, token)) {
 							ret[token] = grammar[token];
 						}
 					}
@@ -478,7 +478,7 @@ var Prism = (function (_self: any) {
 				var objId = _.util.objId;
 
 				for (var i in o) {
-					if (o.hasOwnProperty(i)) {
+					if (Object.hasOwn(o, i)) {
 						callback.call(o, i, o[i], type || i);
 
 						var property = o[i];
@@ -931,7 +931,7 @@ var Prism = (function (_self: any) {
 	 */
 	function matchGrammar(text: string, tokenList: any, grammar: any, startNode: any, startPos: any, rematch?: any): void {
 		for (var token in grammar) {
-			if (!grammar.hasOwnProperty(token) || !grammar[token]) {
+			if (!Object.hasOwn(grammar, token) || !grammar[token]) {
 				continue;
 			}
 
@@ -1191,11 +1191,11 @@ var Prism = (function (_self: any) {
 		}
 	}
 
-	function highlightAutomaticallyCallback() {
-		if (!_.manual) {
-			_.highlightAll();
-		}
-	}
+	// function highlightAutomaticallyCallback() {
+	// 	if (!_.manual) {
+	// 		_.highlightAll();
+	// 	}
+	// }
 
 	if (!_.manual) {
 		// If the document state is "loading", then we'll use DOMContentLoaded.

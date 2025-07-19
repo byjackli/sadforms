@@ -3,6 +3,7 @@ import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
 import svelte from 'eslint-plugin-svelte';
 import svelteParser from 'svelte-eslint-parser';
+import globals from 'globals';
 
 export default [
   js.configs.recommended,
@@ -21,40 +22,22 @@ export default [
     languageOptions: {
       parser: tsparser,
       parserOptions: {
-        ecmaVersion: 2020,
+        ecmaVersion: 'latest',
         sourceType: 'module'
       },
       globals: {
-        console: 'readonly',
-        localStorage: 'readonly',
-        document: 'readonly',
-        window: 'readonly',
-        navigator: 'readonly',
-        HTMLElement: 'readonly',
-        MouseEvent: 'readonly',
-        KeyboardEvent: 'readonly',
-        Element: 'readonly',
-        Event: 'readonly',
-        HTMLInputElement: 'readonly',
-        DragEvent: 'readonly',
-        NodeJS: 'readonly',
-        setInterval: 'readonly',
-        clearInterval: 'readonly',
-        performance: 'readonly',
-        File: 'readonly',
-        FileReader: 'readonly',
-        FileList: 'readonly',
-        Blob: 'readonly',
-        Worker: 'readonly',
-        module: 'readonly',
-        global: 'readonly'
+        ...globals.browser,
+        ...globals.node,
+        ...globals.es2021,
+        NodeJS: 'readonly'
       }
     },
     plugins: {
       '@typescript-eslint': tseslint
     },
     rules: {
-      'no-unused-vars': 'warn'
+      'no-unused-vars': 'warn',
+      'no-useless-escape': 'off'
     }
   },
   {
@@ -66,16 +49,9 @@ export default [
         sourceType: 'module'
       },
       globals: {
-        console: 'readonly',
-        window: 'readonly',
-        document: 'readonly',
-        global: 'writable',
-        vi: 'readonly',
-        test: 'readonly',
-        expect: 'readonly',
-        describe: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly'
+        ...globals.browser,
+        ...globals.node,
+        ...globals.jest
       }
     },
     rules: {
@@ -91,29 +67,10 @@ export default [
         parser: tsparser
       },
       globals: {
-        console: 'readonly',
-        localStorage: 'readonly',
-        document: 'readonly',
-        window: 'readonly',
-        navigator: 'readonly',
-        HTMLElement: 'readonly',
-        MouseEvent: 'readonly',
-        KeyboardEvent: 'readonly',
-        Element: 'readonly',
-        Event: 'readonly',
-        HTMLInputElement: 'readonly',
-        DragEvent: 'readonly',
-        NodeJS: 'readonly',
-        setInterval: 'readonly',
-        clearInterval: 'readonly',
-        performance: 'readonly',
-        File: 'readonly',
-        FileReader: 'readonly',
-        FileList: 'readonly',
-        Blob: 'readonly',
-        Worker: 'readonly',
-        module: 'readonly',
-        global: 'readonly'
+        ...globals.browser,
+        ...globals.node,
+        ...globals.es2021,
+        NodeJS: 'readonly'
       }
     },
     plugins: {
