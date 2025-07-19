@@ -217,8 +217,8 @@ test.describe('Advanced Validation Tests', () => {
       await page.keyboard.press('Escape');
       await page.waitForTimeout(2000);
       
-      // Test password validation - target the form field (not the editor field)
-      const passwordField = page.locator('input[type="password"]').first(); // The first one is the form field
+      // Test password validation - look for the password field by name
+      const passwordField = page.locator('input[name="Password"]');
       await passwordField.waitFor({ state: 'visible', timeout: 10000 });
       await expect(passwordField).toBeVisible();
       

@@ -92,7 +92,11 @@
 	// Debug functionality
 	function updateDebug(): void {
 		if (debug) {
-			debugData = JSON.stringify({ ...get(FormFieldStore)[uid] }, null, 4);
+			debugData = JSON.stringify(
+				{ ...get(FormFieldStore)[uid] },
+				null,
+				4,
+			);
 		} else {
 			debugData = null;
 		}

@@ -20,7 +20,7 @@ export enum FIELD_TYPES {
   PASSWORD = 'password',
   NUMBER = 'number',
   TIME = 'time'
-};
+}
 
 // Field Type Groups
 export const TEXT_FIELD_TYPES = [
@@ -53,7 +53,7 @@ export enum FormProps {
   GROUP = 'group',
   SAVE_TO_LOCAL = 'saveToLocal',
   SAVE_TO_CLOUD = 'saveToCloud'
-};
+}
 
 // Actions
 export const STORAGE_ACTIONS = {

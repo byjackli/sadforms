@@ -1,5 +1,7 @@
 <script lang="ts">
     import { genSubmit } from "$lib/tools/kit";
+    import { editorViewService, type ViewState } from "./services/editorViewService";
+    import JsonEditor from "./JsonEditor.svelte";
     import SadForms, {
         replacer,
         updateForm,
@@ -8,41 +10,47 @@
     import EditPreview from "./EditPreview.svelte";
     import EditField from "./EditField.svelte";
     import EditSettings from "./EditSettings.svelte";
-    import Checkbox from "$lib/components/Checkbox.svelte";
+    import Form from "$lib/components/Form.svelte";
 
-    let curView = "code",
-        open = true,
-        aria = "close",
-        icon = "chevron_right",
-        toggler: HTMLElement,
-        editing: boolean;
+    let viewState: ViewState = editorViewService.getInitialState();
+    let toggler: HTMLElement;
+    let main: any = undefined;
+    let debugData: string | null = undefined;
 
     $: formData = $SadForms.data;
-    $: main = undefined;
-    $: debugData = undefined;
+    $: copyButtonConfig = editorViewService.getCopyButtonConfig(viewState.currentView);
+    
+    // Debug form configuration using SadForms dogfooding approach
+    $: debugFormConfig = {
+        uid: "debug-toggle",
+        title: "Debug Controls",
+        hide: { title: true, caption: true, submit: true, reset: true },
+        autocomplete: false,
+        fields: {
+            debug: {
+                uid: "debug",
+                name: "Debug",
+                type: "checkbox",
+                hide: { label: true },
+                defaultValue: formData.debug,
+                onInput: handleDebugToggle,
+            }
+        }
+    };
 
     function swapView(view: string): void {
-        curView = view;
-        if (view === "edit") editing = true;
-        if (!open) togglePanel();
+        viewState = editorViewService.updateViewState(
+            viewState, 
+            view as any, 
+            togglePanel
+        );
         toggler.focus();
     }
+    
     function togglePanel(): void {
-        const ss = document.documentElement.style,
-            vw = window
-                .getComputedStyle(document.documentElement)
-                .getPropertyValue(`--w-editor`);
-
-        if (open) {
-            open = false;
-            aria = "open";
-            icon = "chevron_left";
-            ss.setProperty("--p-editor", vw);
-        } else {
-            open = true;
-            aria = "close";
-            icon = "chevron_right";
-            ss.setProperty("--p-editor", "0vw");
+        viewState = editorViewService.togglePanelState(viewState);
+        editorViewService.updatePanelPosition(viewState.open);
+        if (viewState.open) {
             toggler.focus();
         }
     }
@@ -51,8 +59,9 @@
             base = groupid ? formData.fields[groupid] : formData.fields;
         return base[fieldid];
     }
+    
     function copyToClipboard(): void {
-        const data = open && curView === "edit" ? getManageFieldStorage() : formData;
+        const data = viewState.open && viewState.currentView === "edit" ? getManageFieldStorage() : formData;
         let clipboard = JSON.stringify(data, replacer, 2);
         navigator.clipboard.writeText(clipboard);
     }
@@ -63,10 +72,17 @@
             copyToClipboard();
     }
 
-    function inputChange(event): void {
-        // check function that validates code
-        // JSON.stringify(event.target.value, null, 2);
+    function handleJsonInput(event: any): void {
+        // Handle JSON editor input - could add validation here
+        // console.log('JSON updated:', event.target.value);
     }
+    
+    function handleDebugToggle(details: any): void {
+        formData.debug = details.fieldValues?.debug || false;
+        updateForm(formData);
+        updateSave(formData);
+    }
+    
     function setMain(element: HTMLElement): void {
         main = element;
     }
@@ -75,7 +91,7 @@
 <svelte:window on:keydown={(event) => save(event)} />
 
 <main id="editor">
-    <EditPreview bind:debugData {togglePanel} {swapView} {setMain} {open} />
+    <EditPreview bind:debugData {togglePanel} {swapView} {setMain} open={viewState.open} />
 </main>
 
 <aside
@@ -88,12 +104,12 @@
             id="editor-sidemenu-toggle"
             class="noselect"
             tabindex="0"
-            aria-label={`${aria} editor panel`}
+            aria-label={`${viewState.aria} editor panel`}
             role="button"
             on:click={togglePanel}
             on:keydown={(event) => genSubmit(event, togglePanel)}
         >
-            <span aria-hidden="true" class="material-icons">{icon}</span>
+            <span aria-hidden="true" class="material-icons">{viewState.icon}</span>
         </div>
         <div
             id="editor-sidemenu-toggle"
@@ -102,51 +118,35 @@
             aria-label="form debug"
             role="button"
             on:click={() => {
-                if (!open) togglePanel();
+                if (!viewState.open) togglePanel();
                 swapView("debug");
             }}
             on:keydown={(event) =>
                 genSubmit(event, () => {
-                    if (!open) togglePanel();
+                    if (!viewState.open) togglePanel();
                     swapView("debug");
                 })}
         >
             <span aria-hidden="true" class="material-icons">bug_report</span>
         </div>
     </div>
-    {#if open}
+    {#if viewState.open}
         <div id="editor-sidemenu">
             <div id="playground">
-                {#if curView === "code"}
-                    <div
-                        contentEditable
-                        class="code"
-                        on:input={(event) => inputChange(event)}
-                    >
-                        {JSON.stringify(
-                            formData,
-                            (k, v) => replacer(k, v),
-                            2
-                        )}
-                    </div>
-                {:else if curView === "settings"}
+                {#if viewState.currentView === "code"}
+                    <JsonEditor 
+                        {formData} 
+                        {replacer} 
+                        onInput={handleJsonInput} 
+                    />
+                {:else if viewState.currentView === "settings"}
                     <EditSettings />
-                {:else if $SadForms && curView === "edit"}
+                {:else if $SadForms && viewState.currentView === "edit"}
                     <EditField {main} />
-                {:else if curView === "debug"}
+                {:else if viewState.currentView === "debug"}
                     <div class="form-container">
                         <div class="sf isolated">
-                            <Checkbox
-                                type="checkbox"
-                                id="toggleDebug"
-                                name="Debug"
-                                data={formData.debug}
-                                input={() => {
-                                    formData.debug = !formData.debug;
-                                    updateForm(formData);
-                                    updateSave(formData);
-                                }}
-                            />
+                            <Form {...debugFormConfig} />
                         </div>
                     </div>
                     {#if formData.debug}
@@ -159,7 +159,7 @@
             <nav id="editor-nav" aria-label="Editor">
                 <div id="en3" aria-label="toggle between the different views">
                     <button
-                        class={curView === "code" ? "active" : ""}
+                        class={viewState.currentView === "code" ? "active" : ""}
                         aria-label="code view of entire form"
                         on:click={() => swapView("code")}
                         on:keydown={(event) =>
@@ -171,7 +171,7 @@
                         <span aria-hidden="true">code</span>
                     </button>
                     <button
-                        class={curView === "settings" ? "active" : ""}
+                        class={viewState.currentView === "settings" ? "active" : ""}
                         aria-label="form settings"
                         on:click={() => swapView("settings")}
                         on:keydown={(event) =>
@@ -181,9 +181,9 @@
                             >settings</span
                         >
                     </button>
-                    {#if editing}
+                    {#if viewState.editing}
                         <button
-                            class={curView === "edit" ? "active" : ""}
+                            class={viewState.currentView === "edit" ? "active" : ""}
                             aria-label="edit view of selected field"
                             on:click={() => swapView("edit")}
                             on:keydown={(event) =>
@@ -200,17 +200,13 @@
                     id="copy-code"
                     on:click={copyToClipboard}
                     on:keydown={(event) => genSubmit(event, copyToClipboard)}
-                    aria-label={`Copy Code for ${
-                        curView === "code"
-                            ? "Entire Form"
-                            : "This Particular Field"
-                    }`}
+                    aria-label={copyButtonConfig.label}
                 >
                     <span aria-hidden="true" class="material-icons">
-                        {curView !== "edit" ? "copy_all" : "code"}
+                        {copyButtonConfig.icon}
                     </span>
                     <span aria-hidden="true">
-                        {curView !== "edit" ? "copy all" : "copy code"}
+                        {copyButtonConfig.text}
                     </span>
                 </button>
             </nav>
