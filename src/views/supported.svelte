@@ -683,7 +683,6 @@
                         meta: {
                             uid: "group",
                             name: "group",
-                            type: "group",
                             required: false,
                             dontSave: false,
                             redact: false,
@@ -691,7 +690,7 @@
                                 label: true,
                                 feedback: true,
                             },
-                            spellcheck: false,
+                            spellcheck: "false",
                             tooltip:
                                 "Do not try to nest groups within groups. This has not been tested and will NOT be an upcoming feature.",
                         },

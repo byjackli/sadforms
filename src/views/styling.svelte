@@ -269,6 +269,10 @@
                         meta: {
                             uid: "mygroupid",
                             name: "group",
+                            override: {
+                                label: false,
+                                feedback: false,
+                            },
                         },
                         mytextid: {
                             uid: "mytextid",

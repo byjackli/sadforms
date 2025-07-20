@@ -155,7 +155,7 @@
             if (currentValue !== undefined && currentValue !== "") {
                 setFieldValue(formId, FormProps.DONT_SAVE, String(currentValue), fieldid, groupid);
             }
-            updateFormSave(formId, true, false);
+            updateFormSave(formId);
         } else if (!newDontSave && hasDataInSensitive) {
             const currentValue = getFieldValue(formId, FormProps.DONT_SAVE, fieldid, groupid);
             clearFieldFromStorage(formId, FormProps.DONT_SAVE, fieldid, groupid);
@@ -163,7 +163,7 @@
             if (currentValue !== undefined && currentValue !== "") {
                 setFieldValue(formId, FormProps.FIELD_VALUES, String(currentValue), fieldid, groupid);
             }
-            updateFormSave(formId, true, false);
+            updateFormSave(formId);
         }
 
         // Clean up form data
@@ -257,7 +257,7 @@
     {fields}
     afterFormLoad={(refresh) => {
         // Only clear localStorage, but preserve in-memory form state
-        clearSave(`edit-${fieldid}-${groupid || 'root'}`, true, false);
+        clearSave(`edit-${fieldid}-${groupid || 'root'}`);
 
         // Load all field values from defaultValue in configuration
         Object.entries(fields).forEach(([, field]) => {

@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { default as NavMain } from "../components/Navbar.svelte";
-    import { default as NavDocs } from "../components/Docs/Navbar.svelte";
+    import NavMain from "../components/Navbar.svelte";
+    import NavDocs from "../components/Docs/Navbar.svelte";
     import { page } from '$app/stores';
 
     $: home = $page.data.home;

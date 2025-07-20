@@ -12,6 +12,7 @@
 			to enforce using \`import type\` instead of \`import\` for Types.
 			*/
 		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
 		"resolveJsonModule": true,
 		/**
 			To have warnings/errors of the Svelte compiler at the correct position,
