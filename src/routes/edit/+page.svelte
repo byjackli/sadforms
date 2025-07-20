@@ -5,7 +5,7 @@
     import Editor from "../../components/Edit/Editor.svelte";
     import Loading from "../../components/Loading.svelte";
 
-    $: SadForm = undefined;
+    let SadForm = $state(undefined);
     onMount(() => {
         const hash = window.location.hash,
             decoded = decodeURIComponent(hash.slice(1, hash.length));

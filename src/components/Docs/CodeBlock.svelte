@@ -1,17 +1,27 @@
 <script lang="ts">
-    export let side: "a" | "b" | "A" | "B" = "a",
+    interface Props {
+        side?: "a" | "b" | "A" | "B";
+        sideA?: { icon: string; text: string };
+        sideB?: { icon: string; text: string };
+        hideButton?: boolean;
+    }
+    
+    const {
+        side = "a",
         sideA = { icon: "data_object", text: "obj type" },
         sideB = { icon: "science", text: "example" },
-        hideButton: boolean = false;
+        hideButton = false
+    }: Props = $props();
 
-    let swap = () => (side = side === "a" ? "b" : "a"),
-        isitA = (char: string) => ["a", "A"].includes(char);
+    let currentSide = $state(side);
+    const swap = () => (currentSide = currentSide === "a" ? "b" : "a");
+    const isitA = (char: string) => ["a", "A"].includes(char);
 </script>
 
 <div class="codeblock">
     <div class="clip-scrollbar">
         <div class="code-container">
-            {#if isitA(side)}
+            {#if isitA(currentSide)}
                 <slot name="a" />
             {:else}
                 <slot name="b" />

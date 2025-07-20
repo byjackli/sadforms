@@ -31,14 +31,19 @@
     import { fieldConfigService } from "./services/fieldConfigService";
     import { formBuilderService } from "./services/formBuilderService";
 
-    export let main: SvelteComponent;
+    interface Props {
+        main: SvelteComponent;
+    }
+    
+    const { main }: Props = $props();
 
-    let maData: Record<string, string>, maValue: string;
+    let maData = $state<Record<string, string>>({});
+    let maValue = $state<string>('');
 
-    $: data = $SadForms.data;
-    $: fieldid = $SadForms.editing.fieldid;
-    $: groupid = $SadForms.editing.groupid;
-    $: fields = $SadForms && fieldid && data && generateFieldConfig();
+    const data = $derived($SadForms.data);
+    const fieldid = $derived($SadForms.editing.fieldid);
+    const groupid = $derived($SadForms.editing.groupid);
+    const fields = $derived($SadForms && fieldid && data && generateFieldConfig());
 
     /**
      * Generates field configuration using the new service

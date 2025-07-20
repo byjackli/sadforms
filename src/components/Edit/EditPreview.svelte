@@ -7,18 +7,23 @@
     
     import SadForms from "../../store/SadForms";
 
-    export let togglePanel: Function;
-    export let swapView: Function;
-    export let setMain: Function;
-    export let debugData: string = null;
-    export let open: boolean;
+    interface Props {
+        togglePanel: Function;
+        swapView: Function;
+        setMain: Function;
+        debugData?: string;
+        open: boolean;
+    }
+    
+    const { togglePanel, swapView, setMain, open }: Props = $props();
 
-    let main: any = undefined;
-    let editControls: any = undefined;
+    let main = $state<any>(undefined);
+    let debugData = $state<string | null>(null);
+    let editControls = $state<any>(undefined);
 
-    $: data = $SadForms.data;
-    $: formOnInput = data.onInput as ((formData: Record<string, Value>) => void) | undefined;
-    $: formOnSubmit = data.onSubmit as ((formData: Record<string, Value>, formId: string) => void | Promise<void>) | undefined;
+    const data = $derived($SadForms.data);
+    const formOnInput = $derived(data.onInput as ((formData: Record<string, Value>) => void) | undefined);
+    const formOnSubmit = $derived(data.onSubmit as ((formData: Record<string, Value>, formId: string) => void | Promise<void>) | undefined);
 
     /**
      * Handles form loading and initializes edit controls

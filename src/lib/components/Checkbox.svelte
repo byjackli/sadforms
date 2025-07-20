@@ -1,22 +1,39 @@
 <script lang="ts">
-	import { beforeUpdate, onDestroy, onMount } from "svelte";
+	import { onMount } from "svelte";
 	import CustomStore from "../store/CustomStore";
 
-	export let id: string,
-		name: string,
-		type: string,
-		icon: { on: string; off: string } = undefined,
-		placeholder: string = "",
-		disabled: boolean = false,
-		redact: boolean = false,
-		data: boolean = undefined,
-		focus: Function = undefined,
-		blur: Function = undefined,
-		input: Function = undefined;
+	interface Props {
+		id: string;
+		name: string;
+		type: string;
+		icon?: { on: string; off: string };
+		placeholder?: string;
+		disabled?: boolean;
+		redact?: boolean;
+		data?: boolean;
+		focus?: Function;
+		blur?: Function;
+		input?: Function;
+	}
+	
+	const {
+		id,
+		name,
+		type,
+		icon = undefined,
+		placeholder = "",
+		disabled = false,
+		redact = false,
+		focus = undefined,
+		blur = undefined,
+		input = undefined
+	}: Props = $props();
+	
+	let data = $state<boolean>(undefined);
 
-	let fullId: string = `${$CustomStore.names.inputHeader}${id}`,
-		label: HTMLElement = undefined,
-		container = undefined;
+	let fullId = $state(`${$CustomStore.names.inputHeader}${id}`);
+	let label = $state<HTMLElement>(undefined);
+	let container = $state(undefined);
 
 	function updateChecked() {
 		if (data) data = false;
@@ -40,7 +57,7 @@
 		container.focus();
 	}
 
-	beforeUpdate(() => {
+	$effect(() => {
 		if (!data) data = undefined;
 	});
 	onMount(() => {
@@ -48,7 +65,9 @@
 		label?.addEventListener("click", labelLink);
 	});
 
-	onDestroy(() => label?.removeEventListener("click", labelLink));
+	$effect(() => {
+		return () => label?.removeEventListener("click", labelLink);
+	});
 </script>
 
 <div
@@ -61,10 +80,10 @@
 	aria-labelledby={`${$CustomStore.names.label}${id}`}
 	aria-checked={`${!!data}`}
 	role={type}
-	on:focus={focus && focus()}
-	on:blur={focus && blur()}
-	on:click={onInput}
-	on:keydown={(event) => onInput(event)}
+	onfocus={() => focus()}
+	onblur={() => blur()}
+	onclick={onInput}
+	onkeydown={(event) => onInput(event)}
 	tabindex="0"
 >
 	{#if type === "checkbox"}

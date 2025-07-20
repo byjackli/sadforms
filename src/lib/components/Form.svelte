@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterUpdate, onDestroy, onMount } from "svelte";
+	import { onMount } from "svelte";
 	import { get } from "svelte/store";
 	import FormRenderer from "./FormRenderer.svelte";
 	import FormFieldStore from "../store/FormFieldStore";
@@ -20,43 +20,56 @@
 	import type { Field, Group, FormData } from "../types/Form";
 
 	// Form configuration props
-	export let uid: string;
-	export let title: string;
-	export let caption: string | undefined = undefined;
-	export let autocomplete = true;
-	export let fullscreen = false;
-	export let saveToLocal = true;
-	export let saveToCloud = false;
-	export let save:
-		| {
-				saveAuto: number | false;
-				saveOnInput: boolean;
-		  }
-		| undefined = undefined;
-	export let onInput: ((formData: FormData) => void) | undefined = undefined;
-	export let fields: Record<string, Field | Group> = {};
-	export let debug = false;
-	export let debugData: string | null = null;
-	export let onSubmit:
-		| ((formData: FormData, formId: string) => void | Promise<void>)
-		| null = null;
-	export let hide:
-		| {
-				title?: boolean;
-				caption?: boolean;
-				submit?: boolean;
-				reset?: boolean;
-		  }
-		| undefined = undefined;
-	export let afterFormLoad:
-		| ((refresh: (bool?: boolean) => void) => void)
-		| null = null;
+	interface Props {
+		uid: string;
+		title: string;
+		caption?: string;
+		autocomplete?: boolean;
+		fullscreen?: boolean;
+		saveToLocal?: boolean;
+		saveToCloud?: boolean;
+		save?: {
+			saveAuto: number | false;
+			saveOnInput: boolean;
+		};
+		onInput?: (formData: FormData) => void;
+		fields?: Record<string, Field | Group>;
+		debug?: boolean;
+		debugData?: string | null;
+		onSubmit?: (formData: FormData, formId: string) => void | Promise<void> | null;
+		hide?: {
+			title?: boolean;
+			caption?: boolean;
+			submit?: boolean;
+			reset?: boolean;
+		};
+		afterFormLoad?: ((refresh: (bool?: boolean) => void) => void) | null;
+	}
+	
+	const {
+		uid,
+		title,
+		caption = undefined,
+		autocomplete = true,
+		fullscreen = false,
+		saveToLocal = true,
+		saveToCloud = false,
+		save = undefined,
+		onInput = undefined,
+		fields = {},
+		debug = false,
+		onSubmit = null,
+		hide = undefined,
+		afterFormLoad = null
+	}: Props = $props();
+	
+	let debugData = $state<string | null>(null);
 
 	// Internal state
-	let loading = true;
-	let formFields: (Field | Group)[] = [];
-	let autoSaveInterval: NodeJS.Timeout | undefined = undefined;
-	let section: Field | Group | null = null;
+	let loading = $state(true);
+	let formFields = $state<(Field | Group)[]>([]);
+	let autoSaveInterval = $state<NodeJS.Timeout | undefined>(undefined);
+	let section = $state<Field | Group | null>(null);
 
 	// Create lifecycle configuration object
 	function getLifecycleConfig(): FormLifecycleConfig {
@@ -73,7 +86,7 @@
 	}
 
 	// Event handler configuration
-	$: eventConfig = {
+	const eventConfig = $derived({
 		formId: uid,
 		formFields,
 		onInput,
@@ -83,7 +96,7 @@
 		debug,
 		updateSave,
 		updateDebug,
-	};
+	});
 
 	// Public API methods
 	export const getFormState = () => get(FormFieldStore)[uid];
@@ -103,7 +116,9 @@
 	}
 
 	// Reactive statement to update debug data when debug prop changes
-	$: if (uid && debug !== undefined) updateDebug();
+	$effect(() => {
+		if (uid && debug !== undefined) updateDebug();
+	});
 
 	// Form submission handler
 	async function submit(): Promise<void> {
@@ -132,12 +147,12 @@
 	}
 
 	// Create lifecycle state object
-	$: lifecycleState = {
+	const lifecycleState = $derived({
 		loading,
 		formFields,
 		autoSaveInterval,
 		section,
-	};
+	});
 
 	// Form reset handler
 	async function reset(): Promise<void> {
@@ -175,24 +190,28 @@
 	// Lifecycle hooks
 	onMount(() => initialize(false, true));
 
-	afterUpdate(() => {
+	// Convert afterUpdate to effect
+	$effect(() => {
 		if (formFields.length && typeof afterFormLoad === "function") {
 			afterFormLoad(reload);
 		}
 	});
 
-	onDestroy(() => {
-		cleanupForm(lifecycleState);
+	// Convert onDestroy to effect cleanup
+	$effect(() => {
+		return () => {
+			cleanupForm(lifecycleState);
+		};
 	});
 
 	// Functions object for FormRenderer
-	$: formFunctions = {
+	const formFunctions = $derived({
 		onFocus,
 		onBlur,
 		updateField,
 		submit,
 		reset,
-	};
+	});
 </script>
 
 <FormRenderer

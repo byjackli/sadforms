@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { beforeUpdate, onDestroy, onMount } from "svelte";
+	import { onMount } from "svelte";
 	import { belongs, uuidV4 } from "../tools/kit";
 	import DropdownStore, {
 		updateCallback,
@@ -8,36 +8,55 @@
 	import CustomStore from "../store/CustomStore";
 	import type { Options, Edit } from "../types/Form";
 
-	export let id: string,
-		name: string,
-		placeholder: string = undefined,
-		disabled: boolean = false,
-		multiple: boolean = false,
-		compact: boolean = true,
-		value: string | string[] = "",
-		data: Record<string, string> = {},
-		options: Options,
-		edit: Edit = undefined,
-		focus: Function,
-		blur: Function,
+	interface Props {
+		id: string;
+		name: string;
+		placeholder?: string;
+		disabled?: boolean;
+		multiple?: boolean;
+		compact?: boolean;
+		value?: string | string[];
+		data?: Record<string, string>;
+		options: Options;
+		edit?: Edit;
+		focus: Function;
+		blur: Function;
 		input: Function;
+	}
+	
+	const {
+		id,
+		name,
+		placeholder = undefined,
+		disabled = false,
+		multiple = false,
+		compact = true,
+		value = "",
+		options,
+		edit = undefined,
+		focus,
+		blur,
+		input
+	}: Props = $props();
+	
+	let data = $state<Record<string, string>>(value && typeof value === 'object' && !Array.isArray(value) ? value : {});
 
-	let fullId: string = `${$CustomStore.names.inputHeader}${id}`,
-		label: HTMLElement = undefined,
-		dropdown: HTMLElement = undefined,
-		prevId: string = undefined,
-		cur: number = 0,
-		curMax: number = 0,
-		size: number,
-		removedList: Record<string, string> = {};
+	let fullId = $state(`${$CustomStore.names.inputHeader}${id}`);
+	let label = $state<HTMLElement>(undefined);
+	let dropdown = $state<HTMLElement>(undefined);
+	let prevId = $state<string>(undefined);
+	let cur = $state(0);
+	let curMax = $state(0);
+	let size = $state<number>(0);
+	let removedList = $state<Record<string, string>>({});
 
-	$: expanded = $DropdownStore.id === fullId && $DropdownStore.expanded;
-	$: add = {
+	const expanded = $derived($DropdownStore.id === fullId && $DropdownStore.expanded);
+	let add = $state({
 		added: 0,
 		removed: 0,
 		field: undefined,
 		value: "",
-	};
+	});
 	// Removed redundant localData - use data directly
 
 	// Remove redundant function - use belongs() directly
@@ -276,7 +295,7 @@
 		}
 	}
 
-	beforeUpdate(() => {
+	$effect(() => {
 		if (Array.isArray(data)) {
 			data = makeToData(data);
 		}
@@ -303,7 +322,9 @@
 		curMax = options.length - 1;
 		prevId = updateCursor(last);
 	});
-	onDestroy(() => label?.removeEventListener("click", labelLink));
+	$effect(() => {
+		return () => label?.removeEventListener("click", labelLink);
+	});
 </script>
 
 <div
@@ -329,7 +350,7 @@
 			: "false"}
 		tabindex="0"
 		role="combobox"
-		on:focus={focus()}
+		on:focus={() => focus()}
 		on:click={() => {
 			if (disabled) return;
 			if (!expanded) updateDropdown(true, fullId);

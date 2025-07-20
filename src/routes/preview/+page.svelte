@@ -5,7 +5,7 @@
     import Loading from "../../components/Loading.svelte";
     import Form from "$lib/components/Form.svelte";
 
-    $: SadForm = undefined;
+    let SadForm = $state(undefined);
     onMount(() => {
         const hash = window.location.hash,
             decoded = decodeURIComponent(hash.slice(1, hash.length));

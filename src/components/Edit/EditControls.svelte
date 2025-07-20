@@ -8,12 +8,16 @@
         updateSave,
     } from "../../store/SadForms";
 
-    export let togglePanel: Function;
-    export let swapView: Function;
-    export let main: any;
-    export let open: boolean;
+    interface Props {
+        togglePanel: Function;
+        swapView: Function;
+        main: any;
+        open: boolean;
+    }
+    
+    const { togglePanel, swapView, main, open }: Props = $props();
 
-    $: data = $SadForms.data;
+    const data = $derived($SadForms.data);
 
     /**
      * Handles field modification actions (edit, delete, settings)

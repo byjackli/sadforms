@@ -9,52 +9,53 @@
 	import Extensions from "../static/extensions.json";
 	import type { Field, Group, ValidationResult } from "../types/Form";
 
-	export let formid: string,
-		field: Field,
-		group: Group = undefined,
+	interface Props {
+		formid: string;
+		field: Field;
+		group?: Group;
 		functions: Record<string, Function>;
+	}
+	
+	const { formid, field, group = undefined, functions }: Props = $props();
 	
 	// Existing reactive statements - now using FormFieldStore
-	// Existing reactive statements - now using FormFieldStore
-	$: value =
+	const value = $derived(
 		group === undefined
 			? $FormFieldStore[formid]?.displayValues?.[field.uid]
-			: $FormFieldStore[formid]?.displayValues?.[group?.meta.uid]?.[field.uid];
+			: $FormFieldStore[formid]?.displayValues?.[group?.meta.uid]?.[field.uid]);
 
-	$: notEmpty =
+	const notEmpty = $derived(
 		typeof value === "string" && value.length
 			? $CustomStore.names.notEmpty_safe
-			: "";
+			: "");
 
 	// NEW: Reactive validation feedback handling - now using FormValidationStore
-	// NEW: Reactive validation feedback handling - now using FormValidationStore
-	$: validationResult = group === undefined
+	const validationResult = $derived(group === undefined
 		? $FormValidationStore[formid]?.validationResult?.[field.uid] as ValidationResult
-		: $FormValidationStore[formid]?.validationResult?.[group?.meta.uid]?.[field.uid] as ValidationResult;
+		: $FormValidationStore[formid]?.validationResult?.[group?.meta.uid]?.[field.uid] as ValidationResult);
 	
 	// Check if field has been touched - now using FormMetaStore
-	// Check if field has been touched - now using FormMetaStore
-	$: isTouched = group === undefined
+	const isTouched = $derived(group === undefined
 		? $FormMetaStore[formid]?.touched?.[field.uid] || false
-		: $FormMetaStore[formid]?.touched?.[group?.meta.uid]?.[field.uid] || false;
+		: $FormMetaStore[formid]?.touched?.[group?.meta.uid]?.[field.uid] || false);
 	
 	// Only show validation feedback if field has been touched
-	$: feedbackItems = (isTouched && validationResult?.raw) ? validationResult.raw : [];
-	$: hasValidationErrors = isTouched && validationResult && !validationResult.verdict;
-	$: feedbackActive = feedbackItems.length > 0;
+	const feedbackItems = $derived((isTouched && validationResult?.raw) ? validationResult.raw : []);
+	const hasValidationErrors = $derived(isTouched && validationResult && !validationResult.verdict);
+	const feedbackActive = $derived(feedbackItems.length > 0);
 
 	// NEW: Reactive warning class handling (only when touched)
-	$: warningClass = hasValidationErrors ? $CustomStore.names.warn : "";
+	const warningClass = $derived(hasValidationErrors ? $CustomStore.names.warn : "");
 
 	// NEW: Reactive file preview handling - now using FormFieldStore
 	// NEW: Reactive file preview handling - now using FormFieldStore
-	$: fieldFiles = group === undefined
+	const fieldFiles = $derived(group === undefined
 		? $FormFieldStore[formid]?.fieldValues?.[field.uid]
-		: $FormFieldStore[formid]?.fieldValues?.[group?.meta.uid]?.[field.uid];
+		: $FormFieldStore[formid]?.fieldValues?.[group?.meta.uid]?.[field.uid]);
 	
-	$: files = Array.isArray(fieldFiles) ? fieldFiles : [];
-	$: hasFiles = files.length > 0;
-	$: previewActive = hasFiles && field.type === "file" && !field?.hide?.preview;
+	const files = $derived(Array.isArray(fieldFiles) ? fieldFiles : []);
+	const hasFiles = $derived(files.length > 0);
+	const previewActive = $derived(hasFiles && field.type === "file" && !field?.hide?.preview);
 
 	// Helper function for file icon mapping
 	function getFileIcon(filename: string): string {

@@ -7,8 +7,8 @@
     import Styling from "../../../views/styling.svelte";
     import Roadmap from "../../../views/roadmap.svelte";
 
-    export let data: PageData;
-    $: subpage = data.subpage || "welcome";
+    const { data }: { data: PageData } = $props();
+    const subpage = $derived(data.subpage || "welcome");
 
     const views = {
         welcome: Welcome,
@@ -20,4 +20,7 @@
     };
 </script>
 
-<svelte:component this={views[subpage]} />
+{#if subpage}
+    {@const Component = views[subpage]}
+    <Component />
+{/if}

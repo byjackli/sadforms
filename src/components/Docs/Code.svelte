@@ -2,12 +2,23 @@
     import { onMount } from "svelte";
     import { highlight, setCustomPattern } from "../../static/vendor/prism";
 
-    export let lang: string = undefined,
-        code: string = "",
-        match: Record<string, unknown> = undefined;
+    interface Props {
+        lang?: string;
+        code?: string;
+        match?: Record<string, unknown>;
+    }
+    
+    const {
+        lang = undefined,
+        code = "",
+        match = undefined
+    }: Props = $props();
 
-    let container = undefined;
-    $: $$props.string && update();
+    let container = $state(undefined);
+    
+    $effect(() => {
+        if (code) update();
+    });
 
     function update() {
         match !== undefined && setCustomPattern(match);

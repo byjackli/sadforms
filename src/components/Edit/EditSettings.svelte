@@ -9,8 +9,8 @@
         updateSave,
     } from "../../store/SadForms";
 
-    $: data = $SadForms.data;
-    $: fields = $SadForms && generateSettingsConfig();
+    let data = $state($SadForms.data);
+    const fields = $derived($SadForms && generateSettingsConfig());
 
     function flash(formid: string, saveToLocal: boolean): void {
         if (!saveToLocal) clearSave(formid);

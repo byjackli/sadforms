@@ -4,21 +4,25 @@
 	import type { Group } from "../types/Form";
 
 	// Props for the group wrapper
-	export let group: Group;
-	export let formId: string;
-	export let functions: {
-		onFocus: (fieldId: string, groupId?: string) => void;
-		onBlur: (fieldId: string, groupId?: string) => void;
-		updateField: (event: Event, fieldId: string, groupId?: string) => void;
-		submit: () => void;
-		reset: () => void;
-	};
-	export let children: any[] = [];
+	interface Props {
+		group: Group;
+		formId: string;
+		functions: {
+			onFocus: (fieldId: string, groupId?: string) => void;
+			onBlur: (fieldId: string, groupId?: string) => void;
+			updateField: (event: Event, fieldId: string, groupId?: string) => void;
+			submit: () => void;
+			reset: () => void;
+		};
+		children?: any[];
+	}
+	
+	const { group, formId, functions, children = [] }: Props = $props();
 
 	// Group metadata
-	$: meta = group.meta;
-	$: showLabel = meta?.override?.label;
-	$: showFeedback = meta?.override?.feedback;
+	const meta = $derived(group.meta);
+	const showLabel = $derived(meta?.override?.label);
+	const showFeedback = $derived(meta?.override?.feedback);
 </script>
 
 <div

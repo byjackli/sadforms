@@ -3,11 +3,11 @@
     import NavDocs from "../components/Docs/Navbar.svelte";
     import { page } from '$app/stores';
 
-    $: home = $page.data.home;
-    $: doc = $page.data.doc;
+    const home = $derived($page.data.home);
+    const doc = $derived($page.data.doc);
 
-    $: path = home;
-    $: hash = doc;
+    const path = $derived(home);
+    const hash = $derived(doc);
 </script>
 
 {#if !(path === "/")}<NavMain {path} {hash} />{/if}

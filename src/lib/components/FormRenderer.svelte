@@ -4,26 +4,40 @@
 	import CustomStore from "../store/CustomStore";
 	import type { Field as FieldType, Group } from "../types/Form";
 
-	export let uid: string;
-	export let title: string;
-	export let caption: string | undefined = undefined;
-	export let hide: {
-		title?: boolean;
-		caption?: boolean;
-		submit?: boolean;
-		reset?: boolean;
-	} | undefined = undefined;
-	export let autocomplete = true;
-	export let fullscreen = false;
-	export let formFields: (FieldType | Group)[] = [];
-	export let loading = false;
-	export let functions: {
-		onFocus: (fieldId: string, groupId?: string) => void;
-		onBlur: (fieldId: string, groupId?: string) => void;
-		updateField: (event: Event, fieldId: string, groupId?: string) => void;
-		submit: () => void;
-		reset: () => void;
-	};
+	interface Props {
+		uid: string;
+		title: string;
+		caption?: string;
+		hide?: {
+			title?: boolean;
+			caption?: boolean;
+			submit?: boolean;
+			reset?: boolean;
+		};
+		autocomplete?: boolean;
+		fullscreen?: boolean;
+		formFields?: (FieldType | Group)[];
+		loading?: boolean;
+		functions: {
+			onFocus: (fieldId: string, groupId?: string) => void;
+			onBlur: (fieldId: string, groupId?: string) => void;
+			updateField: (event: Event, fieldId: string, groupId?: string) => void;
+			submit: () => void;
+			reset: () => void;
+		};
+	}
+	
+	const {
+		uid,
+		title,
+		caption = undefined,
+		hide = undefined,
+		autocomplete = true,
+		fullscreen = false,
+		formFields = [],
+		loading = false,
+		functions
+	}: Props = $props();
 
 	// Type checking utility
 	function isField(field: unknown): field is FieldType {
@@ -80,7 +94,7 @@
 	}
 
 	// Reactive preprocessing of form fields
-	$: processedFields = preprocessFormFields(formFields);
+	const processedFields = $derived(preprocessFormFields(formFields));
 </script>
 
 <div id={uid} class="sf sf-container">

@@ -1,13 +1,23 @@
 <script lang="ts">
     import { loadForm, deleteForm } from "../store/SadForms";
 
-    export let custom: boolean = false,
-        uid: string = undefined,
-        title: string,
-        icon: string = "edit",
-        action: string = "edit form";
+    interface Props {
+        custom?: boolean;
+        uid?: string;
+        title: string;
+        icon?: string;
+        action?: string;
+    }
+    
+    const {
+        custom = false,
+        uid = undefined,
+        title,
+        icon = "edit",
+        action = "edit form"
+    }: Props = $props();
 
-    let square;
+    let square = $state();
 
     function toggleClick(event): void {
         if (

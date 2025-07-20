@@ -4,9 +4,13 @@
     import { newType } from "../../presets";
     import SadForms, { updateForm, updateSave } from "../../store/SadForms";
 
-    export let main: any;
+    interface Props {
+        main: any;
+    }
+    
+    const { main }: Props = $props();
 
-    $: data = $SadForms.data;
+    const data = $derived($SadForms.data);
 
     /**
      * Form configuration for adding new fields

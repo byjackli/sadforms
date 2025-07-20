@@ -12,16 +12,16 @@
     import EditSettings from "./EditSettings.svelte";
     import Form from "$lib/components/Form.svelte";
 
-    let viewState: ViewState = editorViewService.getInitialState();
-    let toggler: HTMLElement;
-    let main: any = undefined;
-    let debugData: string | null = undefined;
+    let viewState = $state<ViewState>(editorViewService.getInitialState());
+    let toggler = $state<HTMLElement>();
+    let main = $state<any>(undefined);
+    let debugData = $state<string | null>(undefined);
 
-    $: formData = $SadForms.data;
-    $: copyButtonConfig = editorViewService.getCopyButtonConfig(viewState.currentView);
+    const formData = $derived($SadForms.data);
+    const copyButtonConfig = $derived(editorViewService.getCopyButtonConfig(viewState.currentView));
     
     // Debug form configuration using SadForms dogfooding approach
-    $: debugFormConfig = {
+    const debugFormConfig = $derived({
         uid: "debug-toggle",
         title: "Debug Controls",
         hide: { title: true, caption: true, submit: true, reset: true },
@@ -36,7 +36,7 @@
                 onInput: handleDebugToggle,
             }
         }
-    };
+    });
 
     function swapView(view: string): void {
         viewState = editorViewService.updateViewState(

@@ -1,5 +1,11 @@
 <script lang="ts">
-    export let id: string, name: string, icon: string;
+    interface Props {
+        id: string;
+        name: string;
+        icon: string;
+    }
+    
+    const { id, name, icon }: Props = $props();
 </script>
 
 <div class="divider" {id}>

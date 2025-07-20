@@ -1,6 +1,10 @@
 <script lang="ts">
     import view, { updateView } from "../../static/intersection";
-    export let title: string;
+    interface Props {
+        title: string;
+    }
+    
+    const { title }: Props = $props();
 </script>
 
 <section

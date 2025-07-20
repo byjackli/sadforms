@@ -3,7 +3,7 @@
     import { getForms } from "../store/SadForms";
     import Square from "../components/Square.svelte";
 
-    let forms: { uid: string; title: string }[] = [];
+    let forms = $state<{ uid: string; title: string }[]>([]);
 
     onMount(() => {
         try {

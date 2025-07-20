@@ -1,11 +1,10 @@
 <script lang="ts">
     import Checkbox from "$lib/components/Checkbox.svelte";
 
-    export let path: string = undefined,
-        hash: string = undefined;
+    const { path = undefined, hash = undefined }: { path?: string; hash?: string } = $props();
 
-    let preview: HTMLElement = undefined,
-        edit: HTMLElement = undefined;
+    let preview: HTMLElement = $state(undefined);
+    let edit: HTMLElement = $state(undefined);
 </script>
 
 <nav id="main">

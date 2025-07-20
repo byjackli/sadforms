@@ -1,14 +1,18 @@
 <script lang="ts">
     import Form from "$lib/components/Form.svelte";
     
-    export let formData: any;
-    export let replacer: (key: string, value: any) => any;
-    export let onInput: (event: any) => void;
+    interface Props {
+        formData: any;
+        replacer: (key: string, value: any) => any;
+        onInput: (event: any) => void;
+    }
+    
+    const { formData, replacer, onInput }: Props = $props();
 
-    $: jsonText = JSON.stringify(formData, replacer, 2);
+    const jsonText = $derived(JSON.stringify(formData, replacer, 2));
     
     // Form configuration for JSON editor using SadForms
-    $: jsonEditorConfig = {
+    const jsonEditorConfig = $derived({
         uid: "json-editor",
         title: "JSON Editor",
         hide: { title: true, caption: true, submit: true, reset: true },
@@ -25,7 +29,7 @@
                 onInput: handleJsonInput,
             }
         }
-    };
+    });
 
     function handleJsonInput(details: any): void {
         // Pass through to parent component
