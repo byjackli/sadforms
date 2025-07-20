@@ -3,9 +3,15 @@
     import { getForms } from "../store/SadForms";
     import Square from "../components/Square.svelte";
 
-    let forms: [{ uid: string; title: string }];
+    let forms: { uid: string; title: string }[] = [];
 
-    onMount(() => (forms = getForms()));
+    onMount(() => {
+        try {
+            forms = getForms();
+        } catch (error) {
+            console.error('Error loading forms:', error);
+        }
+    });
 </script>
 
 <main id="home">
@@ -43,7 +49,7 @@
     </div>
     <section>
         <Square custom icon="post_add" title="new form" action="new form" />
-        {#if forms}
+        {#if forms && forms.length > 0}
             {#each forms as form (form)}
                 {@const { uid, title } = form}
                 <Square {uid} {title} />

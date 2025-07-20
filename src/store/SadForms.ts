@@ -10,13 +10,26 @@ export function setRefresh(state: boolean): void {
     SadForms.update(() => ({ data, editing, refresh }))
 }
 
-export function getForms(): [{ uid: string, title: string }] {
-    const sample = { uid: "sample", title: "Sample Form" }, arr: [{ uid: string, title: string }] = [sample];
-    if (!localStorage.getItem("SadForms:sample |")) loadSample()
+export function getForms(): { uid: string, title: string }[] {
+    const arr: { uid: string, title: string }[] = [];
+    
+    // Check if we're in browser environment
+    if (typeof window === 'undefined') {
+        return arr;
+    }
+    
+    // Always ensure sample form is available
+    if (!localStorage.getItem("SadForms:sample |")) {
+        loadSample();
+    }
 
-    for (const [key, value] of Object.entries(localStorage))
-        if (key.startsWith("SadForms") && key[46] === "|")
-            arr.push({ uid: key.slice(9, 45), title: JSON.parse(value).title })
+    for (const [key, value] of Object.entries(localStorage)) {
+        if (key.startsWith("SadForms:") && key.endsWith(" |")) {
+            const uid = key.slice(9, -2); // Remove "SadForms:" prefix and " |" suffix
+            const title = JSON.parse(value).title;
+            arr.push({ uid, title });
+        }
+    }
 
     return arr
 }

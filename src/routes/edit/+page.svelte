@@ -1,9 +1,9 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import SadForms, { loadForm } from "../store/SadForms";
+    import SadForms, { loadForm } from "../../store/SadForms";
 
-    import Loading from "../components/Loading.svelte";
-    import Form from "$lib/components/Form.svelte";
+    import Editor from "../../components/Edit/Editor.svelte";
+    import Loading from "../../components/Loading.svelte";
 
     $: SadForm = undefined;
     onMount(() => {
@@ -13,14 +13,12 @@
         let uid = decoded[36] === "|" ? decoded.slice(0, 36) : "sample";
 
         loadForm(uid);
-        SadForm = $SadForms.data;
+        SadForm = $SadForms;
     });
 </script>
 
-<main id="preview" class="fwfh">
-    {#if SadForm}
-        <Form {...SadForm} />
-    {:else}
-        <Loading />
-    {/if}
-</main>
+{#if SadForm}
+    <Editor />
+{:else}
+    <Loading />
+{/if}
