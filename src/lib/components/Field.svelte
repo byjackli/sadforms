@@ -15,53 +15,97 @@
 		group?: Group;
 		functions: Record<string, Function>;
 	}
-	
+
 	const { formid, field, group = undefined, functions }: Props = $props();
-	
+
 	// Existing reactive statements - now using FormFieldStore
 	const value = $derived(
 		group === undefined
 			? $FormFieldStore[formid]?.displayValues?.[field.uid]
-			: $FormFieldStore[formid]?.displayValues?.[group?.meta.uid]?.[field.uid]);
+			: $FormFieldStore[formid]?.displayValues?.[group?.meta.uid]?.[
+					field.uid
+				],
+	);
 
 	const notEmpty = $derived(
 		typeof value === "string" && value.length
 			? $CustomStore.names.notEmpty_safe
-			: "");
+			: "",
+	);
 
 	// NEW: Reactive validation feedback handling - now using FormValidationStore
-	const validationResult = $derived(group === undefined
-		? $FormValidationStore[formid]?.validationResult?.[field.uid] as ValidationResult
-		: $FormValidationStore[formid]?.validationResult?.[group?.meta.uid]?.[field.uid] as ValidationResult);
-	
+	const validationResult = $derived(
+		group === undefined
+			? ($FormValidationStore[formid]?.validationResult?.[
+					field.uid
+				] as ValidationResult)
+			: ($FormValidationStore[formid]?.validationResult?.[
+					group?.meta.uid
+				]?.[field.uid] as ValidationResult),
+	);
+
 	// Check if field has been touched - now using FormMetaStore
-	const isTouched = $derived(group === undefined
-		? $FormMetaStore[formid]?.touched?.[field.uid] || false
-		: $FormMetaStore[formid]?.touched?.[group?.meta.uid]?.[field.uid] || false);
-	
+	const isTouched = $derived(
+		group === undefined
+			? $FormMetaStore[formid]?.touched?.[field.uid] || false
+			: $FormMetaStore[formid]?.touched?.[group?.meta.uid]?.[field.uid] ||
+					false,
+	);
+
 	// Only show validation feedback if field has been touched
-	const feedbackItems = $derived((isTouched && validationResult?.raw) ? validationResult.raw : []);
-	const hasValidationErrors = $derived(isTouched && validationResult && !validationResult.verdict);
+	const feedbackItems = $derived(
+		isTouched && validationResult?.raw ? validationResult.raw : [],
+	);
+	const hasValidationErrors = $derived(
+		isTouched && validationResult && !validationResult.verdict,
+	);
 	const feedbackActive = $derived(feedbackItems.length > 0);
 
 	// NEW: Reactive warning class handling (only when touched)
-	const warningClass = $derived(hasValidationErrors ? $CustomStore.names.warn : "");
+	const warningClass = $derived(
+		hasValidationErrors ? $CustomStore.names.warn : "",
+	);
 
 	// NEW: Reactive file preview handling - now using FormFieldStore
 	// NEW: Reactive file preview handling - now using FormFieldStore
-	const fieldFiles = $derived(group === undefined
-		? $FormFieldStore[formid]?.fieldValues?.[field.uid]
-		: $FormFieldStore[formid]?.fieldValues?.[group?.meta.uid]?.[field.uid]);
-	
+	const fieldFiles = $derived(
+		group === undefined
+			? $FormFieldStore[formid]?.fieldValues?.[field.uid]
+			: $FormFieldStore[formid]?.fieldValues?.[group?.meta.uid]?.[
+					field.uid
+				],
+	);
+
 	const files = $derived(Array.isArray(fieldFiles) ? fieldFiles : []);
 	const hasFiles = $derived(files.length > 0);
-	const previewActive = $derived(hasFiles && field.type === "file" && !field?.hide?.preview);
+	const previewActive = $derived(
+		hasFiles && field.type === "file" && !field?.hide?.preview,
+	);
 
 	// Helper function for file icon mapping
 	function getFileIcon(filename: string): string {
 		const ext = filename.split(".").pop();
 		return (Extensions as any)[ext || ""] || "insert_drive_file";
 	}
+
+	// Reactive checkbox/switch value - use FormFieldStore directly for reactivity
+	const checkboxValue = $derived(
+		["checkbox", "switch"].includes(field.type) 
+			? !!(group === undefined
+				? $FormFieldStore[formid]?.fieldValues?.[field.uid]
+				: $FormFieldStore[formid]?.fieldValues?.[group?.meta.uid]?.[field.uid])
+			: false
+	);
+
+	// Reactive dropdown/radio value - use FormFieldStore directly for reactivity
+	const dropdownValue = $derived(
+		["dropdown", "radio"].includes(field.type)
+			? (group === undefined
+				? $FormFieldStore[formid]?.fieldValues?.[field.uid]
+				: $FormFieldStore[formid]?.fieldValues?.[group?.meta.uid]?.[field.uid]) || {}
+			: {}
+	);
+
 </script>
 
 <div
@@ -72,7 +116,7 @@
 >
 	{#if !field.hidden}
 		{#if field.type && field.type === "custom"}
-			<div>{@html field.body ? decodeURIComponent(field.body) : ''}</div>
+			<div>{@html field.body ? decodeURIComponent(field.body) : ""}</div>
 		{:else}
 			{#if field.type === "textarea"}
 				<textarea
@@ -86,16 +130,16 @@
 					aria-required={field.required}
 					spellcheck={`${field.spellcheck}`}
 					{value}
-					on:focus={() =>
+					onfocus={() =>
 						functions.onFocus(field.uid, group?.meta.uid)}
-					on:blur={() => functions.onBlur(field.uid, group?.meta.uid)}
-					on:input={async (event) =>
+					onblur={() => functions.onBlur(field.uid, group?.meta.uid)}
+					oninput={async (event) =>
 						await functions.updateField(
 							event,
 							field.uid,
 							group?.meta.uid,
 						)}
-				/>
+				></textarea>
 			{:else if field.type === "file" && field.custom}
 				<button
 					id={`${$CustomStore.names.inputHeader}${field.uid}`}
@@ -107,7 +151,7 @@
 						field.multiple ? `files` : `a file`
 					} onto the button`}
 					aria-labelledby={`${$CustomStore.names.label}${field.uid}`}
-					on:click={(event) => {
+					onclick={(event) => {
 						event.preventDefault();
 						document
 							.getElementById(
@@ -115,20 +159,29 @@
 							)
 							.click();
 					}}
-					on:drop={null}
-					on:dragenter={null}
-					on:dragover={null}
-					on:dragleave={null}
+					ondrop={null}
+					ondragenter={null}
+					ondragover={null}
+					ondragleave={null}
 				>
 					{(() => {
-						const fieldData = getField(formid, field.uid, group?.meta.uid);
+						const fieldData = getField(
+							formid,
+							field.uid,
+							group?.meta.uid,
+						);
 						if (Array.isArray(fieldData) && fieldData.length > 0) {
 							const fileData = fieldData[0];
-							if (typeof fileData === 'object' && fileData !== null && 'meta' in fileData && fileData.meta?.name) {
+							if (
+								typeof fileData === "object" &&
+								fileData !== null &&
+								"meta" in fileData &&
+								fileData.meta?.name
+							) {
 								return decodeURIComponent(fileData.meta.name);
 							}
 						}
-						return `click to choose ${field.multiple ? 'files' : 'a file'}`;
+						return `click to choose ${field.multiple ? "files" : "a file"}`;
 					})()}
 				</button>
 				<input
@@ -144,10 +197,10 @@
 					aria-disabled={field.disabled}
 					aria-hidden="true"
 					style={`display: none`}
-					on:focus={() =>
+					onfocus={() =>
 						functions.onFocus(field.uid, group?.meta.uid)}
-					on:blur={() => functions.onBlur(field.uid, group?.meta.uid)}
-					on:input={async (event) =>
+					onblur={() => functions.onBlur(field.uid, group?.meta.uid)}
+					oninput={async (event) =>
 						await functions.updateField(
 							event,
 							field.uid,
@@ -162,10 +215,11 @@
 					disabled={field.disabled}
 					multiple={field.multiple}
 					compact={field.compact}
+					redact={field.redact}
 					options={field.options}
 					edit={field.edit}
 					{value}
-					data={getField(formid, field.uid, group?.meta.uid) || {}}
+					data={dropdownValue}
 					focus={() => functions.onFocus(field.uid, group?.meta.uid)}
 					blur={() => functions.onBlur(field.uid, group?.meta.uid)}
 					input={async (event) =>
@@ -186,7 +240,7 @@
 						: undefined}
 					disabled={field.disabled}
 					redact={field.redact}
-					data={!!getField(formid, field.uid, group?.meta.uid)}
+					data={checkboxValue}
 					focus={() => functions.onFocus(field.uid, group?.meta.uid)}
 					blur={() => functions.onBlur(field.uid, group?.meta.uid)}
 					input={async (event) =>
@@ -219,10 +273,10 @@
 					aria-disabled={field.disabled}
 					multiple={field.multiple ? true : null}
 					value={field.type === "file" ? null : value}
-					on:focus={() =>
+					onfocus={() =>
 						functions.onFocus(field.uid, group?.meta.uid)}
-					on:blur={() => functions.onBlur(field.uid, group?.meta.uid)}
-					on:input={async (event) =>
+					onblur={() => functions.onBlur(field.uid, group?.meta.uid)}
+					oninput={async (event) =>
 						await functions.updateField(
 							event,
 							field.uid,
@@ -266,7 +320,10 @@
 		>
 			{#each feedbackItems as item, index}
 				<p class="condition-{item.verdict}">
-					<span class="for-aria">feedback {index + 1} {item.verdict ? 'is' : 'is NOT'} valid;</span>
+					<span class="for-aria"
+						>feedback {index + 1}
+						{item.verdict ? "is" : "is NOT"} valid;</span
+					>
 					{item.feedback}
 					<span class="for-aria">.</span>
 				</p>
@@ -283,7 +340,9 @@
 		>
 			{#each files as file}
 				<div class="preview" title={decodeURIComponent(file.meta.name)}>
-					<span class="material-icons">{getFileIcon(decodeURIComponent(file.meta.name))}</span>
+					<span class="material-icons"
+						>{getFileIcon(decodeURIComponent(file.meta.name))}</span
+					>
 					<p>{decodeURIComponent(file.meta.name)}</p>
 				</div>
 			{/each}

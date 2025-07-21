@@ -6,6 +6,7 @@
     import Loading from "../../components/Loading.svelte";
 
     let SadForm = $state(undefined);
+    
     onMount(() => {
         loadEmpty();
         SadForm = $SadForms;

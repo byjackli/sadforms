@@ -15,10 +15,9 @@
         open: boolean;
     }
     
-    const { togglePanel, swapView, setMain, open }: Props = $props();
+    let { togglePanel, swapView, setMain, open, debugData = $bindable() }: Props = $props();
 
     let main = $state<any>(undefined);
-    let debugData = $state<string | null>(null);
     let editControls = $state<any>(undefined);
 
     const data = $derived($SadForms.data);

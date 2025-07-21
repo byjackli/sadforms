@@ -104,7 +104,7 @@
 		<form
 			autocomplete={autocomplete ? "on" : "off"}
 			tabindex="-1"
-			on:submit|preventDefault={functions.submit}
+			onsubmit={(event) => { event.preventDefault(); functions.submit(); }}
 		>
 			{#each processedFields as item (item.uid)}
 				{#if item.isGroup}
@@ -128,7 +128,7 @@
 						class="field"
 						type="button"
 						value="reset"
-						on:click|preventDefault={functions.reset}
+						onclick={(event) => { event.preventDefault(); functions.reset(); }}
 					/>
 				{/if}
 				{#if !hide?.submit}
@@ -136,7 +136,7 @@
 						class="field"
 						type="submit"
 						value="submit"
-						on:click|preventDefault={functions.submit}
+						onclick={(event) => { event.preventDefault(); functions.submit(); }}
 					/>
 				{/if}
 			</div>

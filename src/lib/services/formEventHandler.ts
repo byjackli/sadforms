@@ -3,7 +3,7 @@
  * Handles field updates, focus/blur events, and form interactions
  */
 
-import { setField, setFieldValue, getField, hasField } from '../store/FormFieldStore';
+import { setField, setFieldValue, getField } from '../store/FormFieldStore';
 import { setTouched, setActive } from '../store/FormMetaStore';
 import { getConfigValue } from '../store/FormConfigStore';
 import { get } from 'svelte/store';
@@ -90,9 +90,7 @@ export async function handleFieldFocus(
 
     // Handle redacted fields - restore original value for editing
     if (getConfigValue(formId, FormProps.REDACT, fieldId, groupId)) {
-        const fieldValue = hasField(formId, fieldId, groupId) 
-            ? getField(formId, fieldId, groupId) 
-            : "";
+        const fieldValue = getField(formId, fieldId, groupId) || "";
         setFieldValue(formId, FormProps.DISPLAY_VALUES, fieldValue, fieldId, groupId);
     }
 

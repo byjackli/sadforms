@@ -144,8 +144,8 @@
             };
         }
 
-        // Update field data
-        base[fieldid] = formData;
+        // Update field data by merging with existing configuration
+        base[fieldid] = { ...base[fieldid], ...formData };
         const newDontSave = formData.dontSave;
 
         // Handle dontSave field changes
@@ -225,6 +225,9 @@
             setRedact(formId, false, fieldid, groupid);
             const actualValue = getFieldValue(formId, FormProps.FIELD_VALUES, fieldid, groupid);
             setFieldValue(formId, FormProps.DISPLAY_VALUES, actualValue, fieldid, groupid);
+        } else {
+            setRedact(formId, true, fieldid, groupid);
+            setFieldValue(formId, FormProps.DISPLAY_VALUES, "[redacted]", fieldid, groupid);
         }
 
         main.reload();

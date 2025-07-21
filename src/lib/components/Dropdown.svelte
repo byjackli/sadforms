@@ -6,7 +6,7 @@
 		updateDropdown,
 	} from "../store/DropdownStore";
 	import CustomStore from "../store/CustomStore";
-	import type { Options, Edit } from "../types/Form";
+	import type { Options, Edit, Value } from "../types/Form";
 
 	interface Props {
 		id: string;
@@ -16,7 +16,7 @@
 		multiple?: boolean;
 		compact?: boolean;
 		value?: string | string[];
-		data?: Record<string, string>;
+		data?: Value;
 		options: Options;
 		edit?: Edit;
 		focus: Function;
@@ -32,6 +32,7 @@
 		multiple = false,
 		compact = true,
 		value = "",
+		data: initialData = {},
 		options,
 		edit = undefined,
 		focus,
@@ -39,7 +40,15 @@
 		input
 	}: Props = $props();
 	
-	let data = $state<Record<string, string>>(value && typeof value === 'object' && !Array.isArray(value) ? value : {});
+	// Make data reactive to prop changes - keep as $state for assignments but sync with prop
+	let data = $state<Record<string, string>>(initialData && typeof initialData === 'object' && !Array.isArray(initialData) && !(initialData instanceof File) ? initialData as Record<string, string> : {});
+	
+	// Sync data with prop changes
+	$effect(() => {
+		if (initialData && typeof initialData === 'object' && !Array.isArray(initialData) && !(initialData instanceof File)) {
+			data = initialData as Record<string, string>;
+		}
+	});
 
 	let fullId = $state(`${$CustomStore.names.inputHeader}${id}`);
 	let label = $state<HTMLElement>(undefined);
@@ -332,8 +341,8 @@
 		value === "[redacted]" ? $CustomStore.names.redact : ""
 	} ${expanded ? "active" : ""}`}
 	id={fullId}
-	{name}
-	{disabled}
+	data-name={name}
+	data-disabled={disabled}
 	aria-haspopup="listbox"
 >
 	<div
@@ -350,21 +359,26 @@
 			: "false"}
 		tabindex="0"
 		role="combobox"
-		on:focus={() => focus()}
-		on:click={() => {
+		onfocus={() => focus()}
+		onblur={() => blur()}
+		onclick={() => {
 			if (disabled) return;
 			if (!expanded) updateDropdown(true, fullId);
 			else updateDropdown(false, undefined);
 
 			dropdown.focus();
 		}}
-		on:keydown={(event) => onInput(event)}
+		onkeydown={(event) => onInput(event)}
 	>
-		<span class={value && value.length ? "" : "option-size"}>
-			{compact && data && typeof data === "object" && Object.keys(data).length > 1
-				? `Multiple Selections (${Object.keys(data).length})`
-				: value && value.length
-				? value
+		<span class={data && Object.keys(data).length ? "" : "option-size"}>
+			{value === "[redacted]" 
+				? "[redacted]"
+				: data && typeof data === "object" && Object.keys(data).length > 1
+				? compact 
+					? `Multiple Selections (${Object.keys(data).length})`
+					: Object.values(data).join(', ')
+				: data && Object.keys(data).length === 1
+				? Object.values(data)[0]
 				: placeholder
 				? placeholder
 				: "Select an option"}
@@ -378,7 +392,7 @@
 			class="option-container"
 			id={`${$CustomStore.names.inputHeader}${id}lb`}
 			role="listbox"
-			on:click={(event) => onClick(event)}
+			onclick={(event) => onClick(event)}
 		>
 			{#if !size}<div>no options available</div>{/if}
 			{#each options as option (option?.uid)}
@@ -412,7 +426,7 @@
 						}`}
 						aria-label={add && addAriaLabel()}
 						role="option"
-						on:click={() => {
+						onclick={() => {
 							updateCursor("add");
 							add.field.focus();
 						}}
@@ -425,7 +439,7 @@
 							aria-hidden={"true"}
 							type="text"
 							placeholder="Add an option. (add / remove / limit)"
-							on:keydown={(event) => addKeydown(event)}
+							onkeydown={(event) => addKeydown(event)}
 						/>
 						<div aria-hidden="true" />
 						<div aria-hidden="true" class="edit-details">
@@ -452,7 +466,7 @@
 
 							<div
 								class="option-actions"
-								on:click={() => addItem()}
+								onclick={() => addItem()}
 							>
 								<span class="material-icons"
 									>add_circle_outline</span

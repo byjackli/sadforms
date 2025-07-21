@@ -46,7 +46,7 @@
 		afterFormLoad?: ((refresh: (bool?: boolean) => void) => void) | null;
 	}
 	
-	const {
+	let {
 		uid,
 		title,
 		caption = undefined,
@@ -60,10 +60,9 @@
 		debug = false,
 		onSubmit = null,
 		hide = undefined,
-		afterFormLoad = null
+		afterFormLoad = null,
+		debugData = $bindable()
 	}: Props = $props();
-	
-	let debugData = $state<string | null>(null);
 
 	// Internal state
 	let loading = $state(true);

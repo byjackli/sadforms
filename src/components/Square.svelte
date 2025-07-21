@@ -52,8 +52,8 @@
         <div
             class={`square ${custom ? "custom" : ""}`}
             tabindex="0"
-            on:click={toggleClick}
-            on:keydown={toggleClick}
+            onclick={toggleClick}
+            onkeydown={toggleClick}
             role="button"
             aria-label={`${!custom ? `edit ${title}` : action}`}
         >
@@ -63,8 +63,8 @@
         {#if uid}
             <button
                 class="delete"
-                on:click={toggleDelete}
-                on:keydown={toggleDelete}
+                onclick={toggleDelete}
+                onkeydown={toggleDelete}
                 aria-label={`delete ${title}`}
             >
                 <span aria-hidden="true" class="material-icons"

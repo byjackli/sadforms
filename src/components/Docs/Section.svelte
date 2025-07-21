@@ -9,7 +9,7 @@
 
 <section
     use:view
-    on:enterView={(event) => updateView(event)}
+    onenterView={(event) => updateView(event)}
     id={title?.toLowerCase().replace(/\s+/g, "_")}
 >
     <h2 class="h3">{title}</h2>

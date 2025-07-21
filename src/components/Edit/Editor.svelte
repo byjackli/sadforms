@@ -88,7 +88,7 @@
     }
 </script>
 
-<svelte:window on:keydown={(event) => save(event)} />
+<svelte:window onkeydown={(event) => save(event)} />
 
 <main id="editor">
     <EditPreview bind:debugData {togglePanel} {swapView} {setMain} open={viewState.open} />
@@ -106,8 +106,8 @@
             tabindex="0"
             aria-label={`${viewState.aria} editor panel`}
             role="button"
-            on:click={togglePanel}
-            on:keydown={(event) => genSubmit(event, togglePanel)}
+            onclick={togglePanel}
+            onkeydown={(event) => genSubmit(event, togglePanel)}
         >
             <span aria-hidden="true" class="material-icons">{viewState.icon}</span>
         </div>
@@ -117,11 +117,11 @@
             tabindex="0"
             aria-label="form debug"
             role="button"
-            on:click={() => {
+            onclick={() => {
                 if (!viewState.open) togglePanel();
                 swapView("debug");
             }}
-            on:keydown={(event) =>
+            onkeydown={(event) =>
                 genSubmit(event, () => {
                     if (!viewState.open) togglePanel();
                     swapView("debug");
@@ -161,8 +161,8 @@
                     <button
                         class={viewState.currentView === "code" ? "active" : ""}
                         aria-label="code view of entire form"
-                        on:click={() => swapView("code")}
-                        on:keydown={(event) =>
+                        onclick={() => swapView("code")}
+                        onkeydown={(event) =>
                             genSubmit(event, () => swapView("code"))}
                     >
                         <span aria-hidden="true" class="material-icons"
@@ -173,8 +173,8 @@
                     <button
                         class={viewState.currentView === "settings" ? "active" : ""}
                         aria-label="form settings"
-                        on:click={() => swapView("settings")}
-                        on:keydown={(event) =>
+                        onclick={() => swapView("settings")}
+                        onkeydown={(event) =>
                             genSubmit(event, () => swapView("settings"))}
                     >
                         <span aria-hidden="true" class="material-icons"
@@ -185,8 +185,8 @@
                         <button
                             class={viewState.currentView === "edit" ? "active" : ""}
                             aria-label="edit view of selected field"
-                            on:click={() => swapView("edit")}
-                            on:keydown={(event) =>
+                            onclick={() => swapView("edit")}
+                            onkeydown={(event) =>
                                 genSubmit(event, () => swapView("edit"))}
                         >
                             <span aria-hidden="true" class="material-icons"
@@ -198,8 +198,8 @@
                 </div>
                 <button
                     id="copy-code"
-                    on:click={copyToClipboard}
-                    on:keydown={(event) => genSubmit(event, copyToClipboard)}
+                    onclick={copyToClipboard}
+                    onkeydown={(event) => genSubmit(event, copyToClipboard)}
                     aria-label={copyButtonConfig.label}
                 >
                     <span aria-hidden="true" class="material-icons">

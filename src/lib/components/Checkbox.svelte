@@ -24,21 +24,16 @@
 		placeholder = "",
 		disabled = false,
 		redact = false,
+		data = false,
 		focus = undefined,
 		blur = undefined,
 		input = undefined
 	}: Props = $props();
 	
-	let data = $state<boolean>(undefined);
-
 	let fullId = $state(`${$CustomStore.names.inputHeader}${id}`);
 	let label = $state<HTMLElement>(undefined);
 	let container = $state(undefined);
 
-	function updateChecked() {
-		if (data) data = false;
-		else data = true;
-	}
 	function renderChecked(boolean: boolean): string {
 		return boolean ? `check_box` : `check_box_outline_blank`;
 	}
@@ -49,17 +44,13 @@
 			["Enter", "NumpadEnter", "Space"].includes(event.code)
 		) {
 			event.preventDefault();
-			updateChecked();
-			input({ target: { value: data } });
+			input({ target: { value: !Boolean(data) } });
 		}
 	}
 	function labelLink() {
 		container.focus();
 	}
 
-	$effect(() => {
-		if (!data) data = undefined;
-	});
 	onMount(() => {
 		label = document.getElementById(`${$CustomStore.names.label}${id}`);
 		label?.addEventListener("click", labelLink);
@@ -70,12 +61,13 @@
 	});
 </script>
 
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
 	bind:this={container}
 	class={`field ${type} noselect ${redact ? $CustomStore.names.redact : ""}`}
 	id={fullId}
-	{name}
-	{disabled}
+	data-name={name}
+	data-disabled={disabled}
 	aria-disabled={disabled}
 	aria-labelledby={`${$CustomStore.names.label}${id}`}
 	aria-checked={`${!!data}`}

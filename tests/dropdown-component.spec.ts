@@ -741,4 +741,135 @@ test.describe('Dropdown Component Tests', () => {
     expect(reselectedState).toBe('true');
   });
 
+  test('should properly handle compact mode enabled (Multiple Selections format)', async ({ page }) => {
+    // Use the existing sample form setup from beforeEach (/preview#sample)
+    // The sample form should have a multi-select dropdown with compact mode enabled
+    
+    const dropdown = page.locator('[role="combobox"]').first();
+    
+    // Check initial display - should show "Multiple Selections (count)" format
+    const initialDisplay = await dropdown.locator('span').first().textContent();
+    console.log('🔍 Compact mode display:', initialDisplay);
+    
+    // Verify it's using compact format
+    expect(initialDisplay).toMatch(/Multiple Selections \(\d+\)/);
+    
+    // Extract the count
+    const countMatch = initialDisplay.match(/Multiple Selections \((\d+)\)/);
+    expect(countMatch).toBeTruthy();
+    const displayedCount = parseInt(countMatch[1]);
+    console.log(`📊 Displayed count: ${displayedCount}`);
+    
+    // Expand dropdown to verify actual selections
+    await dropdown.click();
+    const selectedOptions = page.locator('[role="option"][aria-selected="true"]');
+    const actualSelectedCount = await selectedOptions.count();
+    console.log(`✅ Actual selected count: ${actualSelectedCount}`);
+    
+    // Count should match
+    expect(displayedCount).toBe(actualSelectedCount);
+    
+    // Verify individual selections still work
+    const firstSelected = selectedOptions.first();
+    const firstSelectedText = await firstSelected.locator('span').first().textContent();
+    console.log(`🎯 Testing selection: ${firstSelectedText}`);
+    
+    await firstSelected.click();
+    await page.waitForTimeout(200);
+    
+    // Display should update to show new count
+    const newDisplay = await dropdown.locator('span').first().textContent();
+    console.log(`📊 After deselection: ${newDisplay}`);
+    expect(newDisplay).toMatch(/Multiple Selections \(\d+\)/);
+    
+    const newCountMatch = newDisplay.match(/Multiple Selections \((\d+)\)/);
+    const newCount = parseInt(newCountMatch[1]);
+    expect(newCount).toBe(displayedCount - 1);
+  });
+
+  test('should properly handle compact mode disabled (comma-separated list)', async ({ page }) => {
+    await page.goto('/edit');
+    await page.waitForLoadState('networkidle');
+    
+    // Wait for editor to load
+    await page.waitForSelector('#editor', { state: 'visible' });
+    await page.waitForTimeout(1000);
+    
+    // Look for the "create new field" dropdown (not button)
+    const createFieldDropdown = page.getByRole('combobox').filter({ hasText: 'create new field' });
+    await expect(createFieldDropdown).toBeVisible();
+    
+    // Click to open dropdown
+    await createFieldDropdown.click();
+    await page.waitForTimeout(500);
+    
+    // Select dropdown field type
+    await page.getByRole('option', { name: 'dropdown' }).click();
+    await page.waitForTimeout(500);
+  });
+
+  test('should handle single selection in both compact modes', async ({ page }) => {
+    await page.goto('/edit');
+    await page.waitForLoadState('networkidle');
+    
+    // Wait for editor to load
+    await page.waitForSelector('#editor', { state: 'visible' });
+    await page.waitForTimeout(1000);
+    
+    // Look for the "create new field" dropdown (not button)
+    const createFieldDropdown = page.getByRole('combobox').filter({ hasText: 'create new field' });
+    await expect(createFieldDropdown).toBeVisible();
+    
+    // Click to open dropdown and select dropdown field type
+    await createFieldDropdown.click();
+    await page.waitForTimeout(500);
+    await page.getByRole('option', { name: 'dropdown' }).click();
+    await page.waitForTimeout(500);
+  });
+
+  test('should handle compact mode count changes correctly', async ({ page }) => {
+    await page.goto('/preview#sample');
+    await page.waitForLoadState('networkidle');
+    
+    const dropdown = page.locator('[role="combobox"]').first();
+    
+    // Initial state
+    const initialDisplay = await dropdown.locator('span').first().textContent();
+    console.log('🔍 Initial:', initialDisplay);
+    expect(initialDisplay).toBe('Multiple Selections (6)');
+    
+    // Expand dropdown
+    await dropdown.click();
+    
+    // Get Red option
+    const redOption = page.locator('[role="option"]').filter({ hasText: 'Red' });
+    
+    // Verify Red is initially selected
+    const initialRedState = await redOption.getAttribute('aria-selected');
+    console.log('📍 Red initially:', initialRedState);
+    expect(initialRedState).toBe('true');
+    
+    // Click Red to deselect
+    await redOption.click();
+    await page.waitForTimeout(100);
+    
+    // Check new display and Red state
+    const afterDeselect = await dropdown.locator('span').first().textContent();
+    const redAfterDeselect = await redOption.getAttribute('aria-selected');
+    console.log('📍 After deselect - Display:', afterDeselect, 'Red:', redAfterDeselect);
+    expect(afterDeselect).toBe('Multiple Selections (5)');
+    expect(redAfterDeselect).toBe('false');
+    
+    // Click Red again to re-select
+    await redOption.click();
+    await page.waitForTimeout(100);
+    
+    // Check final display and Red state
+    const afterReselect = await dropdown.locator('span').first().textContent();
+    const redAfterReselect = await redOption.getAttribute('aria-selected');
+    console.log('📍 After reselect - Display:', afterReselect, 'Red:', redAfterReselect);
+    expect(afterReselect).toBe('Multiple Selections (6)');
+    expect(redAfterReselect).toBe('true');
+  });
+
 });
